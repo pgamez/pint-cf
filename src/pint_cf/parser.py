@@ -409,7 +409,7 @@ if __name__ == "__main__":
                 print(f'[FAIL] "{input_str}" -> "{result}" (expected: "{expected}")')
                 failed += 1
         except Exception as e:
-            print(f'✗ "{input_str}" -> {type(e).__name__}: {e}')
+            print(f'[ERROR] "{input_str}" -> {type(e).__name__}: {e}')
             failed += 1
 
     print("=" * 60)
