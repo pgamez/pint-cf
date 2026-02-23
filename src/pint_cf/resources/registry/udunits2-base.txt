@@ -1,0 +1,7 @@
+meter = [length] = m = metre = metres = meters
+kilogram = [mass] = kg = kilograms
+second = [time] = s = seconds
+ampere = [current] = A = amperes
+kelvin = [temperature]; offset: 0 = K = kelvins
+mole = [substance] = mol = moles
+candela = [luminosity] = cd = candelas

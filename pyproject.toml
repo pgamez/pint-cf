@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pint-cf"
+authors = [{ name = "Pedro Gámez", email = "pedrogameznieto@gmail.com" }]
+description = "CF-compliant unit registry for Pint"
+dynamic = ["version"]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["Pint>=0.25", "defusedxml", "lark"]
+
+[project.optional-dependencies]
+build = ["build", "twine"]
+tests = ["pytest", "cfunits"]
+docs = ["sphinx", "pydata-sphinx-theme", "myst-parser"]
+# dev = ["pint-cf[tests,docs,build]", "ruff", "prek"]
+dev = ["pint-cf[tests,docs,build]", "ruff"]
+
+[tool.setuptools.dynamic]
+version = { attr = "pint_cf.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src/"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "S"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+# addopts = ""
+testpaths = ["tests"]
+pythonpath = "src"

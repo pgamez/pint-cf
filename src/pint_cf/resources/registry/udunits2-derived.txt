@@ -1,0 +1,23 @@
+radian = [] = rad = radians
+steradian = rad ** 2 = sr = steradians
+hertz = 1 / s = Hz = hertzes
+gram = 1e-3 * kg = g = grams
+newton = m * kg / s ** 2 = N = newtons
+pascal = N / m ** 2 = Pa = pascals
+joule = N * m = J = joules
+watt = J / s = W = watts
+coulomb = s * A = C = coulombs
+volt = W / A = V = volts
+farad = C / V = F = farads
+ohm = V / A = Ω = Ω = ohms
+siemens = A / V = S = siemenses
+weber = V * s = Wb = webers
+tesla = Wb / m ** 2 = T = teslas
+henry = Wb / A = H = henries
+degree_Celsius = K; offset: 273.15 = °C = degrees_Celsius
+lumen = cd * sr = lm = lumens
+lux = lm / m ** 2 = lx = luxes
+katal = mol / s = kat = katals
+@alias hertz = becquerel = becquerels = Bq
+gray = J / kg = Gy = grays
+@alias gray = sievert = sieverts = Sv

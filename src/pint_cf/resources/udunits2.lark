@@ -1,0 +1,159 @@
+// =============================================================================
+// UDUNITS-2 Grammar for Lark (LALR parser with contextual lexer)
+// =============================================================================
+//
+// Converted from the original Bison grammar (parser.y).
+// Uses LALR parser with contextual lexer for deterministic parsing while
+// supporting implicit multiplication via juxtaposition (e.g., "m s" = "m*s").
+//
+// Grammar hierarchy:
+//   unit_spec → shift_exp → product_exp → power_exp → basic_exp
+//
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// Entry point: a unit specification can be empty or a shift expression
+// -----------------------------------------------------------------------------
+
+?start: shift_exp?
+
+// -----------------------------------------------------------------------------
+// Shift expression: unit with optional time origin offset
+// Examples: "seconds since 1970-01-01", "K @ 273.15"
+// -----------------------------------------------------------------------------
+
+?shift_exp: product_exp
+          | product_exp shift_op number     -> shift_by_number
+          | product_exp shift_op timestamp  -> shift_by_time
+
+shift_op: SHIFT_AT | SHIFT_AFTER | SHIFT_FROM | SHIFT_SINCE | SHIFT_REF
+
+// -----------------------------------------------------------------------------
+// Product expression: multiplication/division of power expressions
+// Juxtaposition (space) also means multiplication: "m s" = "m*s"
+// -----------------------------------------------------------------------------
+
+?product_exp: power_exp
+            | product_exp power_exp           -> multiply   // juxtaposition
+            | product_exp MULTIPLY power_exp  -> multiply
+            | product_exp DIVIDE power_exp    -> divide
+
+// -----------------------------------------------------------------------------
+// Power expression: base with optional exponent
+// Examples: "m2", "m^2", "m**2", "m²"
+// -----------------------------------------------------------------------------
+
+?power_exp: basic_exp
+          | basic_exp SIGNED_INT         -> power
+          | basic_exp EXPONENT           -> power
+          | basic_exp RAISE SIGNED_INT   -> power
+
+// -----------------------------------------------------------------------------
+// Basic expression: the fundamental building blocks
+// -----------------------------------------------------------------------------
+
+?basic_exp: ID                           -> identifier
+          | "(" shift_exp ")"            -> group
+          | LOGREF product_exp ")"       -> logarithm
+          | number                       -> scalar
+
+?number: SIGNED_INT                      -> int
+       | REAL                            -> real
+
+// -----------------------------------------------------------------------------
+// Timestamp: date/time specifications for temporal units
+// Examples: "1970-01-01", "1970-01-01 00:00:00", "1970-01-01T00:00:00Z"
+// -----------------------------------------------------------------------------
+
+?timestamp: DATE                                      -> date_only
+          | DATE CLOCK                                -> date_time
+          | DATE CLOCK CLOCK                          -> date_time_offset
+          | DATE CLOCK TIMEZONE                       -> date_time_tz
+          | DATE_TIME_ISO                             -> datetime_iso
+          | DATE_TIME_ISO TIMEZONE                    -> datetime_iso_tz
+          | PACKED_TIMESTAMP                          -> packed_timestamp
+          | PACKED_TIMESTAMP CLOCK                    -> packed_timestamp_offset
+          | PACKED_TIMESTAMP TIMEZONE                 -> packed_timestamp_tz
+
+// =============================================================================
+// TERMINALS (priority indicated by .N suffix - higher = preferred)
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// Shift operators (high priority to avoid being captured as ID)
+// -----------------------------------------------------------------------------
+
+SHIFT_AT.3: "@"
+SHIFT_AFTER.3: "after"i
+SHIFT_FROM.3: "from"i
+SHIFT_SINCE.3: "since"i
+SHIFT_REF.3: "ref"i
+
+// -----------------------------------------------------------------------------
+// Multiplication and Division
+// -----------------------------------------------------------------------------
+
+// Note: UDUNITS allows '-' as multiplication, but we exclude it to avoid
+// ambiguity with negative exponents (e.g., "m s-1" should be m*s^-1, not m*s*-1)
+MULTIPLY: /[*.·]/
+DIVIDE.2: /\/|per|PER/
+
+// Exponentiation: ^ or **
+RAISE: /\^|\*\*/
+
+// -----------------------------------------------------------------------------
+// Logarithmic reference (high priority)
+// Format: log(re, lg(re, ln(re, lb(re (opening paren included)
+// -----------------------------------------------------------------------------
+
+LOGREF.4: /(log|lg|ln|lb)\s*\(\s*(re:?\s*)?/i
+
+// -----------------------------------------------------------------------------
+// Date and Time (high priority - must match before INTEGER)
+// -----------------------------------------------------------------------------
+
+// ISO 8601 datetime: YYYY-MM-DDTHH:MM:SS (T separator, no space)
+DATE_TIME_ISO.5: /[+-]?[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}T[0-9]{1,2}:[0-9]{2}(:[0-9]{2}(\.[0-9]*)?)?/
+
+// Packed timestamp: YYYYMMDDTHHMMSS (ISO 8601 basic format)
+PACKED_TIMESTAMP.5: /[0-9]{4}[0-9]{2}[0-9]{2}T[0-9]{2}([0-9]{2}([0-9]{2})?)?/
+
+// Date format: YYYY-MM-DD or YYYY-MM (with optional sign for year)
+DATE.4: /[+-]?[0-9]{1,4}-[0-9]{1,2}(-[0-9]{1,2})?/
+
+// Clock format: HH:MM:SS.sss or HH:MM (with optional sign for timezone)
+CLOCK.4: /[+-]?[0-9]{1,2}:[0-9]{2}(:[0-9]{2}(\.[0-9]*)?)?/
+
+// Timezone identifiers
+TIMEZONE.3: /UTC|GMT|Z/i
+
+// -----------------------------------------------------------------------------
+// Numbers
+// -----------------------------------------------------------------------------
+
+// Real number: floating point with optional exponent (highest priority for numbers)
+REAL.4: /[+-]?[0-9]+\.[0-9]*([eE][+-]?[0-9]+)?/
+      | /[+-]?[0-9]+[eE][+-]?[0-9]+/
+      | /[+-]?\.[0-9]+([eE][+-]?[0-9]+)?/
+
+// Signed integer: used for exponents and scalar numbers
+SIGNED_INT.3: /[+-]?[0-9]+/
+
+// Unicode superscript exponents: ¹ ² ³ ⁴ ⁵ ⁶ ⁷ ⁸ ⁹ ⁰ ⁺ ⁻
+EXPONENT.3: /[\u00B2\u00B3\u00B9\u2070\u2074-\u2079\u207A\u207B]+/
+
+// -----------------------------------------------------------------------------
+// Identifiers (low priority - catch-all for unit names)
+// -----------------------------------------------------------------------------
+
+// Unit identifiers: alphanumeric names, or special symbols
+// Includes: letters, underscore, degree signs, percent, quotes, greek mu
+ID.1: /[a-zA-Z_\u00C0-\u00FF][a-zA-Z0-9_\u00C0-\u00FF]*/
+    | /[%'"°µ]/
+
+// -----------------------------------------------------------------------------
+// Whitespace handling
+// -----------------------------------------------------------------------------
+
+%import common.WS
+%ignore WS
