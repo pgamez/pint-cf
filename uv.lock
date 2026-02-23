@@ -687,11 +687,6 @@ tests = [
     { name = "pytest" },
 ]
 
-[package.dev-dependencies]
-dev = [
-    { name = "prek" },
-]
-
 [package.metadata]
 requires-dist = [
     { name = "build", marker = "extra == 'build'" },
@@ -709,9 +704,6 @@ requires-dist = [
     { name = "twine", marker = "extra == 'build'" },
 ]
 provides-extras = ["build", "tests", "docs", "dev"]
-
-[package.metadata.requires-dev]
-dev = [{ name = "prek", specifier = ">=0.3.3" }]
 
 [[package]]
 name = "platformdirs"
