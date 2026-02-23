@@ -4,11 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pint-cf"
-authors = [{ name = "Pedro Gámez", email = "pedrogameznieto@gmail.com" }]
+authors = [{ name = "Pedro Gámez" }]
 description = "CF-compliant unit registry for Pint"
 dynamic = ["version"]
 readme = "README.md"
 requires-python = ">=3.12"
+license = { text = "MIT" }
+classifiers = ["License :: OSI Approved :: MIT License"]
 dependencies = ["Pint>=0.25", "defusedxml", "lark"]
 
 [project.optional-dependencies]
