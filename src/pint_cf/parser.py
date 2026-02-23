@@ -403,10 +403,10 @@ if __name__ == "__main__":
         try:
             result = udunits_to_pint(input_str)
             if result == expected:
-                print(f'✓ "{input_str}" -> "{result}"')
+                print(f'[OK] "{input_str}" -> "{result}"')
                 passed += 1
             else:
-                print(f'✗ "{input_str}" -> "{result}" (expected: "{expected}")')
+                print(f'[FAIL] "{input_str}" -> "{result}" (expected: "{expected}")')
                 failed += 1
         except Exception as e:
             print(f'✗ "{input_str}" -> {type(e).__name__}: {e}')
