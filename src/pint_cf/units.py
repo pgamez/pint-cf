@@ -70,7 +70,7 @@ def short_formatter(unit, registry, **options):
 
 def cf_unitregistry() -> pint.UnitRegistry:
     """Factory function to create a CFUnitRegistry instance."""
-    with resources.path("pint_cf.resources.txt", "udunits2.txt") as fspath:
+    with resources.path("pint_cf.resources.registry", "udunits2.txt") as fspath:
         ureg = pint.UnitRegistry(
             filename=str(fspath),
             autoconvert_offset_to_baseunit=True,
@@ -87,31 +87,68 @@ def cf_unitregistry() -> pint.UnitRegistry:
 
 
 if __name__ == "__main__":
+    # Quick test cases
     ureg = cf_unitregistry()
-    print(ureg)
+    print("=== CF Unit Registry Test Cases ===\n")
 
+    # Test 1: Registry creation
+    print("✓ Registry created:", type(ureg).__name__)
+
+    # Test 2: Dimensionless units
+    print("\n--- Dimensionless Units ---")
+    u = ureg.Unit("1")
+    print(f"Unit('1') → {u:~cf}")
+
+    # Test 3: Basic units with CF format
+    print("\n--- Basic Units ---")
+    for unit_str in ["meter", "kilometers", "kilogram", "second"]:
+        u = ureg.Unit(unit_str)
+        print(f"{unit_str:20s} → {u:~cf}")
+
+    # Test 4: Compound units
+    print("\n--- Compound Units ---")
+    compound_units = ["m s-2", "W.m-2", "micrograms/m3", "meter^2 per s^2"]
+    for unit_str in compound_units:
+        u = ureg.Unit(unit_str)
+        print(f"{unit_str:20s} → {u:~cf}")
+
+    # Test 5: Temperature units
+    print("\n--- Temperature Units ---")
     from pint import Quantity
 
     c = Quantity(10, ureg.degree_Celsius)
-    print(c)
-    print(c.to("kelvin"))
+    print(f"10 °C = {c.to('kelvin'):.2f}")
+    print(f"degree_Celsius → {ureg.Unit('degree_Celsius'):~cf}")
 
-    a = ureg.arc_second
-    print(f"{a:~cf}")
+    # Test 6: Angular units
+    print("\n--- Angular Units ---")
+    for unit_str in ["degree", "arc_second", "degree_west", "'"]:
+        u = ureg.Unit(unit_str)
+        print(f"{unit_str:20s} → {u:~cf}")
 
-    print(ureg.Unit("1"))
-    print(ureg.Unit("meter"))
-    print(ureg.Unit("kilometers"))
-    print(f"{ureg.Unit('kilometers'):~cf}")
-    print(ureg.Unit("ug"))
-    print(ureg.Unit("micrograms/m3"))
-    print(ureg.Unit("degree_Celsius"))
-    print(ureg.Unit("degrees_Celsius"))
-    print(ureg.Unit("W.m-2"))
-    # print(ureg.Unit("degKs"))
-    print(ureg.Unit("m s-2"))
-    print(f"{ureg.Unit('m s-2'):~cf}")
-    print(ureg.Unit("meter per second"))
-    print(f"{ureg.Unit('meter^2 s-2')}")
-    print(f"{ureg.Unit('degree_west'):~cf}")
-    print(ureg.Unit("'"))
+    # Test 7: Plural forms (valid and invalid)
+    print("\n--- Plural Units ---")
+    plural_tests = [
+        ("meters", True),  # Valid plural
+        ("degrees_Celsius", True),  # Valid plural in udunits
+        ("kilometers", True),  # Valid plural
+        (
+            "degree_Celsiuss",
+            False,
+        ),  # Invalid: double 's' (pint accepts, udunits doesn't)
+        ("seconds", True),  # Valid plural
+    ]
+    for unit_str, should_work in plural_tests:
+        try:
+            u = ureg.Unit(unit_str)
+            status = "✓" if should_work else "✗ (expected to fail)"
+            print(f"{unit_str:25s} → {u:~cf:15s} {status}")
+        except Exception as e:
+            status = (
+                "✗ (failed as expected)"
+                if not should_work
+                else f"✗ ERROR: {type(e).__name__}"
+            )
+            print(f"{unit_str:25s} → {status}")
+
+    print("\n✓ All test cases completed")
