@@ -8,6 +8,4 @@ sudo apt install -y vim libudunits2-dev
 
 curl -LsSf https://astral.sh/uv/install.sh | sh
 uv sync --extra dev
-
-# pip3 install --user ruff prek
-# prek install
+uv tool install prek

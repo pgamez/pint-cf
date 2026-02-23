@@ -17,8 +17,7 @@ dependencies = ["Pint>=0.25", "defusedxml", "lark"]
 build = ["build", "twine"]
 tests = ["pytest", "cfunits"]
 docs = ["sphinx", "pydata-sphinx-theme", "myst-parser"]
-# dev = ["pint-cf[tests,docs,build]", "ruff", "prek"]
-dev = ["pint-cf[tests,docs,build]", "ruff"]
+dev = ["pint-cf[tests,docs,build]", "ruff", "prek"]
 
 [tool.setuptools.dynamic]
 version = { attr = "pint_cf.__version__" }
@@ -37,3 +36,6 @@ minversion = "6.0"
 # addopts = ""
 testpaths = ["tests"]
 pythonpath = "src"
+
+# [dependency-groups]
+# dev = ["prek>=0.3.3"]
