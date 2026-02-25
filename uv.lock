@@ -656,7 +656,6 @@ wheels = [
 name = "pint-cf"
 source = { editable = "." }
 dependencies = [
-    { name = "defusedxml" },
     { name = "lark" },
     { name = "pint" },
 ]
@@ -669,6 +668,7 @@ build = [
 dev = [
     { name = "build" },
     { name = "cfunits" },
+    { name = "defusedxml" },
     { name = "myst-parser" },
     { name = "prek" },
     { name = "pydata-sphinx-theme" },
@@ -691,7 +691,7 @@ tests = [
 requires-dist = [
     { name = "build", marker = "extra == 'build'" },
     { name = "cfunits", marker = "extra == 'tests'" },
-    { name = "defusedxml" },
+    { name = "defusedxml", marker = "extra == 'dev'" },
     { name = "lark" },
     { name = "myst-parser", marker = "extra == 'docs'" },
     { name = "pint", specifier = ">=0.25" },

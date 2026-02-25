@@ -11,13 +11,13 @@ readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
 classifiers = ["License :: OSI Approved :: MIT License"]
-dependencies = ["Pint>=0.25", "defusedxml", "lark"]
+dependencies = ["Pint>=0.25", "lark"]
 
 [project.optional-dependencies]
 build = ["build", "twine"]
 tests = ["pytest", "cfunits"]
 docs = ["sphinx", "pydata-sphinx-theme", "myst-parser"]
-dev = ["pint-cf[tests,docs,build]", "ruff", "prek"]
+dev = ["pint-cf[tests,docs,build]", "defusedxml", "ruff", "prek"]
 
 [tool.setuptools.dynamic]
 version = { attr = "pint_cf.__version__" }
