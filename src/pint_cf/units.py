@@ -16,9 +16,9 @@ from .parser import udunits_to_pint
 
 
 def cf_unitregistry() -> pint.UnitRegistry:
-    with resources.path("pint_cf.resources.registry", "udunits2.txt") as fspath:
+    with resources.path("pint_cf.resources.registry", "udunits2.txt") as filename:
         ureg = pint.UnitRegistry(
-            filename=str(fspath),
+            filename=str(filename),
             autoconvert_offset_to_baseunit=True,
             preprocessors=[udunits_to_pint],
         )
