@@ -9,7 +9,7 @@ from pathlib import Path
 
 import defusedxml.ElementTree as ET
 
-from pint_cf.parser import udunits_to_pint
+from pint_cf.parser import cf_string_to_pint
 
 _logger = logging.getLogger(__name__)
 
@@ -160,7 +160,7 @@ class Unit:
         elif self.dimensionless:
             return "[]"
         else:
-            return udunits_to_pint(self.element.find("def").text)
+            return cf_string_to_pint(self.element.find("def").text)
 
     def write(self, f):
         if self.name:

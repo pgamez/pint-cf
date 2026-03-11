@@ -93,9 +93,11 @@ SHIFT_REF.3: "ref"i
 // Multiplication and Division
 // -----------------------------------------------------------------------------
 
-// Note: UDUNITS allows '-' as multiplication, but we exclude it to avoid
-// ambiguity with negative exponents (e.g., "m s-1" should be m*s^-1, not m*s*-1)
-MULTIPLY: /[*.·]/
+// UDUNITS allows '-' as multiplication (e.g., "meter-second" = "meter*second").
+// The contextual lexer resolves the ambiguity with negative exponents:
+// after a basic_exp, SIGNED_INT "-1" (length 2) wins over MULTIPLY "-" (length 1),
+// so "s-1" is correctly parsed as s^-1.
+MULTIPLY: /[-*.·]/
 DIVIDE.2: /\/|per|PER/
 
 // Exponentiation: ^ or **

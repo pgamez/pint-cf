@@ -673,7 +673,6 @@ wheels = [
 name = "pint-cf"
 source = { editable = "." }
 dependencies = [
-    { name = "cf-units" },
     { name = "lark" },
     { name = "pint" },
 ]
@@ -685,6 +684,7 @@ build = [
 ]
 dev = [
     { name = "build" },
+    { name = "cf-units" },
     { name = "cfunits" },
     { name = "defusedxml" },
     { name = "myst-parser" },
@@ -701,15 +701,14 @@ docs = [
     { name = "sphinx" },
 ]
 tests = [
-    { name = "cfunits" },
     { name = "pytest" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "build", marker = "extra == 'build'" },
-    { name = "cf-units", specifier = ">=3.3.1" },
-    { name = "cfunits", marker = "extra == 'tests'" },
+    { name = "cf-units", marker = "extra == 'dev'" },
+    { name = "cfunits", marker = "extra == 'dev'" },
     { name = "defusedxml", marker = "extra == 'dev'" },
     { name = "lark" },
     { name = "myst-parser", marker = "extra == 'docs'" },
