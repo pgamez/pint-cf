@@ -92,45 +92,6 @@ class UdunitsToPintTransformer(Transformer):
     # Arithmetic operations
     # -------------------------------------------------------------------------
 
-    def _is_simple_identifier(self, s: str) -> bool:
-        """Check if string is a simple identifier (no operators)."""
-        return bool(re.match(r"^[a-zA-Z_\u00C0-\u00FF][a-zA-Z_\u00C0-\u00FF]*$", s))
-
-    def _get_rightmost_identifier(self, s: str) -> str | None:
-        """
-        Get the rightmost simple identifier from a multiplication expression.
-        Returns None if the rightmost part is not a simple identifier.
-        """
-        # Check if it's a simple identifier
-        if self._is_simple_identifier(s):
-            return s
-
-        # Check if it ends with "* identifier"
-        match = re.search(r"\*\s*([a-zA-Z_\u00C0-\u00FF][a-zA-Z_\u00C0-\u00FF]*)$", s)
-        if match:
-            return match.group(1)
-
-        return None
-
-    def _attach_exponent_to_rightmost(self, expr: str, exponent: str) -> str:
-        """
-        Attach an exponent to the rightmost identifier in expression.
-        e.g., "m * s" with exponent "-1" becomes "m * s ** -1"
-        """
-        if self._is_simple_identifier(expr):
-            return f"{expr} ** {exponent}"
-
-        # Find and replace the rightmost identifier
-        match = re.search(
-            r"(\*\s*)([a-zA-Z_\u00C0-\u00FF][a-zA-Z_\u00C0-\u00FF]*)$", expr
-        )
-        if match:
-            prefix = expr[: match.start(2)]
-            identifier = match.group(2)
-            return f"{prefix}{identifier} ** {exponent}"
-
-        return expr
-
     def multiply(self, *args) -> str:
         """
         Multiplication (explicit or implicit via juxtaposition).
