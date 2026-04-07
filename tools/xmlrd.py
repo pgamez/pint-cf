@@ -1,12 +1,6 @@
 """
 https://pint.readthedocs.io/en/stable/advanced/defining.html
 
-Falta:
-
-- Comprobar unidades
-- Añadir descripciones como comentarios
-- Derived units? [density] = [mass] / [volume]
-
 """
 
 import textwrap
