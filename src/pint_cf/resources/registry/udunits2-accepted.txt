@@ -1,24 +1,24 @@
 minute = 60 * s = min = minutes
-hour = 60 * min = h = hr = hours
+hour = 60 * min = h = hours = hr
 day = 24 * h = d = days
 pi = 3.141592653589793238462643383279 = π
-arc_degree = (pi / 180) * rad = ° = angular_degree = angular_degrees = degree = degrees = arcdeg = arcdegs = arc_degrees
-arc_minute = ° / 60 = ' = angular_minute = angular_minutes = arcminute = arcminutes = arcmin = arcmins = arc_minutes
-arc_second = arc_minute / 60 = " = angular_second = angular_seconds = arcsecond = arcseconds = arcsec = arcsecs = arc_seconds
-liter = dm ** 3 = L = litre = litres = l = liters
-metric_ton = 1000 * kg = t = tonne = tonnes = metric_tons
-electronvolt = 1.60217733e-19 * J = eV = electron_volt = electron_volts = electronvolts
-unified_atomic_mass_unit = 1.6605402e-27 * kg = u = atomic_mass_unit = atomic_mass_units = atomicmassunit = atomicmassunits = amu = unified_atomic_mass_units
-astronomical_unit = 1.49597870700e11 * m = astronomical_units = au
-astronomical_unit_BIPM_2006 = 1.495979e11 * m = astronomical_unit_BIPM_2006s = ua
-nautical_mile = 1852 * m = nautical_miles
-international_knot = nautical_mile / hour = international_knots = knot_international = knot_internationals = knot = knots
-angstrom = 1e-10 * m = angstroms = ångström = ångströms = Å = Å
-are = dam ** 2 = ares = a
-hectare = 100 * are = hectares
-barn = 100 * fm ** 2 = barns = b
-bar = 1000 * hPa = bars
-gal = cm / s ** 2 = gals
-curie = 3.7e10 * Bq = curies = Ci
-roentgen = 2.58e-4 * C / kg = roentgens = R
-rem = cSv = rems
+arc_degree = (pi / 180) * rad = ° = arc_degrees = angular_degree = angular_degrees = degree = degrees = arcdeg = arcdegs
+arc_minute = ° / 60 = ' = arc_minutes = angular_minute = angular_minutes = arcminute = arcminutes = arcmin = arcmins
+arc_second = arc_minute / 60 = " = arc_seconds = angular_second = angular_seconds = arcsecond = arcseconds = arcsec = arcsecs
+liter = dm ** 3 = L = liters = litre = litres = l
+metric_ton = 1000 * kg = t = metric_tons = tonne = tonnes
+electronvolt = 1.60217733e-19 * J = eV = electronvolts = electron_volt = electron_volts
+unified_atomic_mass_unit = 1.6605402e-27 * kg = u = unified_atomic_mass_units = atomic_mass_unit = atomic_mass_units = atomicmassunit = atomicmassunits = amu
+astronomical_unit = 1.49597870700e11 * m = au = astronomical_units
+astronomical_unit_BIPM_2006 = 1.495979e11 * m = ua = astronomical_unit_BIPM_2006s
+nautical_mile = 1852 * m = _ = nautical_miles
+international_knot = nautical_mile / hour = _ = international_knots = knot_international = knot_internationals = knot = knots
+angstrom = 1e-10 * m = Å = angstroms = ångström = ångströms = Å
+are = dam ** 2 = a = ares
+hectare = 100 * are = _ = hectares
+barn = 100 * fm ** 2 = b = barns
+bar = 1000 * hPa = _ = bars
+gal = cm / s ** 2 = _ = gals
+curie = 3.7e10 * Bq = Ci = curies
+roentgen = 2.58e-4 * C / kg = R = roentgens
+rem = cSv = _ = rems

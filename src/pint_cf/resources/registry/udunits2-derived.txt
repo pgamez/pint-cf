@@ -9,7 +9,7 @@ watt = J / s = W = watts
 coulomb = s * A = C = coulombs
 volt = W / A = V = volts
 farad = C / V = F = farads
-ohm = V / A = Ω = Ω = ohms
+ohm = V / A = Ω = ohms = Ω
 siemens = A / V = S = siemenses
 weber = V * s = Wb = webers
 tesla = Wb / m ** 2 = T = teslas

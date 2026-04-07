@@ -1,4 +1,4 @@
-meter = [length] = m = metre = metres = meters
+meter = [length] = m = meters = metre = metres
 kilogram = [mass] = kg = kilograms
 second = [time] = s = seconds
 ampere = [current] = A = amperes

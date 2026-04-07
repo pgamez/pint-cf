@@ -1,223 +1,223 @@
 @alias second = sec = secs
 @alias ampere = amp = amps
-@alias kelvin = degree_kelvin = degrees_kelvin = degree_K = degrees_K = degreeK = degreesK = deg_K = degs_K = degK = degsK = °K
+@alias kelvin = °K = degree_kelvin = degrees_kelvin = degree_K = degrees_K = degreeK = degreesK = deg_K = degs_K = degK = degsK
 @alias candela = candle = candles
 @alias mole = einstein = einsteins
 @alias hertz = baud = bauds = Bd = bps
-@alias degree_Celsius = celsius = celsiuses = degree_C = degrees_C = degreeC = degreesC = deg_C = degs_C = degC = degsC = ℃
+@alias degree_Celsius = ℃ = celsius = celsiuses = degree_C = degrees_C = degreeC = degreesC = deg_C = degs_C = degC = degsC
 kt = knot = kts
-avogadro_constant = 6.02214179e23 / mol = avogadro_constants
-percent = 0.01 = percents = %
+avogadro_constant = 6.02214179e23 / mol = _
+percent = 0.01 = %
 ppv = 1
 ppm = 1e-6 = ppmv
 ppb = 1e-9 = ppbv
 ppt = 1e-12 = pptv
 ppq = 1e-15 = ppqv
 B = 1; logbase: 10; logfactor: 10
-grade = 0.9 * arc_degree = grades
-circle = 2 * pi * rad = circles = cycle = cycles = turn = turns = revolution = revolutions = rotation = rotations
+grade = 0.9 * arc_degree = _ = grades
+circle = 2 * pi * rad = _ = circles = cycle = cycles = turn = turns = revolution = revolutions = rotation = rotations
 @alias arc_degree = degree_north = degrees_north = degree_N = degrees_N = degreeN = degreesN = degree_east = degrees_east = degree_E = degrees_E = degreeE = degreesE = degree_true = degrees_true = degree_T = degrees_T = degreeT = degreesT
-degree_west = -1 * degree_east = degrees_west = degree_W = degrees_W = degreeW = degreesW
-assay_ton = 2.916667e-2 * kg = assay_tons
-avoirdupois_ounce = 2.834952e-2 * kg = avoirdupois_ounces
-avoirdupois_pound = 4.5359237e-1 * kg = avoirdupois_pounds = pound = pounds = lb
-carat = 2e-4 * kg = carats
-grain = 6.479891e-5 * kg = grains = gr
-long_hundredweight = 5.080235e1 * kg = long_hundredweights
-pennyweight = 1.555174e-3 * kg = pennyweights
-short_hundredweight = 4.535924e1 * kg = short_hundredweights
-slug = 14.59390 * kg = slugs
-troy_ounce = 3.110348e-2 * kg = troy_ounces = apothecary_ounce = apothecary_ounces
-troy_pound = 3.732417e-1 * kg = troy_pounds = apothecary_pound = apothecary_pounds
-scruple = 20 * grain = scruples
-apdram = 60 * grain = apdrams
-dram = avoirdupois_ounce / 16 = drams = dr
-apounce = 480 * grain = apounces
-appound = 5760 * grain = appounds
-bag = 94 * pound = bags
-short_ton = 2000 * pound = short_tons = ton = tons
-long_ton = 2240 * pound = long_tons
-fermi = 1e-15 * m = fermis
-light_year = 9.46073e15 * m = light_years
-micron = 1e-6 * m = microns
-mil = 2.54e-5 * m = mils
-parsec = 3.085678e16 * m = parsecs
-printers_point = 3.514598e-4 * m = printers_points
-chain = 2.011684e1 * m = chains
-printers_pica = 12 * printers_point = printers_picas = pica = picas
-nmile = nautical_mile = nmiles
-US_survey_foot = (1200 / 3937) * m = US_survey_feet
-US_survey_yard = 3 * US_survey_feet = US_survey_yards
-US_survey_mile = 5280 * US_survey_feet = US_survey_miles = US_statute_mile = US_statute_miles
-rod = 16.5 * US_survey_feet = rods = pole = poles = perch = perches
-furlong = 660 * US_survey_feet = furlongs
-fathom = 6 * US_survey_feet = fathoms
-international_inch = 2.54 * cm = international_inches = inch = inches = in
-international_foot = 12 * international_inches = international_feet = foot = feet = ft
-international_yard = 3 * international_feet = international_yards = yard = yards = yd
-international_mile = 5280 * international_feet = international_miles = mile = miles = mi
-big_point = inch / 72 = big_points
-barleycorn = inch / 3 = barleycorns
-arpentlin = 191.835 * foot = arpentlins
-rotation_per_second = rotation / second = rotations_per_second = rps = cps
+degree_west = -1 * degree_east = _ = degrees_west = degree_W = degrees_W = degreeW = degreesW
+assay_ton = 2.916667e-2 * kg = _ = assay_tons
+avoirdupois_ounce = 2.834952e-2 * kg = _ = avoirdupois_ounces
+avoirdupois_pound = 4.5359237e-1 * kg = lb = avoirdupois_pounds = pound = pounds
+carat = 2e-4 * kg = _ = carats
+grain = 6.479891e-5 * kg = gr = grains
+long_hundredweight = 5.080235e1 * kg = _ = long_hundredweights
+pennyweight = 1.555174e-3 * kg = _ = pennyweights
+short_hundredweight = 4.535924e1 * kg = _ = short_hundredweights
+slug = 14.59390 * kg = _ = slugs
+troy_ounce = 3.110348e-2 * kg = _ = troy_ounces = apothecary_ounce = apothecary_ounces
+troy_pound = 3.732417e-1 * kg = _ = troy_pounds = apothecary_pound = apothecary_pounds
+scruple = 20 * grain = _ = scruples
+apdram = 60 * grain = _ = apdrams
+dram = avoirdupois_ounce / 16 = dr = drams
+apounce = 480 * grain = _ = apounces
+appound = 5760 * grain = _ = appounds
+bag = 94 * pound = _ = bags
+short_ton = 2000 * pound = _ = short_tons = ton = tons
+long_ton = 2240 * pound = _ = long_tons
+fermi = 1e-15 * m = _ = fermis
+light_year = 9.46073e15 * m = _ = light_years
+micron = 1e-6 * m = _ = microns
+mil = 2.54e-5 * m = _ = mils
+parsec = 3.085678e16 * m = _ = parsecs
+printers_point = 3.514598e-4 * m = _ = printers_points
+chain = 2.011684e1 * m = _ = chains
+printers_pica = 12 * printers_point = _ = printers_picas = pica = picas
+nmile = nautical_mile = _ = nmiles
+US_survey_foot = (1200 / 3937) * m = _ = US_survey_feet
+US_survey_yard = 3 * US_survey_feet = _ = US_survey_yards
+US_survey_mile = 5280 * US_survey_feet = _ = US_survey_miles = US_statute_mile = US_statute_miles
+rod = 16.5 * US_survey_feet = _ = rods = pole = poles = perch = perches
+furlong = 660 * US_survey_feet = _ = furlongs
+fathom = 6 * US_survey_feet = _ = fathoms
+international_inch = 2.54 * cm = in = international_inches = inch = inches
+international_foot = 12 * international_inches = ft = international_feet = foot = feet
+international_yard = 3 * international_feet = yd = international_yards = yard = yards
+international_mile = 5280 * international_feet = mi = international_miles = mile = miles
+big_point = inch / 72 = _ = big_points
+barleycorn = inch / 3 = _ = barleycorns
+arpentlin = 191.835 * foot = _ = arpentlins
+rotation_per_second = rotation / second = rps = rotations_per_second = cps
 rpm = rotation / minute
-denier = 1.111111e-7 * kg / m = deniers
-tex = 1e-6 * kg / m = texes
-perm_0C = 5.72135e-11 * kg / (Pa * s * m ** 2) = perms_0C
-perm_23C = 5.74525e-11 * kg / (Pa * s * m ** 2) = perms_23C
-circular_mil = 5.067075e-10 * m ** 2 = circular_mils
-darcy = 9.869233e-13 * m ** 2 = darcies
-acre = 160 * rod ** 2 = acres
-acre_foot = 1.233489e3 * m ** 3 = acre_feet
-board_foot = 2.359737e-3 * m ** 3 = board_feet
-bushel = 3.523907e-2 * m ** 3 = bushels = bu
-peck = bushel / 4 = pecks = pk
-Canadian_liquid_gallon = 4.546090e-3 * m ** 3 = Canadian_liquid_gallons
-US_dry_gallon = 4.404884e-3 * m ** 3 = US_dry_gallons
+denier = 1.111111e-7 * kg / m = _ = deniers
+tex = 1e-6 * kg / m = _ = texes
+perm_0C = 5.72135e-11 * kg / (Pa * s * m ** 2) = _ = perms_0C
+perm_23C = 5.74525e-11 * kg / (Pa * s * m ** 2) = _ = perms_23C
+circular_mil = 5.067075e-10 * m ** 2 = _ = circular_mils
+darcy = 9.869233e-13 * m ** 2 = _ = darcies
+acre = 160 * rod ** 2 = _ = acres
+acre_foot = 1.233489e3 * m ** 3 = _ = acre_feet
+board_foot = 2.359737e-3 * m ** 3 = _ = board_feet
+bushel = 3.523907e-2 * m ** 3 = bu = bushels
+peck = bushel / 4 = pk = pecks
+Canadian_liquid_gallon = 4.546090e-3 * m ** 3 = _ = Canadian_liquid_gallons
+US_dry_gallon = 4.404884e-3 * m ** 3 = _ = US_dry_gallons
 cc = cm ** 3
-stere = 1 * m ** 3 = steres
-register_ton = 2.831685 * m ** 3 = register_tons
-US_dry_quart = US_dry_gallon / 4 = US_dry_quarts = dry_quart = dry_quarts
-US_dry_pint = US_dry_gallon / 8 = US_dry_pints = dry_pint = dry_pints
-US_liquid_gallon = 3.785412e-3 * m ** 3 = US_liquid_gallons = liquid_gallon = liquid_gallons = gallon = gallons
-barrel = 42 * US_liquid_gallon = barrels = bbl
-firkin = barrel / 4 = firkins
-US_liquid_quart = US_liquid_gallon / 4 = US_liquid_quarts = liquid_quart = liquid_quarts = quart = quarts
-US_liquid_pint = US_liquid_gallon / 8 = US_liquid_pints = liquid_pint = liquid_pints = pint = pints = pt
-US_liquid_cup = US_liquid_gallon / 16 = US_liquid_cups = liquid_cup = liquid_cups = cup = cups
-US_liquid_gill = US_liquid_gallon / 32 = US_liquid_gills = liquid_gill = liquid_gills = gill = gills
-US_fluid_ounce = US_liquid_gallon / 128 = US_fluid_ounces = US_liquid_ounce = US_liquid_ounces = fluid_ounce = fluid_ounces = liquid_ounce = liquid_ounces = oz = floz
-tablespoon = US_fluid_ounce / 2 = tablespoons = Tbl = Tbsp = tbsp = Tblsp = tblsp
-fluid_dram = US_fluid_ounce / 8 = fluid_drams = fldr
-teaspoon = tablespoon / 3 = teaspoons = tsp
-UK_liquid_gallon = 4.546090e-3 * m ** 3 = UK_liquid_gallons
-UK_liquid_quart = UK_liquid_gallon / 4 = UK_liquid_quarts
-UK_liquid_pint = UK_liquid_gallon / 8 = UK_liquid_pints
-UK_liquid_cup = UK_liquid_gallon / 16 = UK_liquid_cups
-UK_liquid_gill = UK_liquid_gallon / 32 = UK_liquid_gills
-UK_fluid_ounce = UK_liquid_gallon / 160 = UK_fluid_ounces = UK_liquid_ounce = UK_liquid_ounces
+stere = 1 * m ** 3 = _ = steres
+register_ton = 2.831685 * m ** 3 = _ = register_tons
+US_dry_quart = US_dry_gallon / 4 = _ = US_dry_quarts = dry_quart = dry_quarts
+US_dry_pint = US_dry_gallon / 8 = _ = US_dry_pints = dry_pint = dry_pints
+US_liquid_gallon = 3.785412e-3 * m ** 3 = _ = US_liquid_gallons = liquid_gallon = liquid_gallons = gallon = gallons
+barrel = 42 * US_liquid_gallon = bbl = barrels
+firkin = barrel / 4 = _ = firkins
+US_liquid_quart = US_liquid_gallon / 4 = _ = US_liquid_quarts = liquid_quart = liquid_quarts = quart = quarts
+US_liquid_pint = US_liquid_gallon / 8 = pt = US_liquid_pints = liquid_pint = liquid_pints = pint = pints
+US_liquid_cup = US_liquid_gallon / 16 = _ = US_liquid_cups = liquid_cup = liquid_cups = cup = cups
+US_liquid_gill = US_liquid_gallon / 32 = _ = US_liquid_gills = liquid_gill = liquid_gills = gill = gills
+US_fluid_ounce = US_liquid_gallon / 128 = oz = US_fluid_ounces = US_liquid_ounce = US_liquid_ounces = fluid_ounce = fluid_ounces = liquid_ounce = liquid_ounces = floz
+tablespoon = US_fluid_ounce / 2 = Tbl = tablespoons = Tbsp = tbsp = Tblsp = tblsp
+fluid_dram = US_fluid_ounce / 8 = fldr = fluid_drams
+teaspoon = tablespoon / 3 = tsp = teaspoons
+UK_liquid_gallon = 4.546090e-3 * m ** 3 = _ = UK_liquid_gallons
+UK_liquid_quart = UK_liquid_gallon / 4 = _ = UK_liquid_quarts
+UK_liquid_pint = UK_liquid_gallon / 8 = _ = UK_liquid_pints
+UK_liquid_cup = UK_liquid_gallon / 16 = _ = UK_liquid_cups
+UK_liquid_gill = UK_liquid_gallon / 32 = _ = UK_liquid_gills
+UK_fluid_ounce = UK_liquid_gallon / 160 = _ = UK_fluid_ounces = UK_liquid_ounce = UK_liquid_ounces
 BZ = (1e-6 * m) ** 3; logbase: 10; logfactor: 10 = Bz
-shake = 1e-8 * s = shakes
-sidereal_day = 8.616409e4 * s = sidereal_days
-sidereal_hour = 3.590170e3 * s = sidereal_hours
-sidereal_minute = 5.983617e1 * s = sidereal_minutes
-sidereal_second = 0.9972696 * s = sidereal_seconds
-sidereal_year = 3.155815e7 * s = sidereal_years
-tropical_year = 3.15569259747e7 * s = tropical_years = year = years = yr
-lunar_month = 29.530589 * day = lunar_months
-common_year = 365 * day = common_years
-leap_year = 366 * day = leap_years
-Julian_year = 365.25 * day = Julian_years
-Gregorian_year = 365.2425 * day = Gregorian_years
-sidereal_month = 27.321661 * day = sidereal_months
-tropical_month = 27.321582 * day = tropical_months
-fortnight = 14 * day = fortnights
-week = 7 * day = weeks
-jiffy = 0.01 * s = jiffies
-eon = 1e9 * year = eons
-month = year / 12 = months
-sverdrup = 1e6 * m ** 3 / s = sverdrups
-standard_free_fall = 9.806650 * m / s ** 2 = standard_free_falls
-gravity = standard_free_fall = gravities
-conventional_water = gravity ** 1000 * kg / m ** 3 = conventional_waters = water = waters = H2O = h2o
-water_4C = gravity * 999.972 * kg / m ** 3 = waters_4C = water_39F = waters_39F
-water_60F = gravity * 999.001 * kg / m ** 3 = waters_60F
-mercury_0C = gravity * 13595.10 * kg / m ** 3 = mercuries_0C = mercury_32F = mercuries_32F = conventional_mercury = conventional_mercuries = Hg
-mercury_60F = gravity * 13556.8 * kg / m ** 3 = mercuries_60F
-force = standard_free_fall = forces
-dyne = 1e-5 * N = dynes
-pond = 9.806650e-3 * N = ponds
-force_kilogram = 9.806650 * N = force_kilograms = kilogram_force = kilograms_force = kgf
-force_ounce = 2.780139e-1 * N = force_ounces = ounce_force = ounces_force = ozf
-force_pound = 4.4482216152605 * N = force_pounds = pound_force = pounds_force = lbf
-poundal = 1.382550e-1 * N = poundals
-gram_force = gram * force = grams_force = force_gram = force_grams = gf
-force_ton = 2000 * force_pound = force_tons = ton_force = tons_force
-kip = 1000 * lbf = kips
-standard_atmosphere = 1.01325e5 * Pa = standard_atmospheres = atmosphere = atmospheres = atm
-technical_atmosphere = 1 * kg * gravity / cm ** 2 = technical_atmospheres = at
+shake = 1e-8 * s = _ = shakes
+sidereal_day = 8.616409e4 * s = _ = sidereal_days
+sidereal_hour = 3.590170e3 * s = _ = sidereal_hours
+sidereal_minute = 5.983617e1 * s = _ = sidereal_minutes
+sidereal_second = 0.9972696 * s = _ = sidereal_seconds
+sidereal_year = 3.155815e7 * s = _ = sidereal_years
+tropical_year = 3.15569259747e7 * s = yr = tropical_years = year = years
+lunar_month = 29.530589 * day = _ = lunar_months
+common_year = 365 * day = _ = common_years
+leap_year = 366 * day = _ = leap_years
+Julian_year = 365.25 * day = _ = Julian_years
+Gregorian_year = 365.2425 * day = _ = Gregorian_years
+sidereal_month = 27.321661 * day = _ = sidereal_months
+tropical_month = 27.321582 * day = _ = tropical_months
+fortnight = 14 * day = _ = fortnights
+week = 7 * day = _ = weeks
+jiffy = 0.01 * s = _ = jiffies
+eon = 1e9 * year = _ = eons
+month = year / 12 = _ = months
+sverdrup = 1e6 * m ** 3 / s = _ = sverdrups
+standard_free_fall = 9.806650 * m / s ** 2 = _ = standard_free_falls
+gravity = standard_free_fall = _ = gravities
+conventional_water = gravity ** 1000 * kg / m ** 3 = H2O = conventional_waters = water = waters = h2o
+water_4C = gravity * 999.972 * kg / m ** 3 = _ = waters_4C = water_39F = waters_39F
+water_60F = gravity * 999.001 * kg / m ** 3 = _ = waters_60F
+mercury_0C = gravity * 13595.10 * kg / m ** 3 = Hg = mercuries_0C = mercury_32F = mercuries_32F = conventional_mercury = conventional_mercuries
+mercury_60F = gravity * 13556.8 * kg / m ** 3 = _ = mercuries_60F
+force = standard_free_fall = _ = forces
+dyne = 1e-5 * N = _ = dynes
+pond = 9.806650e-3 * N = _ = ponds
+force_kilogram = 9.806650 * N = kgf = force_kilograms = kilogram_force = kilograms_force
+force_ounce = 2.780139e-1 * N = ozf = force_ounces = ounce_force = ounces_force
+force_pound = 4.4482216152605 * N = lbf = force_pounds = pound_force = pounds_force
+poundal = 1.382550e-1 * N = _ = poundals
+gram_force = gram * force = gf = grams_force = force_gram = force_grams
+force_ton = 2000 * force_pound = _ = force_tons = ton_force = tons_force
+kip = 1000 * lbf = _ = kips
+standard_atmosphere = 1.01325e5 * Pa = atm = standard_atmospheres = atmosphere = atmospheres
+technical_atmosphere = 1 * kg * gravity / cm ** 2 = at = technical_atmospheres
 cm_H2O = cm * H2O = cmH2O
-inch_H2O_39F = inch * water_39F = inches_H2O_39F
-inch_H2O_60F = inch * water_60F = inches_H2O_60F
-foot_water = foot * water = feet_water = foot_H2O = feet_H2O = footH2O = feetH2O = ftH2O = fth2o
+inch_H2O_39F = inch * water_39F = _ = inches_H2O_39F
+inch_H2O_60F = inch * water_60F = _ = inches_H2O_60F
+foot_water = foot * water = ftH2O = feet_water = foot_H2O = feet_H2O = footH2O = feetH2O = fth2o
 cm_Hg = cm * Hg = cmHg
-millimeter_Hg_0C = mm * mercury_0C = millimeters_Hg_0C
-inch_Hg_32F = inch * mercury_32F = inches_Hg_32F
-inch_Hg_60F = inch * mercury_60F = inches_Hg_60F
-millimeter_Hg = mm * Hg = millimeters_Hg = torr = torrs = mm_Hg = mm_hg = mmHg = mmhg
-inch_Hg = inch * Hg = inches_Hg = in_Hg = inHg
+millimeter_Hg_0C = mm * mercury_0C = _ = millimeters_Hg_0C
+inch_Hg_32F = inch * mercury_32F = _ = inches_Hg_32F
+inch_Hg_60F = inch * mercury_60F = _ = inches_Hg_60F
+millimeter_Hg = mm * Hg = mm_Hg = millimeters_Hg = torr = torrs = mm_hg = mmHg = mmhg
+inch_Hg = inch * Hg = in_Hg = inches_Hg = inHg
 psi = 1 * pound * gravity / in ** 2
 ksi = kip / in ** 2
-barie = 0.1 * N / m ** 2 = baries = barye = baryes
+barie = 0.1 * N / m ** 2 = _ = baries = barye = baryes
 B_SPL = 20e-6 * Pa; logbase: 10; logfactor: 10
-poise = 1e-1 * Pa * s = poises
-stokes = 1e-4 * m ** 2 / s = stokeses = St
-rhe = 10 / (Pa * s) = rhes
-erg = 1e-7 * J = ergs
-IT_Btu = 1.05505585262e3 * J = IT_Btus = Btu = Btus
-EC_therm = 1.05506e8 * J = EC_therms
-thermochemical_calorie = 4.184000 * J = thermochemical_calories
-IT_calorie = 4.1868 * J = IT_calories = calorie = calories = cal
-TNT = 4.184 * MJ / kg
-ton_TNT = 4.184e9 * J = tons_TNT
-US_therm = 1.054804e8 * J = US_therms = therm = therms = thm
-watthour = watt * hour = watthours
+poise = 1e-1 * Pa * s = _ = poises
+stokes = 1e-4 * m ** 2 / s = St = stokeses
+rhe = 10 / (Pa * s) = _ = rhes
+erg = 1e-7 * J = _ = ergs
+IT_Btu = 1.05505585262e3 * J = _ = IT_Btus = Btu = Btus
+EC_therm = 1.05506e8 * J = _ = EC_therms
+thermochemical_calorie = 4.184000 * J = _ = thermochemical_calories
+IT_calorie = 4.1868 * J = cal = IT_calories = calorie = calories
+TNT = 4.184 * MJ / kg = _
+ton_TNT = 4.184e9 * J = _ = tons_TNT
+US_therm = 1.054804e8 * J = thm = US_therms = therm = therms
+watthour = watt * hour = _ = watthours
 bev = 1e9 * eV
-voltampere = V * A = voltamperes = VA
-boiler_horsepower = 9.80950e3 * W = boiler_horsepowers
-shaft_horsepower = 7.456999e2 * W = shaft_horsepowers = horsepower = horsepowers = hp
-metric_horsepower = 7.35499e2 * W = metric_horsepowers
-electric_horsepower = 7.460000e2 * W = electric_horsepowers
-water_horsepower = 7.46043e2 * W = water_horsepowers
-UK_horsepower = 7.4570e2 * W = UK_horsepowers
-refrigeration_ton = 12000 * Btu / hr = refrigeration_tons = ton_of_refrigeration = tons_of_refrigeration
+voltampere = V * A = VA = voltamperes
+boiler_horsepower = 9.80950e3 * W = _ = boiler_horsepowers
+shaft_horsepower = 7.456999e2 * W = hp = shaft_horsepowers = horsepower = horsepowers
+metric_horsepower = 7.35499e2 * W = _ = metric_horsepowers
+electric_horsepower = 7.460000e2 * W = _ = electric_horsepowers
+water_horsepower = 7.46043e2 * W = _ = water_horsepowers
+UK_horsepower = 7.4570e2 * W = _ = UK_horsepowers
+refrigeration_ton = 12000 * Btu / hr = _ = refrigeration_tons = ton_of_refrigeration = tons_of_refrigeration
 BW = 1 * W; logbase: 10; logfactor: 10
 Bm = 1 * mW; logbase: 10; logfactor: 10
-clo = 1.55e-1 * K * m ** 2 / W = clos
-abampere = 10 * A = abamperes
-gilbert = 7.957747e-1 * A = gilberts
-statampere = 3.335640e-10 * A = statamperes
-biot = 10 * A = biots
-abfarad = 1e9 * F = abfarads
-abhenry = 1e-9 * H = abhenries
-abmho = 1e9 * S = abmhos
-abohm = 1e-9 * ohm = abohms
-abvolt = 1e-8 * V = abvolts
+clo = 1.55e-1 * K * m ** 2 / W = _ = clos
+abampere = 10 * A = _ = abamperes
+gilbert = 7.957747e-1 * A = _ = gilberts
+statampere = 3.335640e-10 * A = _ = statamperes
+biot = 10 * A = _ = biots
+abfarad = 1e9 * F = _ = abfarads
+abhenry = 1e-9 * H = _ = abhenries
+abmho = 1e9 * S = _ = abmhos
+abohm = 1e-9 * ohm = _ = abohms
+abvolt = 1e-8 * V = _ = abvolts
 e = 1.602176487e-19 * C
-chemical_faraday = 9.64957e4 * C = chemical_faradays
-physical_faraday = 9.65219e4 * C = physical_faradays
-C12_faraday = 9.648531e4 * C = C12_faradays = faraday = faradays
-gamma = 1e-9 * T = gammas
-gauss = 1e-4 * T = gausses
-maxwell = 1e-8 * Wb = maxwells
-oersted = 7.957747e1 * A / m = oersteds = Oe
-statcoulomb = 3.335640e-10 * C = statcoulombs
-statfarad = 1.112650e-12 * F = statfarads
-stathenry = 8.987554e11 * H = stathenries
-statmho = 1.112650e-12 * S = statmhos
-statohm = 8.987554e11 * ohm = statohms
-statvolt = 2.997925e2 * V = statvolts
-unit_pole = 1.256637e-7 * Wb = unit_poles
+chemical_faraday = 9.64957e4 * C = _ = chemical_faradays
+physical_faraday = 9.65219e4 * C = _ = physical_faradays
+C12_faraday = 9.648531e4 * C = _ = C12_faradays = faraday = faradays
+gamma = 1e-9 * T = _ = gammas
+gauss = 1e-4 * T = _ = gausses
+maxwell = 1e-8 * Wb = _ = maxwells
+oersted = 7.957747e1 * A / m = Oe = oersteds
+statcoulomb = 3.335640e-10 * C = _ = statcoulombs
+statfarad = 1.112650e-12 * F = _ = statfarads
+stathenry = 8.987554e11 * H = _ = stathenries
+statmho = 1.112650e-12 * S = _ = statmhos
+statohm = 8.987554e11 * ohm = _ = statohms
+statvolt = 2.997925e2 * V = _ = statvolts
+unit_pole = 1.256637e-7 * Wb = _ = unit_poles
 BV = 1 * V; logbase: 10; logfactor: 10
 Bv = 0.775 * V; logbase: 10; logfactor: 10
 BµV = 1e-6 * V; logbase: 10; logfactor: 10
-degree_rankine = K / 1.8 = degrees_rankine = degreeR = degreesR = degree_R = degrees_R = degR = degsR = deg_R = degs_R = °R
-fahrenheit = ° * R; offset: 459.67 = fahrenheits = degree_fahrenheit = degrees_fahrenheit = degreeF = degreesF = degree_F = degrees_F = degF = degsF = deg_F = degs_F = °F = ℉
-footcandle = 1.076391e-1 * lx = footcandles
-footlambert = 3.426259 * cd / m ** 2 = footlamberts
-lambert = (1e4 / pi) * cd / m ** 2 = lamberts
-stilb = 1e4 * cd / m ** 2 = stilbs = sb
-phot = 1e4 * lm / m ** 2 = phots = ph
-nit = 1 * cd / m ** 2 = nits = nt
-langley = 4.184000e4 * J / m ** 2 = langleys
-blondel = cd / (pi * m ** 2) = blondels = apostilb = apostilbs
-kayser = 100 / m = kaysers
-geopotential = gravity = geopotentials = dynamic = dynamics = gp
-work_year = 2056 * hours = work_years
-work_month = work_year / 12 = work_months
-potential_vorticity_unit = 1e-6 * m ** 2 * s ** -1 * K * kg ** -1 = potential_vorticity_units = PVU
-count = 1 = counts
-bit = 1 = bits
-octet = 8 = octets = byte = bytes
-dobson = 446.2 * micromoles / meter ** 2 = dobsons = DU
-molecule = 1 / avogadro_constant = _ = molec = molecs = nucleon = nucleons = nuc = nucs = molecules
+degree_rankine = K / 1.8 = °R = degrees_rankine = degreeR = degreesR = degree_R = degrees_R = degR = degsR = deg_R = degs_R
+fahrenheit = ° * R; offset: 459.67 = °F = fahrenheits = ℉ = degree_fahrenheit = degrees_fahrenheit = degreeF = degreesF = degree_F = degrees_F = degF = degsF = deg_F = degs_F
+footcandle = 1.076391e-1 * lx = _ = footcandles
+footlambert = 3.426259 * cd / m ** 2 = _ = footlamberts
+lambert = (1e4 / pi) * cd / m ** 2 = _ = lamberts
+stilb = 1e4 * cd / m ** 2 = sb = stilbs
+phot = 1e4 * lm / m ** 2 = ph = phots
+nit = 1 * cd / m ** 2 = nt = nits
+langley = 4.184000e4 * J / m ** 2 = _ = langleys
+blondel = cd / (pi * m ** 2) = _ = blondels = apostilb = apostilbs
+kayser = 100 / m = _ = kaysers
+geopotential = gravity = gp = geopotentials = dynamic = dynamics
+work_year = 2056 * hours = _ = work_years
+work_month = work_year / 12 = _ = work_months
+potential_vorticity_unit = 1e-6 * m ** 2 * s ** -1 * K * kg ** -1 = PVU = potential_vorticity_units
+count = 1 = _ = counts
+bit = 1 = _ = bits
+octet = 8 = _ = octets = byte = bytes
+dobson = 446.2 * micromoles / meter ** 2 = DU = dobsons
+molecule = 1 / avogadro_constant = _ = molecules = molec = molecs = nucleon = nucleons = nuc = nucs
