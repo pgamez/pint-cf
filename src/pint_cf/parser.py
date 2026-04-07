@@ -73,10 +73,9 @@ class UdunitsToPintTransformer(Transformer):
         Also handles UDUNITS-style power notation where digits at the end
         of an identifier represent an exponent (e.g., 'm2' -> m ** 2).
         """
-        # XXX: Handle special case for arc_minute, which is represented
-        # as ' (prime) in UDUNITS. We replace it with 'arc_minute' to
-        # avoid issues with pint parsing.
-        name_str = str(name).replace("'", "arc_minute")
+        # XXX: Handle angle symbols represented by quotes in UDUNITS.
+        # Replace prime/double-prime with explicit unit names so pint parses them.
+        name_str = str(name).replace("'", "arc_minute").replace('"', "arc_second")
 
         # Check for trailing exponent pattern (e.g., m2, s-1, kg-2)
         match = re.match(
@@ -135,24 +134,11 @@ class UdunitsToPintTransformer(Transformer):
     def multiply(self, *args) -> str:
         """
         Multiplication (explicit or implicit via juxtaposition).
-
-        Special handling: when the right side is a number and the left side
-        ends with an identifier, treat it as an exponent (UDUNITS convention).
-        e.g., "m s-1" becomes "m * s ** -1"
         """
         if len(args) == 2:
             left, right = args
-            is_implicit = True
         else:
             left, _, right = args
-            is_implicit = False
-
-        # For implicit multiplication where right looks like a number,
-        # convert it to an exponent on the rightmost identifier
-        if is_implicit and re.match(r"^[+-]?\d+$", right):
-            rightmost = self._get_rightmost_identifier(left)
-            if rightmost is not None:
-                return self._attach_exponent_to_rightmost(left, right)
 
         return f"{left} * {right}"
 

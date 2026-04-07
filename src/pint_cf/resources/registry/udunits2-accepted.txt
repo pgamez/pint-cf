@@ -1,24 +1,117 @@
+# Generated from udunits2-accepted.xml
+
+
+# period of time equal to 60 seconds
 minute = 60 * s = min = minutes
+
+# period of time equal to 60 minutes
 hour = 60 * min = h = hours = hr
+
+# period of time equal to 24 hours
 day = 24 * h = d = days
+
+# mathematical constant equal to the ratio of a circle's circumference
+# to its diameter
+# [comment] This "unit" is useful in the definition of subsequent
+# units.
+# [comment @ π] GREEK SMALL LETTER PI
 pi = 3.141592653589793238462643383279 = π
+
+# measurement of a plane angle representing 1/360 of a full rotation
+# [comment @ °] DEGREE SIGN
 arc_degree = (pi / 180) * rad = ° = arc_degrees = angular_degree = angular_degrees = degree = degrees = arcdeg = arcdegs
+
+# measurement of a plane angle equal to 1/60 arc degree
 arc_minute = ° / 60 = ' = arc_minutes = angular_minute = angular_minutes = arcminute = arcminutes = arcmin = arcmins
+
+# measurement of a plane angle equal to 1/60 arc minute
 arc_second = arc_minute / 60 = " = arc_seconds = angular_second = angular_seconds = arcsecond = arcseconds = arcsec = arcsecs
+
+# unit of capacity equal to 1000 cubic centimeters
+# [comment] The definition is exact.  From 1901 to 1964, however, 1
+# liter was 1.000028 dm^3 (volume of 1 kg of water under standard
+# conditions).
+# [comment @ L] NIST recommendation
 liter = dm ** 3 = L = liters = litre = litres = l
+
+# unit of weight equal to 1000 kilograms
 metric_ton = 1000 * kg = t = metric_tons = tonne = tonnes
+
+# unit of energy equal to the work accelerating an electron through a
+# potential difference of one volt
+# [comment] Unit's value is obtained experimentally
 electronvolt = 1.60217733e-19 * J = eV = electronvolts = electron_volt = electron_volts
+
+# standard unit for indicating mass on an atomic or molecular scale;
+# is approximately the mass of one nucleon (either a single proton or
+# neutron), and equivalent to 1 g/mol
+# [comment] Unit's value is obtained experimentally
 unified_atomic_mass_unit = 1.6605402e-27 * kg = u = unified_atomic_mass_units = atomic_mass_unit = atomic_mass_units = atomicmassunit = atomicmassunits = amu
+
+# Exact definition according to 2012 resolution by the International
+# Astronomical Union (IAU). Ostensibly equal to the mean distance from
+# the center of the earth to the center of the sun.
+# [comment] According to resolution by the International Astronomical
+# Union (IAU) in 2012
 astronomical_unit = 1.49597870700e11 * m = au = astronomical_units
+
+# unit of measurement equal to 149.6 million kilometers, the mean
+# distance from the center of the earth to the center of the sun
+# according to the International Bureau of Weights and Measures (BIPM)
+# in 2006
+# [comment] Pre-2012 resolution by the IAU
 astronomical_unit_BIPM_2006 = 1.495979e11 * m = ua = astronomical_unit_BIPM_2006s
+
+# unit of distance at sea, set at 1852 meters (approximately one
+# minute of arc measured along any meridian)
+# [comment] Unit is temporarily accepted for use with the SI.
 nautical_mile = 1852 * m = _ = nautical_miles
+
+# derived unit of speed at sea
+# [comment] Unit is temporarily accepted for use with the SI.
 international_knot = nautical_mile / hour = _ = international_knots = knot_international = knot_internationals = knot = knots
+
+# unit of length equal to one hundred-millionth of a centimeter (1
+# meter/10**10)
+# [comment] Unit is temporarily accepted for use with the SI.
+# [comment @ Å] LATIN CAPITAL LETTER A WITH RING ABOVE
+# [comment @ Å] ANGSTROM SIGN
 angstrom = 1e-10 * m = Å = angstroms = ångström = ångströms = Å
+
+# unit of area equal to 100 square meters
+# [comment] Unit is temporarily accepted for use with the SI.
 are = dam ** 2 = a = ares
+
+# unit of area equal to 100 are ('hectoare'), or 10000 square meters
+# [comment] Unit is temporarily accepted for use with the SI.
 hectare = 100 * are = _ = hectares
+
+# unit of area, approximately the cross-sectional area of a uranium
+# nucleus (10e-28 square meters)
+# [comment] Unit is temporarily accepted for use with the SI.
 barn = 100 * fm ** 2 = b = barns
+
+# unit of pressure equal to 100000 Pascals, or about 0.987 atmospheres
+# of pressure
+# [comment] Unit is temporarily accepted for use with the SI.
 bar = 1000 * hPa = _ = bars
+
+# unit of acceleration equal to 1 cm per second squared
+# [comment] Unit is temporarily accepted for use with the SI.
 gal = cm / s ** 2 = _ = gals
+
+# unit of radioactivity corresponding to 3.7 * 10e10 disintegrations
+# per second
+# [comment] Unit is temporarily accepted for use with the SI.
 curie = 3.7e10 * Bq = Ci = curies
+
+# unit of ionizing radiation, the amount producing one electrostatic
+# unit of positive or negative ionic charge in one cubic centimeter of
+# air under standard conditions; rarely used
+# [comment] Unit is temporarily accepted for use with the SI.
 roentgen = 2.58e-4 * C / kg = R = roentgens
+
+# unit of radiation dosage applied to humans; equal to one hundredth
+# of a sievert
+# [comment] Unit is temporarily accepted for use with the SI.
 rem = cSv = _ = rems

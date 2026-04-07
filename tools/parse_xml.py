@@ -12,13 +12,6 @@ def main():
     parser.add_argument(
         "filename", type=Path, help="Path to the output pint definition file"
     )
-    # parser.add_argument(
-    #     "-o",
-    #     "--output",
-    #     type=Path,
-    #     default=Path("udunits2.txt"),
-    #     help="Path to the output pint definition file (default: udunits2.txt)",
-    # )
     args = parser.parse_args()
 
     with args.filename.open() as f:

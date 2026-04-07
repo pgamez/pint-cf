@@ -1,3 +1,5 @@
+# Generated from udunits2-prefixes.xml
+
 yotta- = 1e24 = Y-
 zetta- = 1e21 = Z-
 exa- = 1e18 = E-

@@ -48,7 +48,7 @@ SI base units.
     </unit>
     <unit>
         <base/>
-        <name comment="Pedro"><singular>candela</singular></name>
+        <name><singular>candela</singular></name>
         <symbol>cd</symbol>
         <definition>The candela is the luminous intensity, in a given direction, of a source that emits monochromatic radiation of frequency 540e12 hertz and that has a radiant intensity in that direction of 1/683 watt per steradian.</definition>
     </unit>

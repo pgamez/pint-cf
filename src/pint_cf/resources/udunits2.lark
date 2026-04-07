@@ -44,7 +44,6 @@ shift_op: SHIFT_AT | SHIFT_AFTER | SHIFT_FROM | SHIFT_SINCE | SHIFT_REF
 // -----------------------------------------------------------------------------
 
 ?power_exp: basic_exp
-          | basic_exp SIGNED_INT         -> power
           | basic_exp EXPONENT           -> power
           | basic_exp RAISE SIGNED_INT   -> power
 
@@ -150,7 +149,8 @@ EXPONENT.3: /[\u00B2\u00B3\u00B9\u2070\u2074-\u2079\u207A\u207B]+/
 
 // Unit identifiers: alphanumeric names, or special symbols
 // Includes: letters, underscore, degree signs, percent, quotes, greek mu
-ID.1: /[a-zA-Z_\u00C0-\u00FF][a-zA-Z0-9_\u00C0-\u00FF]*/
+ID.1: /[a-zA-Z_\u00C0-\u00FF][a-zA-Z0-9_\u00C0-\u00FF]*(-[0-9]+)?/
+    | /[°µ][a-zA-Z0-9_\u00C0-\u00FF]*/
     | /[%'"°µ]/
 
 // -----------------------------------------------------------------------------

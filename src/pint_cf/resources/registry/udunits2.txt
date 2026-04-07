@@ -1,3 +1,5 @@
+# Generated from udunits2.xml
+
 @import udunits2-prefixes.txt
 @import udunits2-base.txt
 @import udunits2-derived.txt

@@ -14,8 +14,7 @@ classifiers = ["License :: OSI Approved :: MIT License"]
 dependencies = ["Pint>=0.25", "lark"]
 
 [project.optional-dependencies]
-build = ["build", "twine"]
-tests = ["pytest"]
+tests = ["pytest", "pytest-cov"]
 docs = ["sphinx", "pydata-sphinx-theme", "myst-parser"]
 dev = [
     "pint-cf[tests,docs,build]",
@@ -46,3 +45,4 @@ pythonpath = "src"
 
 # [dependency-groups]
 # dev = ["prek>=0.3.3"]
+build = ["build", "twine"]

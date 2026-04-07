@@ -1,15 +1,15 @@
 """
+https://pint.readthedocs.io/en/stable/advanced/defining.html
+
 Falta:
 
-- Guardar en ficheros de texto separados
 - Comprobar unidades
 - Añadir descripciones como comentarios
-- Probar que carga todo bien
-- Tests que fallaban
 - Derived units? [density] = [mass] / [volume]
 
 """
 
+import textwrap
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from pathlib import Path
@@ -36,7 +36,6 @@ _DIMENSIONS = {
 
 class BaseElement(ABC):
     comment: str | None = None
-    description: str | None = None
 
     @abstractmethod
     def spec(self) -> list[str]: ...
@@ -125,7 +124,39 @@ class Symbol(BaseElement):
         return [self.symbol]
 
 
-class Unit(BaseElement):
+class BaseUnit(BaseElement):
+    description: str | None = None
+
+    @property
+    @abstractmethod
+    def name(self) -> Name | None: ...
+
+    @property
+    @abstractmethod
+    def symbol(self) -> Symbol | None: ...
+
+    @property
+    @abstractmethod
+    def aliases(self) -> Iterable[Name | Symbol]: ...
+
+    @property
+    def spec_comments(self) -> dict[str, str]:
+        params = {}
+
+        if self.name and self.name.comment:
+            params[str(self.name)] = self.name.comment
+
+        if self.symbol and self.symbol.comment:
+            params[str(self.symbol)] = self.symbol.comment
+
+        for alias in self.aliases or []:
+            if alias.comment:
+                params[str(alias)] = alias.comment
+
+        return params
+
+
+class Unit(BaseUnit):
     def __init__(
         self,
         name: Name,
@@ -137,14 +168,26 @@ class Unit(BaseElement):
         is_dimensionless: bool = False,
         comment: str | None = None,
     ) -> None:
-        self.name = name
-        self.symbol = symbol or Symbol(NO_SYMBOL)
-        self.aliases = aliases or []
+        self._name = name
+        self._symbol = symbol or Symbol(NO_SYMBOL)
+        self._aliases = aliases or []
         self.definition = definition
         self.is_base = is_base
         self.is_dimensionless = is_dimensionless
         self.description = description
         self.comment = comment
+
+    @property
+    def name(self) -> Name:
+        return self._name
+
+    @property
+    def symbol(self) -> Symbol:
+        return self._symbol
+
+    @property
+    def aliases(self) -> Iterable[Name | Symbol]:
+        return self._aliases
 
     def spec(self) -> list[str]:
         line = [self.name.singular, self.definition, *self.symbol.spec()]
@@ -157,23 +200,8 @@ class Unit(BaseElement):
 
         return line
 
-    # def __str__(self) -> str:
-    #     line = [self.name.singular, self.definition, str(self.symbol)]
 
-    #     if self.name.plural:
-    #         line.append(self.name.plural)
-
-    #     line += [str(alias) for alias in self.aliases]
-    #     entry = " = ".join(line)
-
-    #     if self.description:
-    #         comment = textwrap.fill(self.description, subsequent_indent="# ")
-    #         return f"\n# {comment}\n{entry}"
-
-    #     return entry
-
-
-class Alias(BaseElement):
+class Alias(BaseUnit):
     def __init__(
         self,
         target: str,
@@ -182,9 +210,21 @@ class Alias(BaseElement):
         comment: str | None = None,
     ) -> None:
         self.target = target
-        self.aliases = aliases or []
+        self._aliases = aliases or []
         self.description = description
         self.comment = comment
+
+    @property
+    def name(self) -> None:
+        pass
+
+    @property
+    def symbol(self) -> None:
+        pass
+
+    @property
+    def aliases(self) -> Iterable[Name | Symbol]:
+        return self._aliases
 
     def spec(self) -> list[str]:
         line = [f"@alias {self.target}"]
@@ -194,7 +234,7 @@ class Alias(BaseElement):
         return line
 
 
-class Constant(BaseElement):
+class Constant(BaseUnit):
     def __init__(
         self,
         symbol: Symbol,
@@ -203,14 +243,26 @@ class Constant(BaseElement):
         description: str | None = None,
         comment: str | None = None,
     ) -> None:
-        self.symbol = symbol
+        self._symbol = symbol
         self.definition = definition
-        self.aliases = aliases or []
+        self._aliases = aliases or []
         self.description = description
         self.comment = comment
 
+    @property
+    def name(self) -> None:
+        pass
+
+    @property
+    def symbol(self) -> Symbol:
+        return self._symbol
+
+    @property
+    def aliases(self) -> Iterable[Name | Symbol]:
+        return self._aliases
+
     def spec(self) -> list[str]:
-        line = [self.symbol.symbol, self.definition]
+        line = [str(self.symbol), self.definition]
         for i in self.aliases:
             line.extend(i.spec())
 
@@ -356,7 +408,7 @@ class _UnitElement:
         self.aliases = aliases
 
 
-def parse_unit(element: Element) -> Unit | Alias | Constant:
+def parse_unit(element: Element) -> BaseUnit:
     u = _UnitElement(element)
 
     if u.name is not None:
@@ -427,16 +479,8 @@ def parse_unit(element: Element) -> Unit | Alias | Constant:
     raise ValueError("Unit element missing name and symbol")
 
 
-# def process_unit_element(element: Element) -> BaseElement:
-#     match element.tag:
-#         case "prefix":
-#             return parse_prefix(element)
-#         case "unit":
-#             return parse_unit(element)
-
-
-def gen_pint_registry(f: TextIO) -> None:
-    print(f"Processing file {f.name}...")
+def gen_pint_registry(f: TextIO, write_doc: bool = True) -> None:
+    print("Processing", f.name, "...")
 
     filepath = Path(f.name)
     filedir = filepath.parent
@@ -451,6 +495,9 @@ def gen_pint_registry(f: TextIO) -> None:
         raise ValueError(f"Unexpected root element: {root.tag}")
 
     with filepath.with_suffix(".txt").open("w") as out:
+        print("> writing to", out.name, "...")
+        print("# Generated from", filepath.name, file=out, end="\n\n")
+
         for child in root:
             match child.tag:
                 case "import":
@@ -463,7 +510,7 @@ def gen_pint_registry(f: TextIO) -> None:
                     print("@import", imported_txt, file=out)
 
                     with imported_xml.open() as fi:
-                        gen_pint_registry(fi)
+                        gen_pint_registry(fi, write_doc)
 
                 case "prefix":
                     prefix = parse_prefix(child)
@@ -471,4 +518,51 @@ def gen_pint_registry(f: TextIO) -> None:
 
                 case "unit":
                     unit = parse_unit(child)
+                    if write_doc:
+                        print(file=out)
+
+                        doc = []
+                        if unit.description:
+                            doc.append(
+                                textwrap.fill(
+                                    f"# {unit.description}",
+                                    subsequent_indent="# ",
+                                )
+                            )
+                        if unit.comment:
+                            doc.append(
+                                textwrap.fill(
+                                    f"# [comment] {unit.comment}",
+                                    subsequent_indent="# ",
+                                )
+                            )
+
+                        for param, comment in unit.spec_comments.items():
+                            doc.append(
+                                textwrap.fill(
+                                    f"# [comment @ {param}] {comment}",
+                                    subsequent_indent="# ",
+                                )
+                            )
+
+                        doc = "\n".join(doc)
+
+                        if doc:
+                            print(doc, file=out)
+
                     print(unit, file=out)
+
+    # def __str__(self) -> str:
+    #     line = [self.name.singular, self.definition, str(self.symbol)]
+
+    #     if self.name.plural:
+    #         line.append(self.name.plural)
+
+    #     line += [str(alias) for alias in self.aliases]
+    #     entry = " = ".join(line)
+
+    #     if self.description:
+    #         comment = textwrap.fill(self.description, subsequent_indent="# ")
+    #         return f"\n# {comment}\n{entry}"
+
+    #     return entry

@@ -10,7 +10,7 @@ TODO:
 
 import pytest
 from cfunits import Units
-from lark.exceptions import UnexpectedInput
+from lark.exceptions import UnexpectedInput, VisitError
 from pint.delegates import ParserConfig
 from pint.delegates.txt_defparser.plain import UnitDefinition
 
@@ -36,8 +36,11 @@ TEST_CASES_TRANSFORM = [
     ("dBm", "dBm"),
     # Special symbol IDs
     ("°", "°"),
+    ("°F", "°F"),
     # ("µ", "µ"),
-    # ("'", "arc_minute"),
+    ("'", "arc_minute"),
+    ('"', "arc_second"),
+    ("'/60", "arc_minute / 60"),
     # =========================================================================
     # Basic-Spec → Number: INT and REAL
     # =========================================================================
@@ -128,6 +131,8 @@ TEST_CASES_TRANSFORM = [
     # Space / juxtaposition
     ("a b", "a * b"),
     ("a  b", "a * b"),
+    ("m 2", "m * 2"),
+    ("kg m 2", "kg * m * 2"),
     # Centered middot (·)
     ("a·b", "a * b"),
     # Chained multiply (3+ terms)
@@ -167,6 +172,7 @@ TEST_CASES_TRANSFORM = [
     ("kg m/s", "kg * m / s"),
     ("kg m / s", "kg * m / s"),
     ("kg m / s^2", "kg * m / s ** 2"),
+    ("kg m -2", "kg * m * -2"),
     ("kg.m/s2", "kg * m * s ** -2"),
     ("1/s", "1 / s"),
     ("1/m", "1 / m"),
@@ -191,6 +197,7 @@ TEST_CASES_TRANSFORM = [
     ("K from 273.15", "K; offset: 273.15"),
     ("K ref 273.15", "K; offset: 273.15"),
     ("degC @ 1.5", "degC; offset: 1.5"),
+    ("°R @ 459.67", "°R; offset: 459.67"),
     # Shift on product expression
     ("m/s @ 0", "m / s; offset: 0"),
     # =========================================================================
@@ -236,7 +243,9 @@ TEST_CASES_TRANSFORM = [
     # Scalar * unit
     ("0.001 m", "0.001 * m"),
     ("1000 kg", "1000 * kg"),
+    ("m 1.5", "1.5 * m"),
     ("1e3 Pa", "1e3 * Pa"),
+    ("Pa 1e3", "1e3 * Pa"),
     ("1e-3 m", "1e-3 * m"),
     ("1e-6 m", "1e-6 * m"),
     ("2 m^2", "2 * m ** 2"),
@@ -256,6 +265,19 @@ TEST_CASES_TRANSFORM = [
     ("  m  ", "m"),
     ("  m    /    s^2    ", "m / s ** 2"),
     ("  kg  /  s  ", "kg / s"),
+]
+
+
+TEST_CASES_TIME_SHIFTS = [
+    "seconds since 1970-01-01",
+    "seconds since 1970-01-01 12:34",
+    "seconds since 1970-01-01 12:34 +01:00",
+    "seconds since 1970-01-01 12:34 UTC",
+    "seconds since 1970-01-01T12:34",
+    "seconds since 1970-01-01T12:34 Z",
+    "seconds since 19700101T1234",
+    "seconds since 19700101T1234 +01:00",
+    "seconds since 19700101T1234 UTC",
 ]
 
 
@@ -382,4 +404,12 @@ def test_transform(input_str: str, expected_str: str) -> None:
 def test_invalid_raises(input_str: str) -> None:
     """Strings that violate the grammar must raise an exception when parsed."""
     with pytest.raises(UnexpectedInput):
+        cf_string_to_pint(input_str)
+
+
+@pytest.mark.parametrize("input_str", TEST_CASES_TIME_SHIFTS)
+def test_time_shifts_raise_not_implemented(input_str: str) -> None:
+    with pytest.raises(
+        VisitError, match="Time-based offsets are not directly supported by pint"
+    ):
         cf_string_to_pint(input_str)
