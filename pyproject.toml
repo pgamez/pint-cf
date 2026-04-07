@@ -14,10 +14,16 @@ classifiers = ["License :: OSI Approved :: MIT License"]
 dependencies = ["Pint>=0.25", "lark"]
 
 [project.optional-dependencies]
-build = ["build", "twine"]
-tests = ["pytest", "cfunits"]
+tests = ["pytest", "pytest-cov"]
 docs = ["sphinx", "pydata-sphinx-theme", "myst-parser"]
-dev = ["pint-cf[tests,docs,build]", "defusedxml", "ruff", "prek"]
+dev = [
+    "pint-cf[tests,docs,build]",
+    "defusedxml",
+    "ruff",
+    "prek",
+    "cf-units",
+    "cfunits",
+]
 
 [tool.setuptools.dynamic]
 version = { attr = "pint_cf.__version__" }
@@ -39,3 +45,4 @@ pythonpath = "src"
 
 # [dependency-groups]
 # dev = ["prek>=0.3.3"]
+build = ["build", "twine"]

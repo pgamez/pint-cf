@@ -73,10 +73,9 @@ class UdunitsToPintTransformer(Transformer):
         Also handles UDUNITS-style power notation where digits at the end
         of an identifier represent an exponent (e.g., 'm2' -> m ** 2).
         """
-        # XXX: Handle special case for arc_minute, which is represented
-        # as ' (prime) in UDUNITS. We replace it with 'arc_minute' to
-        # avoid issues with pint parsing.
-        name_str = str(name).replace("'", "arc_minute")
+        # XXX: Handle angle symbols represented by quotes in UDUNITS.
+        # Replace prime/double-prime with explicit unit names so pint parses them.
+        name_str = str(name).replace("'", "arc_minute").replace('"', "arc_second")
 
         # Check for trailing exponent pattern (e.g., m2, s-1, kg-2)
         match = re.match(
@@ -135,24 +134,11 @@ class UdunitsToPintTransformer(Transformer):
     def multiply(self, *args) -> str:
         """
         Multiplication (explicit or implicit via juxtaposition).
-
-        Special handling: when the right side is a number and the left side
-        ends with an identifier, treat it as an exponent (UDUNITS convention).
-        e.g., "m s-1" becomes "m * s ** -1"
         """
         if len(args) == 2:
             left, right = args
-            is_implicit = True
         else:
             left, _, right = args
-            is_implicit = False
-
-        # For implicit multiplication where right looks like a number,
-        # convert it to an exponent on the rightmost identifier
-        if is_implicit and re.match(r"^[+-]?\d+$", right):
-            rightmost = self._get_rightmost_identifier(left)
-            if rightmost is not None:
-                return self._attach_exponent_to_rightmost(left, right)
 
         return f"{left} * {right}"
 
@@ -258,7 +244,12 @@ class UdunitsToPintTransformer(Transformer):
 
         Creates a special notation for time references.
         """
-        return f"{unit} since {timestamp}"
+        # return f"{unit} since {timestamp}"
+        raise NotImplementedError(
+            "Time-based offsets are not directly supported by pint. "
+            "Consider using a dedicated time handling library like cftime "
+            "for this use case (see: https://unidata.github.io/cftime/)"
+        )
 
     # -------------------------------------------------------------------------
     # Timestamps
@@ -322,7 +313,7 @@ def get_parser() -> Lark:
     return _parser
 
 
-def udunits_to_pint(unit_string: str) -> str:
+def cf_string_to_pint(unit_string: str) -> str:
     """
     Convert a UDUNITS-2 unit string to pint-compatible format.
 
@@ -361,56 +352,3 @@ def udunits_to_pint(unit_string: str) -> str:
         return "1"
 
     return result
-
-
-# =============================================================================
-# Testing
-# =============================================================================
-
-if __name__ == "__main__":
-    test_cases = [
-        ("", "1"),
-        ("m", "m"),
-        ("m2", "m ** 2"),
-        ("m^2", "m ** 2"),
-        ("m²", "m ** 2"),
-        ("m/s", "m / s"),
-        ("kg.m/s2", "kg * m / s ** 2"),
-        ("K @ 273.15", "K; offset: 273.15"),
-        ("seconds since 1970-01-01", "seconds since 1970-01-01"),
-        ("lg(re 1 mW)", "1 * mW; logbase: 10; logfactor: 10"),
-        (
-            "ln(re 1 Pa)",
-            "1 * Pa; logbase: 2.71828182845904523536028747135266249775724709369995; logfactor: 0.5",
-        ),
-        ("lb(re 1 Hz)", "1 * Hz; logbase: 2; logfactor: 1"),
-        ("m s-1", "m * s ** -1"),
-        ("kg m s-2", "kg * m * s ** -2"),
-        ("(m/s)", "(m / s)"),
-        ("m³", "m ** 3"),
-        ("1", "1"),
-        ("3.14", "3.14"),
-        ("1e-6 m", "1e-6 * m"),
-    ]
-
-    print("UDUNITS-2 to Pint String Transformer Test")
-    print("=" * 60)
-
-    passed = 0
-    failed = 0
-
-    for input_str, expected in test_cases:
-        try:
-            result = udunits_to_pint(input_str)
-            if result == expected:
-                print(f'[OK] "{input_str}" -> "{result}"')
-                passed += 1
-            else:
-                print(f'[FAIL] "{input_str}" -> "{result}" (expected: "{expected}")')
-                failed += 1
-        except Exception as e:
-            print(f'[ERROR] "{input_str}" -> {type(e).__name__}: {e}')
-            failed += 1
-
-    print("=" * 60)
-    print(f"Passed: {passed}, Failed: {failed}")

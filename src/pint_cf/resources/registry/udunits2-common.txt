@@ -1,223 +1,977 @@
+# Generated from udunits2-common.xml
+
+
+# unit of time, synonym for second
+# [comment] Synonym for SI unit
 @alias second = sec = secs
+
+# unit of electric current, synonym for ampere
+# [comment] Synonym for SI unit
 @alias ampere = amp = amps
-@alias kelvin = degree_kelvin = degrees_kelvin = degree_K = degrees_K = degreeK = degreesK = deg_K = degs_K = degK = degsK = °K
+
+# unit of temperature, synonym for kelvin
+# [comment] Synonym for SI unit
+# [comment @ °K] DEGREE SIGN
+@alias kelvin = °K = degree_kelvin = degrees_kelvin = degree_K = degrees_K = degreeK = degreesK = deg_K = degs_K = degK = degsK
+
+# unit of luminous intensity, synonym for candela
+# [comment] Synonym for SI unit
 @alias candela = candle = candles
+
+# unit of chemical mass, synonym for mole
+# [comment] Synonym for SI unit
 @alias mole = einstein = einsteins
+
+# unit of frequency, synonym for hertz
+# [comment] Synonym for SI unit
 @alias hertz = baud = bauds = Bd = bps
-@alias degree_Celsius = celsius = celsiuses = degree_C = degrees_C = degreeC = degreesC = deg_C = degs_C = degC = degsC = ℃
+
+# unit of temperature, synonym for 'K @ 273.15' (degree_Celsius)
+# [comment] Synonym for SI unit
+# [comment @ ℃] DEGREE CELSIUS
+@alias degree_Celsius = ℃ = celsius = celsiuses = degree_C = degrees_C = degreeC = degreesC = deg_C = degs_C = degC = degsC
+
+# unit of speed, synonym for nautical_mile/hour
+# [comment] Synonym for SI unit
 kt = knot = kts
-avogadro_constant = 6.02214179e23 / mol = avogadro_constants
-percent = 0.01 = percents = %
+
+# number of constituent particles (usually atoms or molecules) per
+# mole of a given substance
+# [comment] Constant; value is +-30e15
+avogadro_constant = 6.02214179e23 / mol = _
+
+# number of parts per hundred
+# [comment] Constant
+percent = 0.01 = %
+
+# parts per volume
+# [comment] Constant
 ppv = 1
+
+# parts per million
+# [comment] Constant
 ppm = 1e-6 = ppmv
+
+# parts per billion
+# [comment] Constant
 ppb = 1e-9 = ppbv
+
+# parts per trillion
+# [comment] Constant
 ppt = 1e-12 = pptv
+
+# parts per quadrillion
+# [comment] Constant
 ppq = 1e-15 = ppqv
+
+# logarithmic unit used to express dimensionless ratios; a value of 0
+# B (0 dB) corresponds to a ratio of 1
 B = 1; logbase: 10; logfactor: 10
-grade = 0.9 * arc_degree = grades
-circle = 2 * pi * rad = circles = cycle = cycles = turn = turns = revolution = revolutions = rotation = rotations
+
+# 1/100 of a right angle (90 degrees)
+grade = 0.9 * arc_degree = _ = grades
+
+# unit of angle in a plane signifying a full 360-degree circle
+circle = 2 * pi * rad = _ = circles = cycle = cycles = turn = turns = revolution = revolutions = rotation = rotations
+
+# unit of angle on a sphere
 @alias arc_degree = degree_north = degrees_north = degree_N = degrees_N = degreeN = degreesN = degree_east = degrees_east = degree_E = degrees_E = degreeE = degreesE = degree_true = degrees_true = degree_T = degrees_T = degreeT = degreesT
-degree_west = -1 * degree_east = degrees_west = degree_W = degrees_W = degreeW = degreesW
-assay_ton = 2.916667e-2 * kg = assay_tons
-avoirdupois_ounce = 2.834952e-2 * kg = avoirdupois_ounces
-avoirdupois_pound = 4.5359237e-1 * kg = avoirdupois_pounds = pound = pounds = lb
-carat = 2e-4 * kg = carats
-grain = 6.479891e-5 * kg = grains = gr
-long_hundredweight = 5.080235e1 * kg = long_hundredweights
-pennyweight = 1.555174e-3 * kg = pennyweights
-short_hundredweight = 4.535924e1 * kg = short_hundredweights
-slug = 14.59390 * kg = slugs
-troy_ounce = 3.110348e-2 * kg = troy_ounces = apothecary_ounce = apothecary_ounces
-troy_pound = 3.732417e-1 * kg = troy_pounds = apothecary_pound = apothecary_pounds
-scruple = 20 * grain = scruples
-apdram = 60 * grain = apdrams
-dram = avoirdupois_ounce / 16 = drams = dr
-apounce = 480 * grain = apounces
-appound = 5760 * grain = appounds
-bag = 94 * pound = bags
-short_ton = 2000 * pound = short_tons = ton = tons
-long_ton = 2240 * pound = long_tons
-fermi = 1e-15 * m = fermis
-light_year = 9.46073e15 * m = light_years
-micron = 1e-6 * m = microns
-mil = 2.54e-5 * m = mils
-parsec = 3.085678e16 * m = parsecs
-printers_point = 3.514598e-4 * m = printers_points
-chain = 2.011684e1 * m = chains
-printers_pica = 12 * printers_point = printers_picas = pica = picas
-nmile = nautical_mile = nmiles
-US_survey_foot = (1200 / 3937) * m = US_survey_feet
-US_survey_yard = 3 * US_survey_feet = US_survey_yards
-US_survey_mile = 5280 * US_survey_feet = US_survey_miles = US_statute_mile = US_statute_miles
-rod = 16.5 * US_survey_feet = rods = pole = poles = perch = perches
-furlong = 660 * US_survey_feet = furlongs
-fathom = 6 * US_survey_feet = fathoms
-international_inch = 2.54 * cm = international_inches = inch = inches = in
-international_foot = 12 * international_inches = international_feet = foot = feet = ft
-international_yard = 3 * international_feet = international_yards = yard = yards = yd
-international_mile = 5280 * international_feet = international_miles = mile = miles = mi
-big_point = inch / 72 = big_points
-barleycorn = inch / 3 = barleycorns
-arpentlin = 191.835 * foot = arpentlins
-rotation_per_second = rotation / second = rotations_per_second = rps = cps
+
+# unit of angle on a sphere (units for negative direction)
+degree_west = -1 * degree_east = _ = degrees_west = degree_W = degrees_W = degreeW = degreesW
+
+# reference unit of mass for a body of ore; roughly equal to 29167
+# milligrams
+assay_ton = 2.916667e-2 * kg = _ = assay_tons
+
+# unit of mass equal to 1/16 avoirdupois pound, commonly used in the
+# United States (16 oz = 1 pound = 7000 grains)
+avoirdupois_ounce = 2.834952e-2 * kg = _ = avoirdupois_ounces
+
+# unit of mass in avoirdupois system of weights (a system commonly
+# used in United States)
+avoirdupois_pound = 4.5359237e-1 * kg = lb = avoirdupois_pounds = pound = pounds
+
+# unit of mass equal to 0.2 gram (defined 1907)
+carat = 2e-4 * kg = _ = carats
+
+# unit of mass equal to 1/7000 pound
+grain = 6.479891e-5 * kg = gr = grains
+
+# unit of mass; a British hundredweight, which is 8 stone * 14
+# pounds/stone
+long_hundredweight = 5.080235e1 * kg = _ = long_hundredweights
+
+# unit of mass; based on historical US troy weight system (is 1/20
+# troy ounce)
+pennyweight = 1.555174e-3 * kg = _ = pennyweights
+
+# unit of mass, a US hundredweight, which is 100 pounds
+short_hundredweight = 4.535924e1 * kg = _ = short_hundredweights
+
+# unit of mass associated with Imperial units; a mass that accelerates
+# by 1 ft/s2 when a force of one pound-force (lbF) is exerted on it
+slug = 14.59390 * kg = _ = slugs
+
+# unit of mass; based on historical US troy weight system (is 1/12
+# troy pound)
+troy_ounce = 3.110348e-2 * kg = _ = troy_ounces = apothecary_ounce = apothecary_ounces
+
+# unit of mass; based on historical US troy weight system (is 5760
+# grain)
+troy_pound = 3.732417e-1 * kg = _ = troy_pounds = apothecary_pound = apothecary_pounds
+
+# unit of mass in apothecaries' weight system (is 1/3 apdram)
+scruple = 20 * grain = _ = scruples
+
+# unit of mass in apothecaries' weight system (is 1/8 apounce)
+apdram = 60 * grain = _ = apdrams
+
+# unit of mass in the avoirdupois system (the system commonly used in
+# the United States)
+# [comment] exact
+dram = avoirdupois_ounce / 16 = dr = drams
+
+# unit of mass in apothecaries' weight system (is 1/16 appound)
+apounce = 480 * grain = _ = apounces
+
+# unit of mass in apothecaries' weight system (is same as a troy
+# pound)
+appound = 5760 * grain = _ = appounds
+
+# unit of mass, for a traditional bag of portland cement
+bag = 94 * pound = _ = bags
+
+# unit of mass based on US weight system
+short_ton = 2000 * pound = _ = short_tons = ton = tons
+
+# unit of mass based on British imperial weight system
+long_ton = 2240 * pound = _ = long_tons
+
+# unit of length equal to 10e-15 meters, a typical length-scale of
+# nuclear physics
+fermi = 1e-15 * m = _ = fermis
+
+# unit of length equal to the distance traversed by light in one mean
+# solar year (365.2422 days), a typical length-scale of astronomy
+light_year = 9.46073e15 * m = _ = light_years
+
+# unit of length, a typical length-scale of technology and science
+# fields
+micron = 1e-6 * m = _ = microns
+
+# unit of length equal to 0.001 inch, a typical length-scale for
+# measuring wire diameters
+mil = 2.54e-5 * m = _ = mils
+
+# unit of length corresponding to the distance at which the mean
+# radius of the earth's orbit subtends an angle of one second of arc,
+# a typical length-scale of astronomy
+parsec = 3.085678e16 * m = _ = parsecs
+
+# unit of length equal to 1/72.27 inch, the original (standardized
+# 1886) unit for measuring font size and other small items on a
+# printed page (see also big_point)
+printers_point = 3.514598e-4 * m = _ = printers_points
+
+# unit of length equal to 66 feet (4 poles), or 1/10 furlong, a
+# typical (historical) scale of land surveying
+chain = 2.011684e1 * m = _ = chains
+
+# unit of length equal to 1/6 inch (12 printers points)
+printers_pica = 12 * printers_point = _ = printers_picas = pica = picas
+
+# unit of length in the US Customary System, equal to 6,076 feet;
+# typically used for air and sea navigation
+nmile = nautical_mile = _ = nmiles
+
+# unit of length used for earlier survey data in some countries,
+# slightly different than the current international foot
+US_survey_foot = (1200 / 3937) * m = _ = US_survey_feet
+
+# unit of length used in earlier survey data in some countries,
+# slightly different than the current international yard
+US_survey_yard = 3 * US_survey_feet = _ = US_survey_yards
+
+# unit of length used for earlier survey data in some countries,
+# slightly slightly different than the current international mile
+US_survey_mile = 5280 * US_survey_feet = _ = US_survey_miles = US_statute_mile = US_statute_miles
+
+# unit of length equal to one-fourth of a surveyor's chain
+rod = 16.5 * US_survey_feet = _ = rods = pole = poles = perch = perches
+
+# unit of length equal to 1/8 mile or 10 chains
+furlong = 660 * US_survey_feet = _ = furlongs
+
+# unit of length equal to 6 feet in the imperial and US customary
+# systems, typically used for measuring depth of water
+fathom = 6 * US_survey_feet = _ = fathoms
+
+# unit of length equal to 25.4 mm by definition, used in imperial and
+# US customary systems
+international_inch = 2.54 * cm = in = international_inches = inch = inches
+
+# unit of length equal to 12 international inches, in the imperial and
+# US customary systems; primarily used in the United States
+international_foot = 12 * international_inches = ft = international_feet = foot = feet
+
+# unit of length equal to 3 international feet, in the imperial and US
+# customary systems; primarily used in the United States
+international_yard = 3 * international_feet = yd = international_yards = yard = yards
+
+# unit of length equal to 5280 feet, equal to 12 international inches,
+# in the imperial and US customary systems; primarily used in the
+# United States and other smaller countries with ties to the US or
+# United Kingdom
+international_mile = 5280 * international_feet = mi = international_miles = mile = miles
+
+# unit of length equal to 1/72 inch, standardized unit in modern
+# computer-based publishing for measuring font size and other small
+# items on a printed page (contrast to printers_point)
+big_point = inch / 72 = _ = big_points
+
+# unit of length based in medieval laws of England and Wales, defining
+# an inch as being 3 barleycorns long (length of a corn of barley);
+# still the basis for current shoe sizes in Great Britain and Ireland
+barleycorn = inch / 3 = _ = barleycorns
+
+# unit of length in French regions; a linear arpent is of length 10
+# perch (10 rod)
+arpentlin = 191.835 * foot = _ = arpentlins
+
+# unit of angular velocity
+# [comment] exact
+rotation_per_second = rotation / second = rps = rotations_per_second = cps
+
+# unit of angular velocity measuring the angular distance covered by a
+# rotating object, divided by the amount of time used to cover that
+# distance; measured perpendicular to the plane of rotation, with
+# direction usually indicated by the right-hand rule
+# [comment] exact
 rpm = rotation / minute
-denier = 1.111111e-7 * kg / m = deniers
-tex = 1e-6 * kg / m = texes
-perm_0C = 5.72135e-11 * kg / (Pa * s * m ** 2) = perms_0C
-perm_23C = 5.74525e-11 * kg / (Pa * s * m ** 2) = perms_23C
-circular_mil = 5.067075e-10 * m ** 2 = circular_mils
-darcy = 9.869233e-13 * m ** 2 = darcies
-acre = 160 * rod ** 2 = acres
-acre_foot = 1.233489e3 * m ** 3 = acre_feet
-board_foot = 2.359737e-3 * m ** 3 = board_feet
-bushel = 3.523907e-2 * m ** 3 = bushels = bu
-peck = bushel / 4 = pecks = pk
-Canadian_liquid_gallon = 4.546090e-3 * m ** 3 = Canadian_liquid_gallons
-US_dry_gallon = 4.404884e-3 * m ** 3 = US_dry_gallons
+
+# unit of lineic mass density for fibers, equal to the mass in grams
+# per 9000 meters (more common in United States and United Kingdom); a
+# single strand of silk is approximately one denier
+denier = 1.111111e-7 * kg / m = _ = deniers
+
+# unit of lineic mass density for fibers, defined as mass in grams per
+# 1000 meters (more common in Canada and Continental Europe)
+# [comment] exact
+tex = 1e-6 * kg / m = _ = texes
+
+# unit of mass per unit time (includes flow) for how fast water vapor
+# flows through substance, or permeance; equals 1 gram of water vapor
+# per hour, per square meter, per millimeter of mercury at 0 degrees C
+perm_0C = 5.72135e-11 * kg / (Pa * s * m ** 2) = _ = perms_0C
+
+# unit of mass per unit time for how fast water vapor flows through
+# substance, or permeance; equals 1 gram of water vapor per hour, per
+# square meter, per millimeter of mercury at 23 degrees C
+perm_23C = 5.74525e-11 * kg / (Pa * s * m ** 2) = _ = perms_23C
+
+# unit of area equal to the area of a one-mil diameter circle
+circular_mil = 5.067075e-10 * m ** 2 = _ = circular_mils
+
+# unit of area for measuring permeability to fluid, equal to 1 cubic
+# centimeter of fluid with 1 centipoise viscosity in 1 second through
+# a 1-square-centimeter cross section of porous medium 1 centimeter
+# long at 1 atmosphere
+# [comment] porous solid permeability
+darcy = 9.869233e-13 * m ** 2 = _ = darcies
+
+# unit of area in the US Customary System, used in land and sea floor
+# measurement, equal to 43560 square feet
+# [comment] exact
+acre = 160 * rod ** 2 = _ = acres
+
+# unit of volume used to describe large-scale water resources in the
+# United State; equal to the volume of one acre of surface area with
+# one foot of depth depth
+# [comment] An "acre.foot", however, is 1233.4867714897 m^3.  Odd.
+acre_foot = 1.233489e3 * m ** 3 = _ = acre_feet
+
+# unit of volume equal to the cubic contents of a piece of lumber one
+# foot square and one inch thick, used in measuring logs and lumber in
+# the United States and Canada
+board_foot = 2.359737e-3 * m ** 3 = _ = board_feet
+
+# unit of volume defined as 2150.42 cubic inches or 4 pecks in the US
+# Customary system (and formerly in England), where it is used as a
+# dry measure
+bushel = 3.523907e-2 * m ** 3 = bu = bushels
+
+# unit of volume defined as 537.6 cubic inches  in the US Customary
+# system (and formerly in England), where it is used as a dry measure
+# [comment] exact
+peck = bushel / 4 = pk = pecks
+
+# unit of volume for liquids in the Imperial system
+# [comment] exact
+Canadian_liquid_gallon = 4.546090e-3 * m ** 3 = _ = Canadian_liquid_gallons
+
+# unit of volume for dry measure in the US Customary system, defined
+# as 1/2 peck or 1/8 bushel
+US_dry_gallon = 4.404884e-3 * m ** 3 = _ = US_dry_gallons
+
+# unit of volume equal to the volume of a cube 1 centimeter on each
+# side
+# [comment] exact
 cc = cm ** 3
-stere = 1 * m ** 3 = steres
-register_ton = 2.831685 * m ** 3 = register_tons
-US_dry_quart = US_dry_gallon / 4 = US_dry_quarts = dry_quart = dry_quarts
-US_dry_pint = US_dry_gallon / 8 = US_dry_pints = dry_pint = dry_pints
-US_liquid_gallon = 3.785412e-3 * m ** 3 = US_liquid_gallons = liquid_gallon = liquid_gallons = gallon = gallons
-barrel = 42 * US_liquid_gallon = barrels = bbl
-firkin = barrel / 4 = firkins
-US_liquid_quart = US_liquid_gallon / 4 = US_liquid_quarts = liquid_quart = liquid_quarts = quart = quarts
-US_liquid_pint = US_liquid_gallon / 8 = US_liquid_pints = liquid_pint = liquid_pints = pint = pints = pt
-US_liquid_cup = US_liquid_gallon / 16 = US_liquid_cups = liquid_cup = liquid_cups = cup = cups
-US_liquid_gill = US_liquid_gallon / 32 = US_liquid_gills = liquid_gill = liquid_gills = gill = gills
-US_fluid_ounce = US_liquid_gallon / 128 = US_fluid_ounces = US_liquid_ounce = US_liquid_ounces = fluid_ounce = fluid_ounces = liquid_ounce = liquid_ounces = oz = floz
-tablespoon = US_fluid_ounce / 2 = tablespoons = Tbl = Tbsp = tbsp = Tblsp = tblsp
-fluid_dram = US_fluid_ounce / 8 = fluid_drams = fldr
-teaspoon = tablespoon / 3 = teaspoons = tsp
-UK_liquid_gallon = 4.546090e-3 * m ** 3 = UK_liquid_gallons
-UK_liquid_quart = UK_liquid_gallon / 4 = UK_liquid_quarts
-UK_liquid_pint = UK_liquid_gallon / 8 = UK_liquid_pints
-UK_liquid_cup = UK_liquid_gallon / 16 = UK_liquid_cups
-UK_liquid_gill = UK_liquid_gallon / 32 = UK_liquid_gills
-UK_fluid_ounce = UK_liquid_gallon / 160 = UK_fluid_ounces = UK_liquid_ounce = UK_liquid_ounces
+
+# unit of volume equal to a cubic meter, originally defined primarily
+# as a measure for firewood
+# [comment] exact
+stere = 1 * m ** 3 = _ = steres
+
+# unit of volume used for internal capacity of ships, equal to 100
+# cubic feet
+register_ton = 2.831685 * m ** 3 = _ = register_tons
+
+# unit of volume for dry measure in the US Customary system, equal to
+# 1/32 US bushel
+# [comment] exact
+US_dry_quart = US_dry_gallon / 4 = _ = US_dry_quarts = dry_quart = dry_quarts
+
+# unit of volume for dry measure in the US Customary system, equal to
+# 1/2 US dry quart
+# [comment] exact
+US_dry_pint = US_dry_gallon / 8 = _ = US_dry_pints = dry_pint = dry_pints
+
+# unit of volume for liquid measure in the US Customary system,
+# defined as 3.785412 liters
+US_liquid_gallon = 3.785412e-3 * m ** 3 = _ = US_liquid_gallons = liquid_gallon = liquid_gallons = gallon = gallons
+
+# unit of volume used by US and Canadian petroleum organizations
+# [comment] The following is the definition of the petroleum industry
+barrel = 42 * US_liquid_gallon = bbl = barrels
+
+# unit of volume whose exact quantity depends on the type of barrel on
+# which it is defined; in this table it is defined based on the oil
+# barrel used by the petroleum industry
+# [comment] The following is exact regardless of the definition of
+# "barrel"
+firkin = barrel / 4 = _ = firkins
+
+# unit of volume for liquid measure in the US Customary system, equal
+# to 1/4 liquid gallon
+# [comment] exact
+US_liquid_quart = US_liquid_gallon / 4 = _ = US_liquid_quarts = liquid_quart = liquid_quarts = quart = quarts
+
+# unit of volume for liquid measure in the US Customary system, equal
+# to 1/8 liquid gallon
+# [comment] exact
+US_liquid_pint = US_liquid_gallon / 8 = pt = US_liquid_pints = liquid_pint = liquid_pints = pint = pints
+
+# unit of volume for liquid measure in the US Customary system, equal
+# to 1/16 liquid gallon
+# [comment] exact
+US_liquid_cup = US_liquid_gallon / 16 = _ = US_liquid_cups = liquid_cup = liquid_cups = cup = cups
+
+# unit of volume for liquid measure in the US Customary system, equal
+# to 1/32 liquid gallon
+# [comment] exact
+US_liquid_gill = US_liquid_gallon / 32 = _ = US_liquid_gills = liquid_gill = liquid_gills = gill = gills
+
+# unit of volume for liquid measure in the US Customary system, equal
+# to 1/128 liquid gallon
+# [comment] exact
+US_fluid_ounce = US_liquid_gallon / 128 = oz = US_fluid_ounces = US_liquid_ounce = US_liquid_ounces = fluid_ounce = fluid_ounces = liquid_ounce = liquid_ounces = floz
+
+# unit of volume for liquid measure in the US Customary system, equal
+# to 1/2 liquid ounce
+# [comment] exact
+tablespoon = US_fluid_ounce / 2 = Tbl = tablespoons = Tbsp = tbsp = Tblsp = tblsp
+
+# unit of volume for liquid measure in the apothecary system, equal to
+# 1/8 liquid ounce
+# [comment] exact
+fluid_dram = US_fluid_ounce / 8 = fldr = fluid_drams
+
+# unit of volume defined as 1/3 tablespoon, the actual volume of which
+# can vary depending on the measurement system (but is based on the US
+# Customary system in this database)
+# [comment] exact
+teaspoon = tablespoon / 3 = tsp = teaspoons
+
+# unit of volume for liquid measure in the Imperial system
+# [comment] exact
+UK_liquid_gallon = 4.546090e-3 * m ** 3 = _ = UK_liquid_gallons
+
+# unit of volume for liquid measure in the Imperial system, equal to
+# 1/4 liquid gallon
+# [comment] exact
+UK_liquid_quart = UK_liquid_gallon / 4 = _ = UK_liquid_quarts
+
+# unit of volume for liquid measure in the Imperial system, equal to
+# 1/8 liquid gallon
+# [comment] exact
+UK_liquid_pint = UK_liquid_gallon / 8 = _ = UK_liquid_pints
+
+# unit of volume for liquid measure in the Imperial system, equal to
+# 1/16 liquid gallon
+# [comment] exact
+UK_liquid_cup = UK_liquid_gallon / 16 = _ = UK_liquid_cups
+
+# unit of volume for liquid measure in the Imperial system, equal to
+# 1/32 liquid gallon
+# [comment] exact
+UK_liquid_gill = UK_liquid_gallon / 32 = _ = UK_liquid_gills
+
+# unit of volume for liquid measure in the Imperial system, equal to
+# 1/160 liquid gallon
+# [comment] exact
+UK_fluid_ounce = UK_liquid_gallon / 160 = _ = UK_fluid_ounces = UK_liquid_ounce = UK_liquid_ounces
+
+# logarithmic unit used to compare the reflectivity (Z) of an unknown
+# remote object, to the reflective return created by a rain with a
+# density of a single drop with a diameter of 1 mm in every 1 m^3 of
+# air; is the base unit for "dBz", which is the typical logarithmic
+# unit for measuring atmospheric radar reflectivity; a value of 0 Bz
+# (0 dBz) corresponds to the return from a single cubic micron; a
+# value of 6 Bz (60 dBz) corresponds to extremely heavy rain.
 BZ = (1e-6 * m) ** 3; logbase: 10; logfactor: 10 = Bz
-shake = 1e-8 * s = shakes
-sidereal_day = 8.616409e4 * s = sidereal_days
-sidereal_hour = 3.590170e3 * s = sidereal_hours
-sidereal_minute = 5.983617e1 * s = sidereal_minutes
-sidereal_second = 0.9972696 * s = sidereal_seconds
-sidereal_year = 3.155815e7 * s = sidereal_years
-tropical_year = 3.15569259747e7 * s = tropical_years = year = years = yr
-lunar_month = 29.530589 * day = lunar_months
-common_year = 365 * day = common_years
-leap_year = 366 * day = leap_years
-Julian_year = 365.25 * day = Julian_years
-Gregorian_year = 365.2425 * day = Gregorian_years
-sidereal_month = 27.321661 * day = sidereal_months
-tropical_month = 27.321582 * day = tropical_months
-fortnight = 14 * day = fortnights
-week = 7 * day = weeks
-jiffy = 0.01 * s = jiffies
-eon = 1e9 * year = eons
-month = year / 12 = months
-sverdrup = 1e6 * m ** 3 / s = sverdrups
-standard_free_fall = 9.806650 * m / s ** 2 = standard_free_falls
-gravity = standard_free_fall = gravities
-conventional_water = gravity ** 1000 * kg / m ** 3 = conventional_waters = water = waters = H2O = h2o
-water_4C = gravity * 999.972 * kg / m ** 3 = waters_4C = water_39F = waters_39F
-water_60F = gravity * 999.001 * kg / m ** 3 = waters_60F
-mercury_0C = gravity * 13595.10 * kg / m ** 3 = mercuries_0C = mercury_32F = mercuries_32F = conventional_mercury = conventional_mercuries = Hg
-mercury_60F = gravity * 13556.8 * kg / m ** 3 = mercuries_60F
-force = standard_free_fall = forces
-dyne = 1e-5 * N = dynes
-pond = 9.806650e-3 * N = ponds
-force_kilogram = 9.806650 * N = force_kilograms = kilogram_force = kilograms_force = kgf
-force_ounce = 2.780139e-1 * N = force_ounces = ounce_force = ounces_force = ozf
-force_pound = 4.4482216152605 * N = force_pounds = pound_force = pounds_force = lbf
-poundal = 1.382550e-1 * N = poundals
-gram_force = gram * force = grams_force = force_gram = force_grams = gf
-force_ton = 2000 * force_pound = force_tons = ton_force = tons_force
-kip = 1000 * lbf = kips
-standard_atmosphere = 1.01325e5 * Pa = standard_atmospheres = atmosphere = atmospheres = atm
-technical_atmosphere = 1 * kg * gravity / cm ** 2 = technical_atmospheres = at
+
+# unit of time approximating the lifetime of an individual neutron,
+# useful for describing very brief durations, e.g., in nuclear physics
+shake = 1e-8 * s = _ = shakes
+
+# unit of time that it takes the earth to complete one revolution with
+# respect to a star, roughly 23 hours, 56 minutes, 4 seconds
+sidereal_day = 8.616409e4 * s = _ = sidereal_days
+
+# unit of time equal to 1/24 sidereal day
+sidereal_hour = 3.590170e3 * s = _ = sidereal_hours
+
+# unit of time equal to 1/60 sidereal hour
+sidereal_minute = 5.983617e1 * s = _ = sidereal_minutes
+
+# unit of time equal to 1/60 sidereal minute
+sidereal_second = 0.9972696 * s = _ = sidereal_seconds
+
+# unit of time for the earth to make one complete revolution around
+# the sun, relative to the fixed stars
+sidereal_year = 3.155815e7 * s = _ = sidereal_years
+
+# unit of time; Interval between 2 successive passages of sun through
+# vernal equinox (365.242198781 days). See
+# http://www.ast.cam.ac.uk/pubinfo/leaflets/,
+# http://aa.usno.navy.mil/AA/, and
+# http://adswww.colorado.edu/adswww/astro_coord.html
+tropical_year = 3.15569259747e7 * s = yr = tropical_years = year = years
+
+# unit of time equal to the average time between successive new or
+# full moons; equal to approximately 29 days, 12 hours, 44 minutes
+lunar_month = 29.530589 * day = _ = lunar_months
+
+# unit of time corresponding to a 'normal' calendar year, that is, one
+# without insertion of a leap day
+common_year = 365 * day = _ = common_years
+
+# unit of time corresponding to a calendar year with a leap day
+# inserted
+leap_year = 366 * day = _ = leap_years
+
+# unit of time recognized by the International Astronomical Union for
+# use in astronomy, defined as 365.25 days of 86400 seconds
+Julian_year = 365.25 * day = _ = Julian_years
+
+# unit of time based on the Gregorian Calendar, the one commonly used
+# today; approximates the tropical year as 365 + 97/400 days
+Gregorian_year = 365.2425 * day = _ = Gregorian_years
+
+# unit of time based on 1/12 of the sidereal year
+sidereal_month = 27.321661 * day = _ = sidereal_months
+
+# unit of time based on 1/12 of the tropical year
+tropical_month = 27.321582 * day = _ = tropical_months
+
+# unit of time commonly defined as 14 days
+fortnight = 14 * day = _ = fortnights
+
+# unit of time commonly defined as 7 days
+week = 7 * day = _ = weeks
+
+# unit of time used in computer animation as a method of defining
+# playback rate
+# [comment] multiple values have been proposed for the amount of time
+# represented by a 'jiffy'
+jiffy = 0.01 * s = _ = jiffies
+
+# unit of time defined in astronomy as 1 billion years
+eon = 1e9 * year = _ = eons
+
+# unit of time defined as the average length of time for a calendar
+# month
+month = year / 12 = _ = months
+
+# unit of volume transport, used almost exclusively to measure the
+# volumetric rate of ocean currents
+# [comment] exact
+sverdrup = 1e6 * m ** 3 / s = _ = sverdrups
+
+# unit of acceleration corresponding to the nominal gravitational
+# acceleration of an object in a vacuum near the surface of earth
+# [comment] exact
+standard_free_fall = 9.806650 * m / s ** 2 = _ = standard_free_falls
+
+# unit of acceleration synonymous with standard rate of free fall (in
+# earth's gravity)
+# [comment] should be local
+gravity = standard_free_fall = _ = gravities
+
+# specifies the acceleration at the earth's surface of a substance
+# with the density of water
+# [comment] exact
+conventional_water = gravity * 1000 * kg / m ** 3 = H2O = conventional_waters = water = waters = h2o
+
+# specifies the acceleration at the earth's surface of a substance
+# with the density of water at 4 degrees C
+water_4C = gravity * 999.972 * kg / m ** 3 = _ = waters_4C = water_39F = waters_39F
+
+# specifies the acceleration at the earth's surface of a substance
+# with the density of water at 60 degrees F
+water_60F = gravity * 999.001 * kg / m ** 3 = _ = waters_60F
+
+# specifies the acceleration at the earth's surface of a substance
+# with the density of mercury at 0 degrees C
+mercury_0C = gravity * 13595.10 * kg / m ** 3 = Hg = mercuries_0C = mercury_32F = mercuries_32F = conventional_mercury = conventional_mercuries
+
+# specifies the acceleration at the earth's surface of a substance
+# with the density of mercury at 60 degrees F
+mercury_60F = gravity * 13556.8 * kg / m ** 3 = _ = mercuries_60F
+
+# unit of force equivalent to the force generated by the effect of
+# gravity
+force = standard_free_fall = _ = forces
+
+# unit of force, equal to the force that produces an acceleration of
+# one centimeter per second per second on a mass of one gram (the
+# standard centimeter-gram-second unit of force)
+# [comment] exact
+dyne = 1e-5 * N = _ = dynes
+
+# unit of force, equal to the magnitude of the force exerted by one
+# gram of mass in a 9.80665 m/s2 gravitational field
+# [comment] exact
+pond = 9.806650e-3 * N = _ = ponds
+
+# unit of force, equal to the magnitude of the force exerted by one
+# kilogram of mass in a 9.80665 m/s2 gravitational field
+# [comment] exact
+force_kilogram = 9.806650 * N = kgf = force_kilograms = kilogram_force = kilograms_force
+
+# unit of force, equal to the magnitude of the force exerted by one
+# ounce of mass in a 9.80665 m/s2 gravitational field
+# [comment] exact
+force_ounce = 2.780139e-1 * N = ozf = force_ounces = ounce_force = ounces_force
+
+# unit of force, equal to the magnitude of the force exerted by one
+# pound of mass in a 9.80665 m/s2 gravitational field
+# [comment] exact
+force_pound = 4.4482216152605 * N = lbf = force_pounds = pound_force = pounds_force
+
+# unit of force, that which is necessary to accelerate 1 pound-mass to
+# 1 foot per second per second
+# [comment] exact
+poundal = 1.382550e-1 * N = _ = poundals
+
+# unit of force, equal to the magnitude of the force exerted by one
+# gram of mass in a 9.80665 m/s2 gravitational field
+# [comment] exact
+gram_force = gram * force = gf = grams_force = force_gram = force_grams
+
+# unit of force, equal to the magnitude of the force exerted by one
+# ton of mass in a 9.80665 m/s2 gravitational field (specifically a
+# short ton of mass)
+# [comment] exact
+force_ton = 2000 * force_pound = _ = force_tons = ton_force = tons_force
+
+# unit of force, equal to the magnitude of the force exerted by one
+# thousand pounds of mass in a 9.80665 m/s2 gravitational field
+# [comment] exact
+kip = 1000 * lbf = _ = kips
+
+# unit of pressure, an international reference pressure intended to
+# represent the mean atmospheric pressure at mean sea level at the
+# latitude of Paris, France
+# [comment] exact
+standard_atmosphere = 1.01325e5 * Pa = atm = standard_atmospheres = atmosphere = atmospheres
+
+# unit of pressure equal to one kilogram force per square centimeter
+# [comment] exact; note that the symbol 'at' clashes with that of the
+# katal ('kat'), the SI unit of catalytic activity
+technical_atmosphere = 1 * kg * gravity / cm ** 2 = at = technical_atmospheres
+
+# unit of pressure derived from pressure head calculations using
+# metrology; represents the pressure exerted by a column of water of 1
+# cm height at 4 degrees C
 cm_H2O = cm * H2O = cmH2O
-inch_H2O_39F = inch * water_39F = inches_H2O_39F
-inch_H2O_60F = inch * water_60F = inches_H2O_60F
-foot_water = foot * water = feet_water = foot_H2O = feet_H2O = footH2O = feetH2O = ftH2O = fth2o
+
+# unit of pressure representing the pressure exerted by a column of
+# water of 1 inch height at 39 degrees F
+# [comment] exact
+inch_H2O_39F = inch * water_39F = _ = inches_H2O_39F
+
+# unit of pressure representing the pressure exerted by a column of
+# water of 1 inch height at 60 degrees F
+# [comment] exact
+inch_H2O_60F = inch * water_60F = _ = inches_H2O_60F
+
+# unit of pressure representing the pressure exerted by a column of
+# water of 1 foot height at 4 degrees C
+foot_water = foot * water = ftH2O = feet_water = foot_H2O = feet_H2O = footH2O = feetH2O = fth2o
+
+# unit of pressure representing the pressure exerted by a column of
+# mercury of 1 cm height at 0 degrees C
 cm_Hg = cm * Hg = cmHg
-millimeter_Hg_0C = mm * mercury_0C = millimeters_Hg_0C
-inch_Hg_32F = inch * mercury_32F = inches_Hg_32F
-inch_Hg_60F = inch * mercury_60F = inches_Hg_60F
-millimeter_Hg = mm * Hg = millimeters_Hg = torr = torrs = mm_Hg = mm_hg = mmHg = mmhg
-inch_Hg = inch * Hg = inches_Hg = in_Hg = inHg
+
+# unit of pressure representing the pressure exerted by a column of
+# mercury of 1 mm height at 0 degrees C
+# [comment] exact
+millimeter_Hg_0C = mm * mercury_0C = _ = millimeters_Hg_0C
+
+# unit of pressure representing the pressure exerted by a column of
+# mercury of 1 inch height at 32 degrees F
+# [comment] exact
+inch_Hg_32F = inch * mercury_32F = _ = inches_Hg_32F
+
+# unit of pressure representing the pressure exerted by a column of
+# mercury of 1 inch height at 60 degrees F
+# [comment] exact
+inch_Hg_60F = inch * mercury_60F = _ = inches_Hg_60F
+
+# unit of pressure representing the pressure exerted by a column of
+# mercury of 1 mm height at 0 degrees C; approximately (within
+# 0.000015%, generally below measurement error) 1 Torr, which is 1/760
+# standard atmospheric pressure
+millimeter_Hg = mm * Hg = mm_Hg = millimeters_Hg = torr = torrs = mm_hg = mmHg = mmhg
+
+# unit of pressure representing the pressure exerted by a column of
+# mercury of 1 inch height at 0 degrees C
+inch_Hg = inch * Hg = in_Hg = inches_Hg = inHg
+
+# unit of pressure representing the pressure exerted, due to gravity,
+# by a one-pound mass, of area one square inch; commonly referred to
+# as "pounds per square inch"
+# [comment] exact
 psi = 1 * pound * gravity / in ** 2
+
+# unit of pressure representing the pressure exerted, due to gravity,
+# by a 1000-pound mass, of area one square inch
+# [comment] exact
 ksi = kip / in ** 2
-barie = 0.1 * N / m ** 2 = baries = barye = baryes
+
+# unit of pressure equal to one dyne per square centimeter
+# [comment] exact
+barie = 0.1 * N / m ** 2 = _ = baries = barye = baryes
+
+# logarithmic unit used to compare the sound pressure of an unknown
+# sound to a standard reference sound pressure; is the base unit for
+# "dB_SPL", a more typical logarithmic unit for measuring sound
+# pressure (the SI unit for sound pressure is pascal); the standard
+# reference sound pressure in air or other gases is 20 microPascal,
+# which is usually considered the threshold of human hearing (at 1
+# kHz)
+# [comment] sound pressure level
 B_SPL = 20e-6 * Pa; logbase: 10; logfactor: 10
-poise = 1e-1 * Pa * s = poises
-stokes = 1e-4 * m ** 2 / s = stokeses = St
-rhe = 10 / (Pa * s) = rhes
-erg = 1e-7 * J = ergs
-IT_Btu = 1.05505585262e3 * J = IT_Btus = Btu = Btus
-EC_therm = 1.05506e8 * J = EC_therms
-thermochemical_calorie = 4.184000 * J = thermochemical_calories
-IT_calorie = 4.1868 * J = IT_calories = calorie = calories = cal
-TNT = 4.184 * MJ / kg
-ton_TNT = 4.184e9 * J = tons_TNT
-US_therm = 1.054804e8 * J = US_therms = therm = therms = thm
-watthour = watt * hour = watthours
+
+# unit of dynamic viscosity, corresponding to 0.1 pascal-second
+# (pascal-second: a fluid placed between two plates, when one plate is
+# pushed sideways with a shear stress of one pascal, moves a distance
+# equal to the thickness of the layer between the plates in one
+# second)
+# [comment] exact
+poise = 1e-1 * Pa * s = _ = poises
+
+# unit of kinematic viscosity, measuring the ratio of the dynamic
+# viscosity to the density of the fluid; water at 20 degrees C has a
+# kinematic viscosity about 100 stokes, or more cmomonly, 1 cSt
+# [comment] exact
+stokes = 1e-4 * m ** 2 / s = St = stokeses
+
+# unit of fluidity (reciprocal of velocity), measured in reciprocal
+# poise
+# [comment] exact
+rhe = 10 / (Pa * s) = _ = rhes
+
+# unit of work, equal to the amount of work done by a force of one
+# dyne exerted for a distance of one centimeter (in CGS base units,
+# one gram centimeter-squared per second-squared)
+# [comment] exact
+erg = 1e-7 * J = _ = ergs
+
+# unit of energy, equal to the energy needed to cool or heat one pound
+# of water by one degree F; this uses the International Steam Table
+# (IT) calorie , defined by the Fifth International Conference on the
+# properties of Steam (1956)
+# [comment] exact
+IT_Btu = 1.05505585262e3 * J = _ = IT_Btus = Btu = Btus
+
+# unit of energy legally defined by the Council Directive of 20
+# December 1979, Council of the European Communities (now the European
+# Union, EU);.roughly equal to 100,000 IT_Btu
+# [comment] exact (reference NIST Guide to SI Units)
+EC_therm = 1.05506e8 * J = _ = EC_therms
+
+# unit of heat energy defined as 4.184 Joules exactly (International
+# Standard ISO 31-4: Quantities and units, Part 4: Heat);
+# approximately the energy needed to increase the temperature of 1
+# gram of water by 1 C
+# [comment] exact
+thermochemical_calorie = 4.184000 * J = _ = thermochemical_calories
+
+# unit of heat energy used in thermochemistry, the International Steam
+# Table (IT) calorie defined by the Fifth International Conference on
+# the properties of Steam (1956)
+# [comment] exact
+IT_calorie = 4.1868 * J = cal = IT_calories = calorie = calories
+
+# unit of energy; approximately the energy released by the detonation
+# of a given amount of mass of TNT
+# [comment] by definition
+TNT = 4.184 * MJ / kg = _
+
+# unit of energy; approximately the energy released by the detonation
+# of a 1000 kilograms of TNT
+# [comment] by definition
+ton_TNT = 4.184e9 * J = _ = tons_TNT
+
+# unit of energy legally defined in the U.S. Federal Register of July
+# 27, 1968, and the legal unit used by the U.S. natural gas industry
+# [comment] exact
+US_therm = 1.054804e8 * J = thm = US_therms = therm = therms
+
+# unit of energy equal to the product of the power in watts and the
+# time in hours (if the energy is being transmitted or used at a
+# constant rate (power) over a period of time); one watt is equal to 1
+# Joule/second
+# [comment] exact
+watthour = watt * hour = _ = watthours
+
+# unit of energy corresponding to 1 billion electron volts (eV)
+# [comment] exact
 bev = 1e9 * eV
-voltampere = V * A = voltamperes = VA
-boiler_horsepower = 9.80950e3 * W = boiler_horsepowers
-shaft_horsepower = 7.456999e2 * W = shaft_horsepowers = horsepower = horsepowers = hp
-metric_horsepower = 7.35499e2 * W = metric_horsepowers
-electric_horsepower = 7.460000e2 * W = electric_horsepowers
-water_horsepower = 7.46043e2 * W = water_horsepowers
-UK_horsepower = 7.4570e2 * W = UK_horsepowers
-refrigeration_ton = 12000 * Btu / hr = refrigeration_tons = ton_of_refrigeration = tons_of_refrigeration
+
+# unit of electric power equal to the product of one volt and one
+# ampere, equivalent to one watt for direct current systems and a unit
+# of apparent power for alternating current systems
+# [comment] exact
+voltampere = V * A = VA = voltamperes
+
+# unit of power equal to the power required to evaporate 34.5 lb of
+# fresh water at 212 degrees F in one hour; describes a boiler's
+# capacity to deliver steam to a steam engine
+boiler_horsepower = 9.80950e3 * W = _ = boiler_horsepowers
+
+# unit of power originally corresponding to the estimated typical
+# power of draft horses, calculated as lifting 33000 pounds one foot
+# in one minute (550 foot-pounds/second)
+# [comment] shaft_horsepower is a unit of power as delivered by a
+# drive shaft at its output (e.g., of a ship, aircraft engine, or
+# helicopter rotor; typically not automobiles due to drive train
+# losses)
+shaft_horsepower = 7.456999e2 * W = hp = shaft_horsepowers = horsepower = horsepowers
+
+# unit of power corresponding to a calculation of 75 kilogram-
+# meters/second
+metric_horsepower = 7.35499e2 * W = _ = metric_horsepowers
+
+# unit of power defined in the International System of Units as
+# exactly 746 W; generally used for power used by electrical machines
+# [comment] exact
+electric_horsepower = 7.460000e2 * W = _ = electric_horsepowers
+
+# unit of power used in the U.S. primarily in rating pumps; calculated
+# as pump capacity Q (gallons per minute) times pump pressure ("head")
+# of P (feet of head), divided by 3956 water horsepower; the
+# calculation assumes water density is 8 1/3 pounds per U.S. gallon,
+# which is not exact.
+water_horsepower = 7.46043e2 * W = _ = water_horsepowers
+
+# unit of power originally corresponding to the estimated typical
+# power of draft horses, calculated as lifting 33000 pounds one foot
+# in one minute (550 foot-pounds/second), as calculated/specified in
+# the United Kingdom
+UK_horsepower = 7.4570e2 * W = _ = UK_horsepowers
+
+# unit of power describing the heat-extraction capacity of cooling
+# equipment; defined as the heat absorbed by melting 1 short ton of
+# pure ice at 0 degrees C in 24 hours
+refrigeration_ton = 12000 * Btu / hr = _ = refrigeration_tons = ton_of_refrigeration = tons_of_refrigeration
+
+# unit of power in decibel scale, referenced to 1 watt; the power in
+# bel-watts is equal to 100 times the base 10 logarithm of the power
+# in watts (making decibel-watt, the more common term, 10 times the
+# base 10 log of the power in watts)
 BW = 1 * W; logbase: 10; logfactor: 10
+
+# unit of power in decibel scale, referenced to 1 milliwatt; the power
+# in bel-milliwatts is equal to 100 times the base 10 logarithm of the
+# power in milliwatts (making decibel-milliwatt, the more common term,
+# 10 times the base 10 log of the power in milliwatts)
 Bm = 1 * mW; logbase: 10; logfactor: 10
-clo = 1.55e-1 * K * m ** 2 / W = clos
-abampere = 10 * A = abamperes
-gilbert = 7.957747e-1 * A = gilberts
-statampere = 3.335640e-10 * A = statamperes
-biot = 10 * A = biots
-abfarad = 1e9 * F = abfarads
-abhenry = 1e-9 * H = abhenries
-abmho = 1e9 * S = abmhos
-abohm = 1e-9 * ohm = abohms
-abvolt = 1e-8 * V = abvolts
+
+# unit of thermal resistance used in describing the insulating value
+# of clothing; the amount of thermal resistance needed to maintain in
+# comfort a resting subject in a normally ventilated room (air
+# movement 10 cm/sec) at a temperature of 20 degrees C and a humidity
+# less than 50%
+clo = 1.55e-1 * K * m ** 2 / W = _ = clos
+
+# basic unit of electricity in the electromagnetic CGS system of units
+abampere = 10 * A = _ = abamperes
+
+# unit of electricity/magnetism
+gilbert = 7.957747e-1 * A = _ = gilberts
+
+# unit of electricity/magnetism
+statampere = 3.335640e-10 * A = _ = statamperes
+
+# basic unit of electricity in the electromagnetic CGS system of units
+# (same as abampere), named after Jean-Baptiste Biot
+biot = 10 * A = _ = biots
+
+# unit of electricity/magnetism
+# [comment] exact
+abfarad = 1e9 * F = _ = abfarads
+
+# unit of electricity/magnetism
+# [comment] exact
+abhenry = 1e-9 * H = _ = abhenries
+
+# unit of electricity/magnetism
+# [comment] exact
+abmho = 1e9 * S = _ = abmhos
+
+# unit of electricity/magnetism
+# [comment] exact
+abohm = 1e-9 * ohm = _ = abohms
+
+# unit of electricity/magnetism
+# [comment] exact
+abvolt = 1e-8 * V = _ = abvolts
+
+# unit of electricity/magnetism
 e = 1.602176487e-19 * C
-chemical_faraday = 9.64957e4 * C = chemical_faradays
-physical_faraday = 9.65219e4 * C = physical_faradays
-C12_faraday = 9.648531e4 * C = C12_faradays = faraday = faradays
-gamma = 1e-9 * T = gammas
-gauss = 1e-4 * T = gausses
-maxwell = 1e-8 * Wb = maxwells
-oersted = 7.957747e1 * A / m = oersteds = Oe
-statcoulomb = 3.335640e-10 * C = statcoulombs
-statfarad = 1.112650e-12 * F = statfarads
-stathenry = 8.987554e11 * H = stathenries
-statmho = 1.112650e-12 * S = statmhos
-statohm = 8.987554e11 * ohm = statohms
-statvolt = 2.997925e2 * V = statvolts
-unit_pole = 1.256637e-7 * Wb = unit_poles
+
+# unit of electricity/magnetism
+chemical_faraday = 9.64957e4 * C = _ = chemical_faradays
+
+# unit of electricity/magnetism
+physical_faraday = 9.65219e4 * C = _ = physical_faradays
+
+# unit of electricity/magnetism
+C12_faraday = 9.648531e4 * C = _ = C12_faradays = faraday = faradays
+
+# unit of electricity/magnetism
+# [comment] exact
+gamma = 1e-9 * T = _ = gammas
+
+# unit of electricity/magnetism
+# [comment] exact
+gauss = 1e-4 * T = _ = gausses
+
+# unit of electricity/magnetism
+# [comment] exact
+maxwell = 1e-8 * Wb = _ = maxwells
+
+# unit of electricity/magnetism
+oersted = 7.957747e1 * A / m = Oe = oersteds
+
+# unit of electricity/magnetism
+statcoulomb = 3.335640e-10 * C = _ = statcoulombs
+
+# unit of electricity/magnetism
+statfarad = 1.112650e-12 * F = _ = statfarads
+
+# unit of electricity/magnetism
+stathenry = 8.987554e11 * H = _ = stathenries
+
+# unit of electricity/magnetism
+statmho = 1.112650e-12 * S = _ = statmhos
+
+# unit of electricity/magnetism
+statohm = 8.987554e11 * ohm = _ = statohms
+
+# unit of electricity/magnetism
+statvolt = 2.997925e2 * V = _ = statvolts
+
+# unit of electricity/magnetism
+unit_pole = 1.256637e-7 * Wb = _ = unit_poles
+
+# unit of electricity/magnetism
 BV = 1 * V; logbase: 10; logfactor: 10
+
+# unit of electricity/magnetism
+# [comment] rms voltage
 Bv = 0.775 * V; logbase: 10; logfactor: 10
+
+# unit of electricity/magnetism
+# [comment @ BµV] uses MICRO SIGN
 BµV = 1e-6 * V; logbase: 10; logfactor: 10
-degree_rankine = K / 1.8 = degrees_rankine = degreeR = degreesR = degree_R = degrees_R = degR = degsR = deg_R = degs_R = °R
-fahrenheit = ° * R; offset: 459.67 = fahrenheits = degree_fahrenheit = degrees_fahrenheit = degreeF = degreesF = degree_F = degrees_F = degF = degsF = deg_F = degs_F = °F = ℉
-footcandle = 1.076391e-1 * lx = footcandles
-footlambert = 3.426259 * cd / m ** 2 = footlamberts
-lambert = (1e4 / pi) * cd / m ** 2 = lamberts
-stilb = 1e4 * cd / m ** 2 = stilbs = sb
-phot = 1e4 * lm / m ** 2 = phots = ph
-nit = 1 * cd / m ** 2 = nits = nt
-langley = 4.184000e4 * J / m ** 2 = langleys
-blondel = cd / (pi * m ** 2) = blondels = apostilb = apostilbs
-kayser = 100 / m = kaysers
-geopotential = gravity = geopotentials = dynamic = dynamics = gp
-work_year = 2056 * hours = work_years
-work_month = work_year / 12 = work_months
-potential_vorticity_unit = 1e-6 * m ** 2 * s ** -1 * K * kg ** -1 = potential_vorticity_units = PVU
-count = 1 = counts
-bit = 1 = bits
-octet = 8 = octets = byte = bytes
-dobson = 446.2 * micromoles / meter ** 2 = dobsons = DU
-molecule = 1 / avogadro_constant = _ = molec = molecs = nucleon = nucleons = nuc = nucs = molecules
+
+# unit of thermodynamic temperature
+# [comment @ °R] DEGREE SIGN
+degree_rankine = K / 1.8 = °R = degrees_rankine = degreeR = degreesR = degree_R = degrees_R = degR = degsR = deg_R = degs_R
+
+# unit of thermodynamic temperature
+# [comment @ °F] DEGREE SIGN
+# [comment @ ℉] DEGREE FAHRENHEIT
+fahrenheit = °R; offset: 459.67 = °F = fahrenheits = ℉ = degree_fahrenheit = degrees_fahrenheit = degreeF = degreesF = degree_F = degrees_F = degF = degsF = deg_F = degs_F
+
+# unit of illumination
+footcandle = 1.076391e-1 * lx = _ = footcandles
+
+# unit of illumination
+# [comment] exact
+footlambert = 3.426259 * cd / m ** 2 = _ = footlamberts
+
+# unit of illumination
+# [comment] exact
+lambert = (1e4 / pi) * cd / m ** 2 = _ = lamberts
+
+# unit of illumination
+# [comment] exact
+stilb = 1e4 * cd / m ** 2 = sb = stilbs
+
+# unit of illumination
+# [comment] exact
+phot = 1e4 * lm / m ** 2 = ph = phots
+
+# unit of illumination
+# [comment] exact
+nit = 1 * cd / m ** 2 = nt = nits
+
+# unit of illumination
+# [comment] exact
+langley = 4.184000e4 * J / m ** 2 = _ = langleys
+
+# unit of illumination
+# [comment] exact
+blondel = cd / (pi * m ** 2) = _ = blondels = apostilb = apostilbs
+
+# [comment] exact
+kayser = 100 / m = _ = kaysers
+
+# [comment] exact
+geopotential = gravity = gp = geopotentials = dynamic = dynamics
+
+# [comment] exact
+work_year = 2056 * hours = _ = work_years
+
+# [comment] exact
+work_month = work_year / 12 = _ = work_months
+
+# [comment] exact
+potential_vorticity_unit = 1e-6 * m ** 2 * s ** -1 * K * kg ** -1 = PVU = potential_vorticity_units
+
+count = 1 = _ = counts
+
+bit = 1 = _ = bits
+
+octet = 8 = _ = octets = byte = bytes
+
+dobson = 446.2 * micromoles / meter ** 2 = DU = dobsons
+
+molecule = 1 / avogadro_constant = _ = molecules = molec = molecs = nucleon = nucleons = nuc = nucs
