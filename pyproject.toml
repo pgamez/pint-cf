@@ -37,6 +37,9 @@ version = { attr = "pint_cf.__version__" }
 [tool.setuptools.packages.find]
 where = ["src/"]
 
+[tool.setuptools.package-data]
+"*" = ["*.txt"]
+
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "S"]
 
