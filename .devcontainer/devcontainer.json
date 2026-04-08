@@ -23,7 +23,8 @@
 				"tamasfe.even-better-toml",
 				"ms-vscode.live-server",
 				"redhat.vscode-yaml",
-				"dirk-thomas.vscode-lark"
+				"dirk-thomas.vscode-lark",
+				"github.vscode-github-actions"
 			],
 			"settings": {
 				"python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python"
