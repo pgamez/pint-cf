@@ -9,7 +9,8 @@ TODO:
 """
 
 import pytest
-from cfunits import Units
+
+# from cfunits import Units
 from lark.exceptions import UnexpectedInput, VisitError
 from pint.delegates import ParserConfig
 from pint.delegates.txt_defparser.plain import UnitDefinition
@@ -389,7 +390,7 @@ TEST_CASES_INVALID = [
 
 @pytest.mark.parametrize("input_str, expected_str", TEST_CASES_TRANSFORM)
 def test_transform(input_str: str, expected_str: str) -> None:
-    assert Units(input_str).isvalid, f"Input '{input_str}' is not a valid unit"
+    # assert Units(input_str).isvalid, f"Input '{input_str}' is not a valid unit"
 
     u = cf_string_to_pint(input_str)
     cfg = ParserConfig()

@@ -1,4 +1,6 @@
 __version__ = "0.1.0"
-__all__ = ["setup_cf_registry"]
+__all__ = [
+    "cf_unitregistry",
+]
 
-from .units import setup_cf_registry
+from .units import cf_unitregistry
