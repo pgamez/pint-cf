@@ -15,9 +15,9 @@ import defusedxml.ElementTree as ET
 from pint_cf.parser import cf_string_to_pint
 
 NO_SYMBOL = "_"
-_NAME_SIZE = 128
+NAME_SIZE = 128
 
-_DIMENSIONS = {
+DIMENSIONS = {
     "meter": "[length]",
     "kilogram": "[mass]",
     "second": "[time]",
@@ -80,7 +80,7 @@ class Name(BaseElement):
 
         length = len(singular)
 
-        if length + 3 >= _NAME_SIZE:
+        if length + 3 >= NAME_SIZE:
             return None
 
         if length == 0:
@@ -355,7 +355,7 @@ class _UnitElement:
             symbol = _parse_symbol(symbol)
 
         if is_base and name is not None:
-            definition = _DIMENSIONS[name.singular]
+            definition = DIMENSIONS[name.singular]
         elif is_dimensionless:
             definition = "[]"
         elif definition:
@@ -546,17 +546,5 @@ def gen_pint_registry(f: TextIO, write_doc: bool = True) -> None:
 
                     print(unit, file=out)
 
-    # def __str__(self) -> str:
-    #     line = [self.name.singular, self.definition, str(self.symbol)]
-
-    #     if self.name.plural:
-    #         line.append(self.name.plural)
-
-    #     line += [str(alias) for alias in self.aliases]
-    #     entry = " = ".join(line)
-
-    #     if self.description:
-    #         comment = textwrap.fill(self.description, subsequent_indent="# ")
-    #         return f"\n# {comment}\n{entry}"
-
-    #     return entry
+                case _:
+                    raise ValueError(f"Unexpected element: {child.tag}")
