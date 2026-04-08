@@ -61,12 +61,11 @@ class CFFormatter(DefaultFormatter):
         ) or "1"
 
 
-def _register_cf_formatter(ureg: pint.UnitRegistry) -> pint.UnitRegistry:
+def _register_cf_formatter(ureg: pint.UnitRegistry) -> None:
     """Register the CF formatter in both registry-local and Pint-global maps."""
     formatter = CFFormatter(ureg)
     ureg.formatter._formatters[_CF_FORMATTER_NAME] = formatter
     REGISTERED_FORMATTERS[_CF_FORMATTER_NAME] = formatter
-    return ureg
 
 
 def cf_unitregistry() -> pint.UnitRegistry:
@@ -83,10 +82,5 @@ def cf_unitregistry() -> pint.UnitRegistry:
     # Deactivate Pint's native pluralization, since UDUNITS2 already
     # defines plural forms for units
     ureg._suffixes = {"": ""}
-    return _register_cf_formatter(ureg)
-
-
-def cf_set_application_registry() -> None:
-    """Create and set the CF registry as the Pint application registry."""
-    ureg = cf_unitregistry()
-    pint.set_application_registry(ureg)
+    _register_cf_formatter(ureg)
+    return ureg

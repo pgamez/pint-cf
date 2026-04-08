@@ -5,24 +5,30 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pint-cf"
 authors = [{ name = "Pedro Gámez" }]
-description = "CF-compliant unit registry for Pint"
+description = "CF-compliant unit registry and formatter for Pint"
 dynamic = ["version"]
 readme = "README.md"
 requires-python = ">=3.12"
-license = { text = "MIT" }
-classifiers = ["License :: OSI Approved :: MIT License"]
-dependencies = ["Pint>=0.25", "lark"]
+license = "MIT"
+classifiers = [
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = ["Pint>=0.25.2", "lark"]
 
-[project.optional-dependencies]
+[dependency-groups]
 tests = ["pytest", "pytest-cov"]
-docs = ["sphinx", "pydata-sphinx-theme", "myst-parser"]
+build = ["build", "twine"]
+tools = ["defusedxml"]
 dev = [
-    "pint-cf[tests,docs,build]",
-    "defusedxml",
-    "ruff",
-    "prek",
+    { include-group = "tests" },
+    { include-group = "tools" },
+    { include-group = "build" },
     "cf-units",
     "cfunits",
+    "prek",
+    "ruff",
 ]
 
 [tool.setuptools.dynamic]
@@ -41,11 +47,7 @@ select = ["E", "F", "I", "B", "S"]
 minversion = "6.0"
 # addopts = ""
 testpaths = ["tests"]
-pythonpath = "src"
-
-# [dependency-groups]
-# dev = ["prek>=0.3.3"]
-build = ["build", "twine"]
+pythonpath = ["src"]
 
 [tool.coverage.run]
 omit = ["tests/*", "*/__init__.py"]
