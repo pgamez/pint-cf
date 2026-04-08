@@ -1,7 +1,5 @@
 # pint-cf
 
-**THIS PROJECT IS UNDER DEVELOPMENT**
-
 This is a Pint extension that implements the CF-compliant UnitRegistry and formatter.
 
 ## Features
@@ -22,16 +20,22 @@ Known limitations:
 ## Usage
 
 ```python
-import pint
-from pint_cf.units import setup_cf_registry
+from pint_cf import cf_unitregistry
 
-
-setup_cf_registry()
-ureg = pint.get_application_registry()
-print(ureg.get())  # <pint.registry.UnitRegistry object at 0x7f1337144080>
+ureg = cf_unitregistry()
 
 q = ureg('10 meters per second^2').to('km s-2')
 
 print(f"{q:cf}")   # 0.01 kilometer-second^-2
 print(f"{q:~cf}")  # 0.01 km/s2
+```
+
+If you prefer Pint's global application registry:
+
+```python
+import pint
+from pint_cf import cf_set_application_registry
+
+cf_set_application_registry()
+ureg = pint.get_application_registry()
 ```

@@ -5,7 +5,6 @@ Converts Lark parse trees from udunits2.lark into strings
 that can be parsed directly by pint.
 """
 
-import re
 from pathlib import Path
 
 from lark import Lark, Token, Transformer, v_args
@@ -26,10 +25,44 @@ _SUPERSCRIPT_MAP = {
     "⁻": "-",
 }
 
+_ANGLE_SYMBOL_REPLACEMENTS = {
+    "'": "arc_minute",
+    '"': "arc_second",
+}
+
 
 def _decode_superscript(s: str) -> str:
     """Convert unicode superscript characters to regular digits."""
     return "".join(_SUPERSCRIPT_MAP.get(c, c) for c in s)
+
+
+def _normalize_identifier(name: str) -> str:
+    """Normalize UDUNITS symbols that need explicit pint unit names."""
+    for symbol, replacement in _ANGLE_SYMBOL_REPLACEMENTS.items():
+        name = name.replace(symbol, replacement)
+    return name
+
+
+def _split_id_with_exponent(token_str: str) -> tuple[str, str]:
+    """Split trailing signed integer exponent from an identifier token."""
+    idx = len(token_str)
+    while idx > 0 and token_str[idx - 1].isdigit():
+        idx -= 1
+
+    # The grammar guarantees that exponent digits exist at the end.
+    if idx == len(token_str):
+        raise ValueError(f"ID_WITH_EXP token without trailing digits: {token_str}")
+
+    if idx > 0 and token_str[idx - 1] == "-":
+        idx -= 1
+
+    base_name = token_str[:idx]
+    exponent = token_str[idx:]
+
+    if not base_name or not exponent:
+        raise ValueError(f"Invalid ID_WITH_EXP token: {token_str}")
+
+    return base_name, exponent
 
 
 @v_args(inline=True)
@@ -50,6 +83,15 @@ class UdunitsToPintTransformer(Transformer):
     # Numbers
     # -------------------------------------------------------------------------
 
+    @staticmethod
+    def _binary_operands(args: tuple) -> tuple[str, str]:
+        """Return left/right operands for binary forms with optional operator token."""
+        if len(args) == 2:
+            return args[0], args[1]
+        if len(args) == 3:
+            return args[0], args[2]
+        raise ValueError(f"Unexpected binary args: {args}")
+
     def int(self, value: Token) -> str:
         """Integer literal."""
         return str(value)
@@ -69,24 +111,13 @@ class UdunitsToPintTransformer(Transformer):
     def identifier(self, name: Token) -> str:
         """
         Unit identifier (e.g., 'm', 'kilogram', '°').
-
-        Also handles UDUNITS-style power notation where digits at the end
-        of an identifier represent an exponent (e.g., 'm2' -> m ** 2).
         """
-        # XXX: Handle angle symbols represented by quotes in UDUNITS.
-        # Replace prime/double-prime with explicit unit names so pint parses them.
-        name_str = str(name).replace("'", "arc_minute").replace('"', "arc_second")
+        return _normalize_identifier(str(name))
 
-        # Check for trailing exponent pattern (e.g., m2, s-1, kg-2)
-        match = re.match(
-            r"^([a-zA-Z_\u00C0-\u00FF][a-zA-Z_\u00C0-\u00FF]*)(-?\d+)$", name_str
-        )
-
-        if match:
-            base_name, exponent = match.groups()
-            return f"{base_name} ** {exponent}"
-
-        return name_str
+    def power_from_id(self, name: Token) -> str:
+        """Power notation encoded in identifier token (e.g., 'm2', 's-1')."""
+        base_name, exponent = _split_id_with_exponent(str(name))
+        return f"{base_name} ** {exponent}"
 
     # -------------------------------------------------------------------------
     # Arithmetic operations
@@ -96,26 +127,17 @@ class UdunitsToPintTransformer(Transformer):
         """
         Multiplication (explicit or implicit via juxtaposition).
         """
-        if len(args) == 2:
-            left, right = args
-        else:
-            left, _, right = args
-
+        left, right = self._binary_operands(args)
         return f"{left} * {right}"
 
     def divide(self, *args) -> str:
         """Division."""
-        if len(args) == 2:
-            left, right = args
-        else:
-            left, _, right = args
-
+        left, right = self._binary_operands(args)
         return f"{left} / {right}"
 
     def power(self, base: str, *args) -> str:
         """
         Exponentiation. Handles multiple forms:
-        - basic_exp INTEGER (e.g., m2)
         - basic_exp EXPONENT (e.g., m²)
         - basic_exp RAISE INTEGER (e.g., m^2, m**2)
         """

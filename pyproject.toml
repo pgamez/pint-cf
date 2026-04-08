@@ -46,3 +46,6 @@ pythonpath = "src"
 # [dependency-groups]
 # dev = ["prek>=0.3.3"]
 build = ["build", "twine"]
+
+[tool.coverage.run]
+omit = ["tests/*", "*/__init__.py"]

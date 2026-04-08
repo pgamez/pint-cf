@@ -43,7 +43,8 @@ shift_op: SHIFT_AT | SHIFT_AFTER | SHIFT_FROM | SHIFT_SINCE | SHIFT_REF
 // Examples: "m2", "m^2", "m**2", "m²"
 // -----------------------------------------------------------------------------
 
-?power_exp: basic_exp
+?power_exp: ID_WITH_EXP                -> power_from_id
+          | basic_exp
           | basic_exp EXPONENT           -> power
           | basic_exp RAISE SIGNED_INT   -> power
 
@@ -147,9 +148,14 @@ EXPONENT.3: /[\u00B2\u00B3\u00B9\u2070\u2074-\u2079\u207A\u207B]+/
 // Identifiers (low priority - catch-all for unit names)
 // -----------------------------------------------------------------------------
 
+// Unit identifiers with trailing integer exponent embedded in the token.
+// Examples: m2, s-1, kg-2
+// Negative lookahead avoids splitting names like "m2k" into "m2" + "k".
+ID_WITH_EXP.2: /[a-zA-Z_\u00C0-\u00FF][a-zA-Z_\u00C0-\u00FF]*-?[0-9]+(?![a-zA-Z0-9_\u00C0-\u00FF])/
+
 // Unit identifiers: alphanumeric names, or special symbols
 // Includes: letters, underscore, degree signs, percent, quotes, greek mu
-ID.1: /[a-zA-Z_\u00C0-\u00FF][a-zA-Z0-9_\u00C0-\u00FF]*(-[0-9]+)?/
+ID.1: /[a-zA-Z_\u00C0-\u00FF][a-zA-Z0-9_\u00C0-\u00FF]*/
     | /[°µ][a-zA-Z0-9_\u00C0-\u00FF]*/
     | /[%'"°µ]/
 

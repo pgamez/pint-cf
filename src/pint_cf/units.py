@@ -14,21 +14,7 @@ from pint.facets.plain import PlainUnit
 
 from .parser import cf_string_to_pint
 
-
-def cf_unitregistry() -> pint.UnitRegistry:
-    with resources.path("pint_cf.resources.registry", "udunits2.txt") as filename:
-        ureg = pint.UnitRegistry(
-            filename=str(filename),
-            autoconvert_offset_to_baseunit=True,
-            preprocessors=[cf_string_to_pint],
-        )
-
-    # ureg.formatter.default_format = "cf"
-
-    # Deactivate Pint's native pluralization, since UDUNITS2 already
-    # defines plural forms for units
-    ureg._suffixes = {"": ""}
-    return ureg
+_CF_FORMATTER_NAME = "cf"
 
 
 class CFFormatter(DefaultFormatter):
@@ -75,9 +61,32 @@ class CFFormatter(DefaultFormatter):
         ) or "1"
 
 
-def setup_cf_registry() -> None:
-    """Set up the CF formatter as the default for pint."""
+def _register_cf_formatter(ureg: pint.UnitRegistry) -> pint.UnitRegistry:
+    """Register the CF formatter in both registry-local and Pint-global maps."""
+    formatter = CFFormatter(ureg)
+    ureg.formatter._formatters[_CF_FORMATTER_NAME] = formatter
+    REGISTERED_FORMATTERS[_CF_FORMATTER_NAME] = formatter
+    return ureg
+
+
+def cf_unitregistry() -> pint.UnitRegistry:
+    """Create a CF-ready UnitRegistry with parser and formatter configured."""
+    with resources.path("pint_cf.resources.registry", "udunits2.txt") as filename:
+        ureg = pint.UnitRegistry(
+            filename=str(filename),
+            autoconvert_offset_to_baseunit=True,
+            preprocessors=[cf_string_to_pint],
+        )
+
+    # ureg.formatter.default_format = "cf"
+
+    # Deactivate Pint's native pluralization, since UDUNITS2 already
+    # defines plural forms for units
+    ureg._suffixes = {"": ""}
+    return _register_cf_formatter(ureg)
+
+
+def cf_set_application_registry() -> None:
+    """Create and set the CF registry as the Pint application registry."""
     ureg = cf_unitregistry()
-    ureg.formatter._formatters["cf"] = CFFormatter(ureg)
     pint.set_application_registry(ureg)
-    REGISTERED_FORMATTERS["cf"] = CFFormatter()
