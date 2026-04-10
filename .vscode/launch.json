@@ -8,12 +8,10 @@
             "name": "Converter udunits2->pint",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/tools/registrygen.py",
+            "program": "${workspaceFolder}/tools/parse_xml.py",
             "console": "integratedTerminal",
             "args": [
-                "${workspaceFolder}/tools/xml/udunits2.xml",
-                "-o",
-                "${workspaceFolder}/src/pint_cf/resources/registry/udunits2.txt"
+                "${workspaceFolder}/tools/xml/udunits2.xml"
             ]
         }
     ]
