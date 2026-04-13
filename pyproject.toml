@@ -17,6 +17,10 @@ classifiers = [
 ]
 dependencies = ["Pint>=0.25.2", "lark"]
 
+[project.urls]
+Homepage = "https://github.com/pgamez/pint-cf"
+Issues = "https://github.com/pgamez/pint-cf/issues"
+
 [dependency-groups]
 tests = ["pytest", "pytest-cov"]
 build = ["build", "twine"]
