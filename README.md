@@ -77,11 +77,34 @@ print(q)  # 1 delta_degree_Celsius
 units = q.units
 metadata = UnitsMetadata.from_unit(q.units)
 
-print(f"{units:cf}")  # degree_Celsius
+print(f"{units:cf}")      # degree_Celsius
 print(metadata.to_str())  # temperature: difference
 
 # or directly from the quantity
 metadata = UnitsMetadata.from_quantity(q)
 
 print(metadata.to_str())  # temperature: difference
+```
+
+You can use it with non temperature units:
+
+```python
+from pint_cf import UnitsMetadata, cf_unitregistry
+
+ureg = cf_unitregistry()
+
+# Unit creation
+
+with UnitsMetadata(None):
+    q = ureg("meters")
+
+print(q)  # 1 meter
+
+# Serialization
+
+units = q.units
+metadata = UnitsMetadata.from_unit(q.units)
+
+print(f"{units:cf}")      # meter
+print(metadata.to_str())  # ""
 ```
