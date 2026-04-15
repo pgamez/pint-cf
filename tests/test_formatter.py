@@ -9,8 +9,6 @@ The CF formatter supports two modes via format specifiers:
 import pint
 import pytest
 
-from pint_cf import cf_unitregistry
-
 # Test cases: (input_unit, expected_cf, expected_short_cf)
 TEST_CASES_FORMAT = [
     # =====================================================================
@@ -136,12 +134,6 @@ TEST_CASES_FORMAT = [
 
 _TEST_CASES_FORMAT_LONG = [(i[0], i[1]) for i in TEST_CASES_FORMAT]
 _TEST_CASES_FORMAT_SHORT = [(i[0], i[2]) for i in TEST_CASES_FORMAT]
-
-
-@pytest.fixture(scope="module")
-def ureg() -> pint.UnitRegistry:
-    """Return the CF-compliant UnitRegistry."""
-    return cf_unitregistry()
 
 
 @pytest.mark.parametrize("input_str, expected", _TEST_CASES_FORMAT_LONG)

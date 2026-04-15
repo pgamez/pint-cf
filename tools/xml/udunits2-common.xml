@@ -27,7 +27,7 @@ elements appear only within <aliases>.
             <comment>Synonym for SI unit</comment>
             <def>K</def>
             <aliases>
-                <symbol comment="DEGREE SIGN">&#xB0;K</symbol>        
+                <symbol comment="DEGREE SIGN">&#xB0;K</symbol>
                 <name>
                     <singular>degree_kelvin</singular>
                     <plural>degrees_kelvin</plural>
@@ -77,7 +77,7 @@ elements appear only within <aliases>.
             <comment>Synonym for SI unit</comment>
             <def>degree_Celsius</def>
             <aliases>
-                <symbol comment="DEGREE CELSIUS">&#x2103;</symbol>       
+                <symbol comment="DEGREE CELSIUS">&#x2103;</symbol>
                 <name> <singular>celsius</singular> </name>
                 <name>
                     <singular>degree_C</singular>
@@ -128,10 +128,10 @@ elements appear only within <aliases>.
             </aliases>
             <definition>number of parts per hundred</definition>
         </unit>
-        <!-- I loathe and despise units like this: one's that contain 
+        <!-- I loathe and despise units like this: one's that contain
         information about the physical quantity in their name or symbol (e.g.,
         "parts by volume". Such information is better conveyed by the name of
-        the physical quantity (e.g., "volume fraction"). Eschewing such 
+        the physical quantity (e.g., "volume fraction"). Eschewing such
         information in the unit provides for a better separation between
         physical quantities and units and enables fewer and simpler units. -->
         <unit>
@@ -374,7 +374,7 @@ elements appear only within <aliases>.
             <aliases> <name> <singular>appound</singular> </name> </aliases>
             <definition>unit of mass in apothecaries' weight system (is same as a troy pound)</definition>
         </unit>
-        <unit> 
+        <unit>
             <def>94 pound</def>
             <aliases> <name> <singular>bag</singular> </name> </aliases>
             <definition>unit of mass, for a traditional bag of portland cement</definition>
@@ -1784,7 +1784,7 @@ elements appear only within <aliases>.
         </unit>
         <unit>
             <def>lg(re 1e-6 V)</def>
-            <aliases> 
+            <aliases>
                 <symbol comment="uses MICRO SIGN">B&#xB5;V</symbol>
             </aliases>
             <definition>unit of electricity/magnetism</definition>
@@ -1794,7 +1794,7 @@ elements appear only within <aliases>.
         <unit>
             <def>K/1.8</def>
             <aliases>
-                <symbol comment="DEGREE SIGN">&#xB0;R</symbol>    
+                <symbol comment="DEGREE SIGN">&#xB0;R</symbol>
                 <name>
                     <singular>degree_rankine</singular>
                     <plural>degrees_rankine</plural>
@@ -1821,8 +1821,8 @@ elements appear only within <aliases>.
         <unit>
             <def>&#xB0;R @ 459.67</def>
             <aliases>
-                <symbol comment="DEGREE SIGN">&#xB0;F</symbol>    
-                <symbol comment="DEGREE FAHRENHEIT">&#x2109;</symbol>   
+                <symbol comment="DEGREE SIGN">&#xB0;F</symbol>
+                <symbol comment="DEGREE FAHRENHEIT">&#x2109;</symbol>
                 <name> <singular>fahrenheit</singular> </name>
                 <name>
                     <singular>degree_fahrenheit</singular>
@@ -1850,7 +1850,7 @@ elements appear only within <aliases>.
 
     <!-- Illumination -->
         <unit>
-            <def>1.076391e-1 lx</def>
+            <def>1.076391e1 lx</def>
             <aliases>
                 <name> <singular>footcandle</singular> </name>
             </aliases>

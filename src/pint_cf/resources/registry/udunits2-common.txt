@@ -921,7 +921,7 @@ degree_rankine = K / 1.8 = °R = degrees_rankine = degreeR = degreesR = degree_R
 fahrenheit = °R; offset: 459.67 = °F = fahrenheits = ℉ = degree_fahrenheit = degrees_fahrenheit = degreeF = degreesF = degree_F = degrees_F = degF = degsF = deg_F = degs_F
 
 # unit of illumination
-footcandle = 1.076391e-1 * lx = _ = footcandles
+footcandle = 1.076391e1 * lx = _ = footcandles
 
 # unit of illumination
 # [comment] exact

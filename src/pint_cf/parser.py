@@ -5,9 +5,12 @@ Converts Lark parse trees from udunits2.lark into strings
 that can be parsed directly by pint.
 """
 
+import warnings
 from pathlib import Path
 
 from lark import Lark, Token, Transformer, v_args
+
+from .metadata import UNITS_METADATA
 
 # Unicode superscript to ASCII digit mapping
 _SUPERSCRIPT_MAP = {
@@ -296,6 +299,22 @@ def get_parser() -> Lark:
     return _parser
 
 
+def _apply_units_metadata(input_string: str, units_metadata: str | None = None) -> str:
+    if units_metadata == "temperature: difference":
+        if input_string.startswith("delta_"):
+            warnings.warn(
+                f"Input string '{input_string}' already appears to be marked as a "
+                "difference unit. Units metadata 'temperature: difference' will be "
+                "ignored to avoid double-marking.",
+                UserWarning,
+                stacklevel=3,
+            )
+            return input_string  # already marked as difference
+
+        return f"delta_{input_string}"
+    return input_string
+
+
 def cf_string_to_pint(unit_string: str) -> str:
     """
     Convert a UDUNITS-2 unit string to pint-compatible format.
@@ -320,6 +339,9 @@ def cf_string_to_pint(unit_string: str) -> str:
     """
     if not unit_string or unit_string.isspace():
         return "1"
+
+    if metadata := UNITS_METADATA.get():
+        unit_string = _apply_units_metadata(unit_string, metadata)
 
     parser = get_parser()
     transformer = UdunitsToPintTransformer()
