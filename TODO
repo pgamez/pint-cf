@@ -1,3 +1,5 @@
+- [DONE] Add support for units_metadata
+- [DONE] Fix delta prefixes for temperature aliases
 - Lark parser: handle delta symbol
 - Lark parser: optimize
 - Add new units (from cf-units docs)
