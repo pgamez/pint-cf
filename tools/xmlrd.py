@@ -11,6 +11,7 @@ from typing import TextIO
 from xml.etree.ElementTree import Element
 
 import defusedxml.ElementTree as ET
+import pint
 
 from pint_cf.parser import cf_string_to_pint
 
@@ -26,6 +27,8 @@ DIMENSIONS = {
     "mole": "[substance]",
     "candela": "[luminosity]",
 }
+
+ureg = pint.UnitRegistry(None)  # type: ignore
 
 
 class BaseElement(ABC):
@@ -427,6 +430,7 @@ def parse_unit(element: Element) -> BaseUnit:
         # If the definition has already been processed, we
         # should have a name for it, so we create an alias
         return Alias(
+            # target=u.definition,
             target=reference,
             aliases=u.aliases,
             description=u.description,
@@ -471,6 +475,23 @@ def parse_unit(element: Element) -> BaseUnit:
         )
 
     raise ValueError("Unit element missing name and symbol")
+
+
+def _get_delta_alias(unit: Alias) -> Alias | None:
+    if not ureg._is_multiplicative(unit.target):
+        return None
+
+    aliases = []
+    for alias in unit.aliases:
+        if isinstance(alias, Name):
+            aliases.append(Name(f"delta_{alias.singular}", None))
+        elif isinstance(alias, Symbol):
+            aliases.append(Symbol(f"delta_{alias.symbol}"))
+
+    if not aliases:
+        return None
+
+    return Alias(target=f"delta_{unit.target}", aliases=aliases)
 
 
 def gen_pint_registry(f: TextIO, write_doc: bool = True) -> None:
@@ -545,6 +566,29 @@ def gen_pint_registry(f: TextIO, write_doc: bool = True) -> None:
                             print(doc, file=out)
 
                     print(unit, file=out)
+
+                    # In case of a temperature alias, we should add another alias
+                    # with "delta_" prefix, so that we can parse it as a delta unit
+                    # in pint.
+                    # See: https://github.com/hgrecco/pint/issues/2296
+                    if isinstance(unit, Alias):
+                        if ureg.get_dimensionality(unit.target) == "[temperature]":
+                            if not ureg._is_multiplicative(unit.target):
+                                aliases = []
+                                for alias in unit.aliases:
+                                    if isinstance(alias, Name):
+                                        aliases.append(
+                                            Name(f"delta_{alias.singular}", None)
+                                        )
+                                    elif isinstance(alias, Symbol):
+                                        aliases.append(Symbol(f"delta_{alias.symbol}"))
+
+                                delta_alias = Alias(
+                                    target=f"delta_{unit.target}", aliases=aliases
+                                )
+                                print(delta_alias, file=out)
+
+                    ureg.define(str(unit))
 
                 case _:
                     raise ValueError(f"Unexpected element: {child.tag}")

@@ -4,7 +4,7 @@ import pytest
 from pint_cf import cf_unitregistry
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def ureg() -> pint.UnitRegistry:
     """Return the CF-compliant UnitRegistry."""
     return cf_unitregistry()
