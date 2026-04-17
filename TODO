@@ -11,7 +11,11 @@
 
 ## Regarding the addition of new units
 
-**Objective**: To implement differences between UDUNITS2 and the CF standard
+### Objective
+
+To implement differences between UDUNITS2 and the CF standard
+
+### References
 
 I haven't found yet a single document from the CF team summarizing these diferences.
 
@@ -21,6 +25,8 @@ Current references:
 -   [CF Conventions : section "Units"](https://cf-convention.github.io/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html#units)
 -   [cf-units.Units](https://ncas-cms.github.io/cfunits/cfunits.Units.html)
 -   [FAQs graybealski/cf-conventions-work](https://github.com/graybealski/cf-conventions-work/blob/master/FAQ.md#are-there-units-in-cf-that-arent-in-udunits), but updated 12 years ago, maybe outdated
+
+### Context
 
 List of new units not supported in UDUNITS2 (from `cfunits`):
 
@@ -37,7 +43,9 @@ List of new units not supported in UDUNITS2 (from `cfunits`):
 
 including plural forms.
 
-### Units `level`, `sigma-level`, `layer`
+### Discussion points
+
+#### Units `level`, `sigma-level`, `layer`
 
 According to CF conventions docs, these are kept for backwards compatibility
 with COARDS, but they are actually deprecated:
@@ -49,31 +57,40 @@ with COARDS, but they are actually deprecated:
 > conventions for more precisely identifying dimensionless vertical coordinates
 > are available
 
-**Proposal**: To add them and show a Deprecation warning when used.
+Proposal:
 
+- To add them as adimensional units
+- To show a Deprecation warning when used.
 
-### Rest of units
+#### Units `sverdrup` and `sievert`
+
+`udunits2-common.xml` has already added both. However, UDUNITS associates the
+`Sv` symbol to `sievert` according to the SI unit-system. This diverges from `cf-units`'s implementation, that intentionally associates it to `sverdrup`.
+
+Proposal:
+
+- To confirm that `cf-units` has changed the assignment of `Sv` symbol according
+  to the CF standard.
+- To assign the symbol to `sverdrup` in consequence
+
+#### Units `practical_salinity_unit`
 
 According to FAQs:
-
-> There are two units acceptable to CF that are not in the UDUNITS library:
-> sverdrup, and decibel or dB. These have been requested for inclusion in future
-> versions of the UDUNITS library.
-
-`udunits2-common.xml` has already added 'sverdrup' but with no symbol, arguing that
-`Sv` means "sievert" in the SI unit-system.
-
-This conflicts with `cf-units`'s implementation, since the symbol
-`Sv` is associated to "sverdup" instead of "sievert".
 
 > The unit PSU or practical salinity unit was used for salinity terms in CF, but
 > is no longer used; rather, this is considered a dimensionless quantity (unit
 > of 1).
 
-This statement diverges from the `cf-units`'s implementation that defines
-`practical_salinity_unit` as `1e-3` (not `1`)
+According to `cf-units`, it should be defined as `1e-3` (correct), not `1`
 
-We could add a `DeprecationWarning` when used.
+Proposal:
+
+- To add to the registry with definition `1e-3`
+- Do we need to show a deprecation warning?
+
+#### Units `decibel` (`bel`)
+
+According to FAQs:
 
 > decibel: a logarithmic measure of relative acoustic or energy intensity;
 > symbol dB, db, or dbel (the reference level, needed for logarithmic units, is
@@ -82,10 +99,11 @@ We could add a `DeprecationWarning` when used.
 `cf-units` defines `dB` as `1`, but this quote says that the reference level
 for the logarithm should be read from the `standard_name` attribute.
 
-**NOTE**:
+Proposal:
 
-I think that could be possible in `pint-cf` to take into account the
-`standard_name` (see the next section, equivalent procedure).
+- To add this unit as `1`.
+- alternatively, explore if the `standard_name` could be taken into account at
+  Units creation time (see the next section, shares procedure).
 
 ## Regarding the support of the `units_metadata` attribute
 
