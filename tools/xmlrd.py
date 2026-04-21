@@ -5,7 +5,7 @@ https://pint.readthedocs.io/en/stable/advanced/defining.html
 
 import textwrap
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import TextIO
 from xml.etree.ElementTree import Element
@@ -473,7 +473,7 @@ def parse_unit(element: Element) -> BaseUnit:
     raise ValueError("Unit element missing name and symbol")
 
 
-def gen_pint_registry(f: TextIO, write_doc: bool = True) -> None:
+def gen_pint_registry(f: TextIO, write_doc: bool = True) -> Iterator[Path]:
     print("Processing", f.name, "...")
 
     filepath = Path(f.name)
@@ -504,7 +504,7 @@ def gen_pint_registry(f: TextIO, write_doc: bool = True) -> None:
                     print("@import", imported_txt, file=out)
 
                     with imported_xml.open() as fi:
-                        gen_pint_registry(fi, write_doc)
+                        yield from gen_pint_registry(fi, write_doc)
 
                 case "prefix":
                     prefix = parse_prefix(child)
@@ -548,3 +548,5 @@ def gen_pint_registry(f: TextIO, write_doc: bool = True) -> None:
 
                 case _:
                     raise ValueError(f"Unexpected element: {child.tag}")
+
+    yield Path(out.name)

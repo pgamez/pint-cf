@@ -5,13 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Converter udunits2->pint",
+            "name": "Update UnitRegistry",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/tools/parse_xml.py",
             "console": "integratedTerminal",
             "args": [
-                "${workspaceFolder}/tools/xml/udunits2.xml"
+                "${workspaceFolder}/tools/xml/udunits2.xml",
+                "--output-dir",
+                "${workspaceFolder}/src/pint_cf/resources/registry"
             ]
         }
     ]
