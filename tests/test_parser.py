@@ -266,6 +266,13 @@ TEST_CASES_TRANSFORM = [
     ("  m  ", "m"),
     ("  m    /    s^2    ", "m / s ** 2"),
     ("  kg  /  s  ", "kg / s"),
+    # =========================================================================
+    # Additional units and symbols from CF conventions (not in UDUNITS)
+    # =========================================================================
+    ("level", "level"),
+    ("layer", "layer"),
+    ("sigma_level", "sigma_level"),
+    ("sigma_level * 10", "sigma_level * 10"),
 ]
 
 
@@ -390,12 +397,16 @@ TEST_CASES_INVALID = [
 
 @pytest.mark.parametrize("input_str, expected_str", TEST_CASES_TRANSFORM)
 def test_transform(input_str: str, expected_str: str) -> None:
-    # assert Units(input_str).isvalid, f"Input '{input_str}' is not a valid unit"
+    import warnings
 
     u = cf_string_to_pint(input_str)
     cfg = ParserConfig()
-    result = UnitDefinition.from_string_and_config(f"_ = {u}", cfg)
-    expected = UnitDefinition.from_string_and_config(f"_ = {expected_str}", cfg)
+
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=FutureWarning)
+        result = UnitDefinition.from_string_and_config(f"_ = {u}", cfg)
+        expected = UnitDefinition.from_string_and_config(f"_ = {expected_str}", cfg)
+
     assert result == expected, (
         f"Expected '{expected}', got '{result}' for input '{input_str}'"
     )
