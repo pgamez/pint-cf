@@ -5,9 +5,36 @@ Converts Lark parse trees from udunits2.lark into strings
 that can be parsed directly by pint.
 """
 
+import warnings
 from pathlib import Path
 
 from lark import Lark, Token, Transformer, v_args
+
+# Additional adimensional units that are in the CF standard but not in UDUNITS2
+
+ADDITIONAL_ADIMENSIONAL_UNITS = {
+    "level": (
+        "The use of 'level' is deprecated in the CF standard."
+        " but accepted for backward compatibility with COARDS."
+        " Conventions for more precisely identifying dimensionless vertical"
+        " coordinates are available.",
+        FutureWarning,
+    ),
+    "layer": (
+        "The use of 'layer' is deprecated in the CF standard."
+        " but accepted for backward compatibility with COARDS."
+        " Conventions for more precisely identifying dimensionless vertical"
+        " coordinates are available.",
+        FutureWarning,
+    ),
+    "sigma_level": (
+        "The use of 'sigma_level' is deprecated in the CF standard."
+        " but accepted for backward compatibility with COARDS."
+        " Conventions for more precisely identifying dimensionless vertical"
+        " coordinates are available.",
+        FutureWarning,
+    ),
+}
 
 # Unicode superscript to ASCII digit mapping
 _SUPERSCRIPT_MAP = {
@@ -112,7 +139,10 @@ class UdunitsToPintTransformer(Transformer):
         """
         Unit identifier (e.g., 'm', 'kilogram', '°').
         """
-        return _normalize_identifier(str(name))
+        identifier = _normalize_identifier(str(name))
+        if message := ADDITIONAL_ADIMENSIONAL_UNITS.get(identifier.strip()):
+            warnings.warn(*message, stacklevel=2)
+        return identifier
 
     def power_from_id(self, name: Token) -> str:
         """Power notation encoded in identifier token (e.g., 'm2', 's-1')."""
