@@ -9,9 +9,11 @@ control "parse_xml.py" as CLI
 participant "xmlrd.py::gen_pint_registry()" as XMLRD
 participant "cf_string_to_pint()" as PREPROCESSOR
 participant UdunitsToPintTransformer as PARSER
-collections "udunits2.xml" as F_XML
 collections "udunits2.lark" as F_LARK
 collections "*.txt registry files" as F_TXT
+box "UDUNITS2 Library" #LightBlue
+    collections "udunits2.xml" as F_XML
+end box
 
 Maintainer -> CLI : execute parse_xml.py
     CLI -> XMLRD : call gen_pint_registry(input XML)
@@ -46,8 +48,8 @@ Maintainer -> CLI : execute parse_xml.py
             end
         end
 
-        XMLRD --> CLI : yield generated .txt path(s)
+        return yield generated .txt path(s)
 
-CLI --> Maintainer : registry files generated
+    return registry files generated
 
 @enduml

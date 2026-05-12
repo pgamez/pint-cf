@@ -21,6 +21,9 @@ package "pint-cf" {
 package "tools" {
     component "parse_xml.py" <<script>> as SCRIPT
     component "xmlrd.py" <<module>> as XMLRD
+}
+
+package "UDUNITS2" {
     file "udunits2.xml" <<data file>> as F_XML
 }
 

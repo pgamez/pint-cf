@@ -6,8 +6,10 @@ autoactivate on
 actor User
 
 control "cf_unitregistry()" as FACTORY
-participant "UnitRegistry" as UREG
-entity "Unit" as UNIT
+box "pint" #LightYellow
+    participant "UnitRegistry" as UREG
+    entity "Unit" as UNIT
+end box
 participant CFFormatter as FORMATTER
 participant "cf_string_to_pint()" as PREPROCESSOR
 participant UdunitsToPintTransformer as PARSER
