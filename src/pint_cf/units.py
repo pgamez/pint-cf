@@ -12,7 +12,7 @@ from pint.delegates.formatter._spec_helpers import REGISTERED_FORMATTERS
 from pint.delegates.formatter.plain import DefaultFormatter
 from pint.facets.plain import PlainUnit
 
-from .parser import ADDITIONAL_ADIMENSIONAL_UNITS, cf_string_to_pint
+from .parser import ADDITIONAL_UNITS, cf_string_to_pint
 
 _CF_FORMATTER_NAME = "cf"
 
@@ -78,8 +78,8 @@ def cf_unitregistry() -> pint.UnitRegistry:
         )
 
     # Add units from the CF standard that aren't in UDUNITS2
-    for unit in ADDITIONAL_ADIMENSIONAL_UNITS.keys():
-        ureg.define(f"{unit} = []")
+    for name, unit in ADDITIONAL_UNITS.items():
+        ureg.define(f"{name} = {unit.definition}")
 
     # ureg.formatter.default_format = "cf"
 

@@ -6,28 +6,47 @@ that can be parsed directly by pint.
 """
 
 import warnings
+from dataclasses import dataclass
 from pathlib import Path
 
 from lark import Lark, Token, Transformer, v_args
 
 # Additional adimensional units that are in the CF standard but not in UDUNITS2
 
-ADDITIONAL_ADIMENSIONAL_UNITS = {
-    "level": (
+
+@dataclass
+class AdditionalUnit:
+    """Data class to hold additional unit information."""
+
+    definition: str
+    warning_message: str
+    warning_category: type[Warning]
+
+    def warning_args(self) -> tuple[str, type[Warning]]:
+        """Return the arguments for issuing a warning"""
+
+        return self.warning_message, self.warning_category
+
+
+ADDITIONAL_UNITS = {
+    "level": AdditionalUnit(
+        "[]",
         "The use of 'level' is deprecated in the CF standard."
         " but accepted for backward compatibility with COARDS."
         " Conventions for more precisely identifying dimensionless vertical"
         " coordinates are available.",
         FutureWarning,
     ),
-    "layer": (
+    "layer": AdditionalUnit(
+        "[]",
         "The use of 'layer' is deprecated in the CF standard."
         " but accepted for backward compatibility with COARDS."
         " Conventions for more precisely identifying dimensionless vertical"
         " coordinates are available.",
         FutureWarning,
     ),
-    "sigma_level": (
+    "sigma_level": AdditionalUnit(
+        "[]",
         "The use of 'sigma_level' is deprecated in the CF standard."
         " but accepted for backward compatibility with COARDS."
         " Conventions for more precisely identifying dimensionless vertical"
@@ -35,7 +54,6 @@ ADDITIONAL_ADIMENSIONAL_UNITS = {
         FutureWarning,
     ),
 }
-
 # Unicode superscript to ASCII digit mapping
 _SUPERSCRIPT_MAP = {
     "⁰": "0",
@@ -140,8 +158,8 @@ class UdunitsToPintTransformer(Transformer):
         Unit identifier (e.g., 'm', 'kilogram', '°').
         """
         identifier = _normalize_identifier(str(name))
-        if message := ADDITIONAL_ADIMENSIONAL_UNITS.get(identifier.strip()):
-            warnings.warn(*message, stacklevel=2)
+        if additional_unit := ADDITIONAL_UNITS.get(identifier.strip()):
+            warnings.warn(*additional_unit.warning_args(), stacklevel=3)
         return identifier
 
     def power_from_id(self, name: Token) -> str:
