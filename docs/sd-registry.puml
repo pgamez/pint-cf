@@ -1,0 +1,53 @@
+@startuml sd-registry
+mainframe **sd** Registry Generation
+
+autoactivate on
+
+actor Maintainer
+
+control "parse_xml.py" as CLI
+participant "xmlrd.py::gen_pint_registry()" as XMLRD
+participant "cf_string_to_pint()" as PREPROCESSOR
+participant UdunitsToPintTransformer as PARSER
+collections "udunits2.xml" as F_XML
+collections "udunits2.lark" as F_LARK
+collections "*.txt registry files" as F_TXT
+
+Maintainer -> CLI : execute parse_xml.py
+    CLI -> XMLRD : call gen_pint_registry(input XML)
+        XMLRD -> F_XML : parse XML input
+            return XML tree loaded
+
+        loop over XML elements
+            alt unit element
+                XMLRD -> PREPROCESSOR : normalize unit definition string
+                    PREPROCESSOR -> PARSER : parse unit string\nusing grammar
+                        PARSER -> F_LARK : use grammar rules
+                            return parsed expression
+                        return pint-compatible string
+                    return normalized unit expression
+
+                XMLRD -> XMLRD : build pint unit definition
+                    note right of XMLRD
+                        Create pint-compatible entries from XML data:
+
+                        - Prefix
+                        - Unit
+                        - Alias
+                        - Constants
+                    end note
+                    return definition entry ready
+
+                XMLRD -> F_TXT : write definition entry
+                    return entry written
+            else import element
+                XMLRD -> XMLRD : recurse on imported XML
+                    return imported registry generated
+            end
+        end
+
+        XMLRD --> CLI : yield generated .txt path(s)
+
+CLI --> Maintainer : registry files generated
+
+@enduml

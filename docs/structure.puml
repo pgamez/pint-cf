@@ -1,0 +1,39 @@
+@startuml structure
+
+skinparam componentStyle rectangle
+
+title STRUCTURE PINT-CF
+
+package "pint" {
+    component DefaultFormatter <<class>> as PINT_DEFAULT_FORMATTER
+    component UnitRegistry <<class>> as PINT_UNIT_REGISTRY
+}
+
+package "pint-cf" {
+    component "cf_unitregistry()" <<function>> as FACTORY #Gold
+    component CFFormatter <<class>> as FORMATTER
+    component "cf_string_to_pint()" <<function>> as PREPROCESSOR
+    component UdunitsToPintTransformer <<class>> as PARSER
+    file "udunits2.txt" <<registry file>> as F_TXT
+    file "udunits2.lark" <<parser file>> as F_LARK
+}
+
+package "tools" {
+    component "parse_xml.py" <<script>> as SCRIPT
+    component "xmlrd.py" <<module>> as XMLRD
+    file "udunits2.xml" <<data file>> as F_XML
+}
+
+FACTORY .l.> FORMATTER : register formatter
+FACTORY .u.> PINT_UNIT_REGISTRY : factory for UnitRegistry
+FORMATTER .u.|> PINT_DEFAULT_FORMATTER : inherits
+FACTORY ..> PREPROCESSOR : adds as preprocessor
+PARSER .l.> F_LARK : uses for parsing
+FACTORY .r.> F_TXT : loads definitions
+SCRIPT .l.> XMLRD : calls gen_pint_registry()
+XMLRD ..> F_XML : parses XML input
+XMLRD .l.> F_TXT : generates from XML
+XMLRD .l.> PREPROCESSOR : reuses for parsing CF strings
+PREPROCESSOR ..> PARSER : uses for parsing CF strings
+
+@enduml

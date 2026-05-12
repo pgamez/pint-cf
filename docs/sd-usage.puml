@@ -1,0 +1,54 @@
+@startuml sd-usage
+mainframe **sd** Usage
+
+autoactivate on
+
+actor User
+
+control "cf_unitregistry()" as FACTORY
+participant "UnitRegistry" as UREG
+entity "Unit" as UNIT
+participant CFFormatter as FORMATTER
+participant "cf_string_to_pint()" as PREPROCESSOR
+participant UdunitsToPintTransformer as PARSER
+collections "udunits2.lark" as F_LARK
+collections "udunits2.txt" as F_TXT
+
+User -> FACTORY : execute cf_unitregistry()
+    FACTORY -> UREG : Create ureg with CF support
+        UREG -> F_TXT : load CF unit definitions
+            return definitions loaded
+
+        UREG -> PREPROCESSOR : register cf_string_to_pint() in preprocessors
+            return preprocessor registered
+
+        UREG -> FORMATTER : register CF formatter
+            return formatter registered
+
+        return CF-compliant ureg
+    return CF-compliant\npint.UnitRegistry
+
+
+User -> UREG : create unit from CF unit string
+
+    UREG -> PREPROCESSOR : preprocess CF string
+        PREPROCESSOR -> PARSER : parse unit string\nusing grammar
+            PARSER -> F_LARK : use grammar rules
+                return parsed expression
+            return pint-compatible string
+        return preprocessed string
+
+    UREG -> UNIT : create unit from parsed units\nand definitions
+        return unit created
+
+    return unit
+
+User -> UREG : format unit with "cf"
+    UREG -> FORMATTER : apply CF formatter
+        FORMATTER -> UNIT : read unit components
+            return formatted string
+        return formatted string
+    return formatted unit string
+
+
+@enduml

@@ -24,7 +24,8 @@
 				"ms-vscode.live-server",
 				"redhat.vscode-yaml",
 				"dirk-thomas.vscode-lark",
-				"github.vscode-github-actions"
+				"github.vscode-github-actions",
+				"jebbs.plantuml"
 			],
 			"settings": {
 				"python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python"
