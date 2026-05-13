@@ -16,8 +16,8 @@ Known limitations:
 - Pint does not support **time coordinates** (e.g.
   `days since 2001-01-01`) or **climate calendars** (e.g., `360_days`).
   Consider using [cftime](https://unidata.github.io/cftime/) instead.
-- The attribute `units_metadata` is not yet supported (currently, is being
-  implemented)
+- Attribute `units_metadata` not supported yet
+- CF units not supported by UDUNITS2 are not handled yet
 
 <!-- - Pint does not support **scaling factors** in unit expressions, such as
   `1.5 * pint.Unit('0.1 m')`. You can work around this by adding your own

@@ -30,6 +30,7 @@
 # [comment] Synonym for SI unit
 # [comment @ ℃] DEGREE CELSIUS
 @alias degree_Celsius = ℃ = celsius = celsiuses = degree_C = degrees_C = degreeC = degreesC = deg_C = degs_C = degC = degsC
+@alias delta_degree_Celsius = delta_℃ = delta_celsius = delta_celsiuses = delta_degree_C = delta_degree_Cs = delta_degreeC = delta_degreeCs = delta_deg_C = delta_deg_Cs = delta_degC = delta_degCs
 
 # unit of speed, synonym for nautical_mile/hour
 # [comment] Synonym for SI unit
