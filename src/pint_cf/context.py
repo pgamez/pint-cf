@@ -202,8 +202,8 @@ def cf_attributes_for(unit: PlainUnit | PlainQuantity) -> dict[str, str]:
 
     Only reliable for units with a genuine on_scale/difference
     distinction (Celsius, Fahrenheit - units with their own offset,
-    which is why pint gives them a delta_ counterpart at all). For
-    Kelvin/Rankine (no offset, so no delta_ variant exists),
+    which is why pint gives them a ``delta_`` counterpart at all).
+    For Kelvin/Rankine (no offset, so no ``delta_`` variant exists),
     on_scale and difference are numerically identical and
     structurally indistinguishable from the unit alone - this
     reports ``"temperature: unknown"`` for those rather than

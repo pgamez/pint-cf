@@ -52,4 +52,12 @@ Maintainer -> CLI : execute parse_xml.py
 
     return registry files generated
 
+note over Maintainer, F_TXT
+    cf-extensions.txt (CF units not in UDUNITS-2: level, psu,
+    decibel/bel, sverdrup's "Sv" symbol) is NOT part of this
+    pipeline - it's hand-maintained directly, since these units
+    have no XML source to regenerate from. See
+    resources/registry/cf-extensions.txt.
+end note
+
 @enduml

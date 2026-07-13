@@ -284,9 +284,9 @@ def get_parser() -> Lark:
 def cf_string_to_pint(unit_string: str) -> str:
     """Convert a UDUNITS-2 unit string to pint-compatible format.
 
-    Under an active `pint_cf.CFContext`, a CF ``units_metadata``
-    temperature mode (see `context`) is applied: ``"difference"``
-    forces a bare temperature unit to its delta_ counterpart, e.g.
+    Under an active `pint_cf.CFContext`, the CF ``units_metadata``
+    temperature mode is applied: ``"difference"`` forces a bare
+    temperature unit to its ``delta_`` counterpart, e.g.
     ``"degree_C"`` -> ``"delta_degree_Celsius"``. With no active
     context (or ``"unknown"``), behavior is unchanged - pint's own
     default ``as_delta=True`` already applies UDUNITS' compound
@@ -312,8 +312,10 @@ def cf_string_to_pint(unit_string: str) -> str:
         unit expression.
     ValueError
         For ``"temperature: on_scale"`` applied to a compound unit
-        expression, which can't be honored through the
-        preprocessor - see `_apply_temperature_mode`.
+        expression - it can't be honored through the automatic
+        preprocessor pipeline; call
+        ``ureg.Quantity(value, units, as_delta=False)`` directly
+        instead.
 
     Examples
     --------

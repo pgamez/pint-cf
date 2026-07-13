@@ -15,11 +15,15 @@ participant "cf_string_to_pint()" as PREPROCESSOR
 participant UdunitsToPintTransformer as PARSER
 collections "udunits2.lark" as F_LARK
 collections "udunits2.txt" as F_TXT
+collections "cf-extensions.txt" as F_CFEXT
 
 User -> FACTORY : execute cf_unitregistry()
     FACTORY -> UREG : Create ureg with CF support
-        UREG -> F_TXT : load CF unit definitions
+        UREG -> F_TXT : load UDUNITS-2 definitions
             return definitions loaded
+
+        UREG -> F_CFEXT : load CF-only units\n(unless cf_extensions=False)
+            return level, psu, decibel/bel,\nsverdrup's "Sv" symbol, ...
 
         UREG -> PREPROCESSOR : register cf_string_to_pint() in preprocessors
             return preprocessor registered
@@ -52,5 +56,12 @@ User -> UREG : format unit with "cf"
         return formatted string
     return formatted unit string
 
+note right of FORMATTER
+    Strips "delta_"/"Δ" for display only - e.g.
+    delta_degree_Celsius -> "degree_Celsius". This never
+    touches Unit._units, so cf_attributes_for() (see
+    sd-temperature.puml) still sees the real difference/
+    on_scale distinction.
+end note
 
 @enduml
