@@ -1,4 +1,5 @@
 # Generated from udunits2-prefixes.xml
+# Unit data (c) UCAR/Unidata (UDUNITS-2) - see UDUNITS2-COPYRIGHT.txt
 
 yotta- = 1e24 = Y-
 zetta- = 1e21 = Z-

@@ -1,3 +1,22 @@
+## v0.2.1
+
+- Added `THIRD_PARTY_LICENSES.md` and
+  `src/pint_cf/resources/registry/UDUNITS2-COPYRIGHT.txt`: the unit
+  database this package is built on is redistributed from UDUNITS-2,
+  whose license requires its copyright notice to be reproduced -
+  needed for the conda-forge submission checklist ("package does not
+  vendor other packages... without their license"). Every generated
+  registry file now also points to it in its own header comment
+- Fixed `tools/xmlrd.py` (the UDUNITS-2 XML → pint registry generator):
+  it broke after `cf_string_to_pint` started rejecting numeric-offset
+  units (e.g. `K @ 273.15`) outright, since the generator relies on
+  that exact string (pint's `"unit; offset: value"` syntax) to define
+  `degree_Celsius`/`degree_Fahrenheit` from UDUNITS-2's own XML - valid
+  there (a registry definition), unlike as a runtime unit expression.
+  Added `_unit_definition_from_udunits`, a private function used only
+  by `tools/xmlrd.py` for this - `cf_string_to_pint` itself is
+  unchanged, so this doesn't reopen the footgun for any other caller
+
 ## v0.2.0
 
 - Added CF units not supported by UDUNITS-2 (#10), on by default in

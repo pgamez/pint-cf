@@ -1,4 +1,5 @@
 # Generated from udunits2-accepted.xml
+# Unit data (c) UCAR/Unidata (UDUNITS-2) - see UDUNITS2-COPYRIGHT.txt
 
 
 # period of time equal to 60 seconds

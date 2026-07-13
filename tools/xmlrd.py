@@ -13,7 +13,34 @@ from xml.etree.ElementTree import Element
 import defusedxml.ElementTree as ET
 import pint
 
-from pint_cf.parser import cf_string_to_pint
+from pint_cf.parser import UdunitsToPintTransformer, get_parser
+
+
+def _unit_definition_from_udunits(unit_string: str) -> str:
+    """Like `pint_cf.parser.cf_string_to_pint`, but for building a registry
+    definition file rather than converting a runtime unit string.
+
+    A numeric offset unit (e.g. "K @ 273.15") produces pint's
+    ``"unit; offset: value"`` syntax instead of raising - valid only
+    when *defining* a new named unit, exactly what UDUNITS-2's own XML
+    does for ``degree_Celsius``/``degree_Fahrenheit``. Never use this
+    for a runtime unit expression - use `cf_string_to_pint` for that.
+    """
+    if not unit_string or unit_string.isspace():
+        return "1"
+
+    parser = get_parser()
+    transformer = UdunitsToPintTransformer(allow_numeric_shift=True)
+
+    tree = parser.parse(unit_string)
+
+    if tree is None or (hasattr(tree, "children") and len(tree.children) == 0):
+        return "1"
+
+    result = transformer.transform(tree)
+
+    return result if isinstance(result, str) else "1"
+
 
 NO_SYMBOL = "_"
 NAME_SIZE = 128
@@ -362,7 +389,7 @@ class _UnitElement:
         elif is_dimensionless:
             definition = "[]"
         elif definition:
-            definition = cf_string_to_pint(definition)
+            definition = _unit_definition_from_udunits(definition)
         else:
             raise ValueError("Unit element missing name and def")
 
@@ -526,7 +553,12 @@ def gen_pint_registry(f: TextIO, write_doc: bool = True) -> None:
 
     with filepath.with_suffix(".txt").open("w") as out:
         print("> writing to", out.name, "...")
-        print("# Generated from", filepath.name, file=out, end="\n\n")
+        print("# Generated from", filepath.name, file=out)
+        print(
+            "# Unit data (c) UCAR/Unidata (UDUNITS-2) - see UDUNITS2-COPYRIGHT.txt",
+            file=out,
+            end="\n\n",
+        )
 
         for child in root:
             match child.tag:

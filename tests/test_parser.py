@@ -12,7 +12,7 @@ from lark.exceptions import UnexpectedInput, VisitError
 from pint.delegates import ParserConfig
 from pint.delegates.txt_defparser.plain import UnitDefinition
 
-from pint_cf.parser import cf_string_to_pint
+from pint_cf.parser import UdunitsToPintTransformer, cf_string_to_pint, get_parser
 
 TEST_CASES_TRANSFORM = [
     # =========================================================================
@@ -434,3 +434,23 @@ def test_number_shifts_raise_not_implemented(input_str: str) -> None:
         VisitError, match="Numeric offset units .* are not directly supported"
     ):
         cf_string_to_pint(input_str)
+
+
+@pytest.mark.parametrize(
+    ("input_str", "expected"),
+    [
+        ("K @ 273.15", "K; offset: 273.15"),
+        ("degC @ 1.5", "degC; offset: 1.5"),
+    ],
+)
+def test_transformer_allows_numeric_shifts_opt_in(
+    input_str: str, expected: str
+) -> None:
+    """UdunitsToPintTransformer(allow_numeric_shift=True) produces pint's
+    "unit; offset: value" definition syntax for a numeric offset unit
+    instead of raising - valid only when *defining* a new named unit, as
+    tools/xmlrd.py does for degree_Celsius/degree_Fahrenheit from
+    UDUNITS-2's own XML. cf_string_to_pint itself never opts into this."""
+    transformer = UdunitsToPintTransformer(allow_numeric_shift=True)
+    tree = get_parser().parse(input_str)
+    assert transformer.transform(tree) == expected

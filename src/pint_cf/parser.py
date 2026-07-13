@@ -74,6 +74,17 @@ class UdunitsToPintTransformer(Transformer):
     The parse tree is produced from `udunits2.lark` by the parser
     returned by `get_parser`.
 
+    Parameters
+    ----------
+    allow_numeric_shift : bool, optional
+        Internal - only ``tools/xmlrd.py`` (the registry generator)
+        constructs this with ``True``; `cf_string_to_pint` always uses
+        the default. When ``False`` (the default), a numeric offset
+        unit (e.g. ``"K @ 273.15"``) raises `NotImplementedError`,
+        since pint's offset syntax it would otherwise produce only
+        works when *defining* a new named unit, not as a runtime unit
+        expression - see `shift_by_number`.
+
     Examples
     --------
     >>> transformer = UdunitsToPintTransformer()
@@ -82,6 +93,10 @@ class UdunitsToPintTransformer(Transformer):
     >>> transformer.transform(tree)
     'kg * m / s ** 2'
     """
+
+    def __init__(self, *, allow_numeric_shift: bool = False) -> None:
+        super().__init__()
+        self._allow_numeric_shift = allow_numeric_shift
 
     # -------------------------------------------------------------------------
     # Numbers
@@ -225,10 +240,14 @@ class UdunitsToPintTransformer(Transformer):
         when defining a NEW named unit in a registry file - it can't be
         parsed as a runtime unit expression by Quantity()/Unit()/ureg(),
         so there is no pint spelling of this that would actually work for
-        a caller. Rejected explicitly rather than returning a string that
+        a caller. Rejected explicitly (unless `allow_numeric_shift` was
+        passed to the constructor) rather than returning a string that
         looks valid here but always fails downstream with a confusing,
         unrelated pint error.
         """
+        if self._allow_numeric_shift:
+            return f"{unit}; offset: {offset}"
+
         raise NotImplementedError(
             "Numeric offset units (e.g. 'K @ 273.15') are not directly "
             "supported: pint's offset syntax ('unit; offset: value') only "

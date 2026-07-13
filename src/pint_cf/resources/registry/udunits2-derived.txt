@@ -1,4 +1,5 @@
 # Generated from udunits2-derived.xml
+# Unit data (c) UCAR/Unidata (UDUNITS-2) - see UDUNITS2-COPYRIGHT.txt
 
 
 # standard unit of angular measure, an angle that creates an arc in a

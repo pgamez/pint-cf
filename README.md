@@ -102,3 +102,9 @@ includes them by default:
 
 Pass `cf_extensions=False` to `cf_unitregistry()` for a registry that
 matches plain UDUNITS-2 instead, without any of these additions.
+
+## Third-party notices
+
+The UDUNITS-2 unit database this package is built on is redistributed
+under its own license - see
+[THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).

@@ -1,4 +1,5 @@
 # Generated from udunits2-common.xml
+# Unit data (c) UCAR/Unidata (UDUNITS-2) - see UDUNITS2-COPYRIGHT.txt
 
 
 # unit of time, synonym for second
