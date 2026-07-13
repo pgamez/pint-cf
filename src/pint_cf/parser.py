@@ -221,9 +221,21 @@ class UdunitsToPintTransformer(Transformer):
         """
         Shift by numeric offset (e.g., K @ 273.15).
 
-        Uses pint's offset notation: "unit; offset: value"
+        pint's own offset notation ("unit; offset: value") is only valid
+        when defining a NEW named unit in a registry file - it can't be
+        parsed as a runtime unit expression by Quantity()/Unit()/ureg(),
+        so there is no pint spelling of this that would actually work for
+        a caller. Rejected explicitly rather than returning a string that
+        looks valid here but always fails downstream with a confusing,
+        unrelated pint error.
         """
-        return f"{unit}; offset: {offset}"
+        raise NotImplementedError(
+            "Numeric offset units (e.g. 'K @ 273.15') are not directly "
+            "supported: pint's offset syntax ('unit; offset: value') only "
+            "works when defining a new named unit, not as a runtime unit "
+            "expression. Define the shifted unit explicitly instead, e.g. "
+            "ureg.define('my_unit = kelvin; offset: 273.15')."
+        )
 
     def shift_by_time(self, unit: str, shift_op: str, timestamp) -> str:
         """
@@ -294,7 +306,10 @@ def cf_string_to_pint(unit_string: str) -> str:
     ------
     NotImplementedError
         For a shift by timestamp (e.g. "seconds since
-        1970-01-01") - pint has no notion of a time origin.
+        1970-01-01") - pint has no notion of a time origin. Also for
+        a shift by number (e.g. "K @ 273.15") - pint's offset syntax
+        only works when defining a new named unit, not as a runtime
+        unit expression.
     ValueError
         For ``"temperature: on_scale"`` applied to a compound unit
         expression, which can't be honored through the
@@ -308,8 +323,6 @@ def cf_string_to_pint(unit_string: str) -> str:
     'm ** 2'
     >>> cf_string_to_pint("kg.m/s2")
     'kg * m / s ** 2'
-    >>> cf_string_to_pint("K @ 273.15")
-    'K; offset: 273.15'
 
     """
     if not unit_string or unit_string.isspace():

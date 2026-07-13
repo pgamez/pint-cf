@@ -11,13 +11,19 @@ This package provides:
 - A CF-compliant Pint UnitRegistry with explicit plural aliases.
 - A custom `cf` formatter that supports both long-name and short-symbol formats.
 - `CFContext`, for CF's `units_metadata` temperature attribute (CF-1.11).
+- CF units not supported by UDUNITS2 (`level`, `sigma_level`, `layer`,
+  `practical_salinity_unit`/`psu`, `decibel`/`bel`, and the `sverdrup` `Sv`
+  symbol), on by default - see below.
 
 Known limitations:
 
 - Pint does not support **time coordinates** (e.g.
   `days since 2001-01-01`) or **climate calendars** (e.g., `360_days`).
   Consider using [cftime](https://unidata.github.io/cftime/) instead.
-- CF units not supported by UDUNITS2 are not handled yet
+- `decibel`/`bel` are plain dimensionless ratio units (matching
+  `cfunits`/`cf-units`) - the physical reference level a `dB` value is
+  relative to is defined per `standard_name` in the CF standard name
+  table, which pint-cf does not resolve.
 
 <!-- - Pint does not support **scaling factors** in unit expressions, such as
   `1.5 * pint.Unit('0.1 m')`. You can work around this by adding your own
@@ -98,3 +104,40 @@ difference are numerically identical for them, and `cf_attributes_for`
 reports `"temperature: unknown"` rather than guessing. If that distinction
 matters for your data, track it through your own computation instead of
 trying to recover it from the resulting unit.
+
+### CF units not supported by UDUNITS-2
+
+CF defines a handful of units UDUNITS-2 itself doesn't
+([issue #10](https://github.com/pgamez/pint-cf/issues/10)), taken from
+[`cfunits`](https://github.com/NCAS-CMS/cfunits) (the CF ecosystem's
+reference implementation for these additions). `cf_unitregistry()` includes
+them by default:
+
+```python
+from pint_cf import cf_unitregistry
+
+ureg = cf_unitregistry()
+
+ureg.Quantity(1, "psu")        # practical_salinity_unit: 1e-3, not 1
+ureg.Quantity(1, "dB")         # decibel: dimensionless ratio unit
+ureg.Quantity(1, "Sv")         # sverdrup (1e6 m3/s), not sievert
+ureg.Quantity(1, "level")      # dimensionless - raises DeprecationWarning
+```
+
+- `level`, `sigma_level`, `layer`: dimensionless vertical-coordinate
+  placeholders kept only for COARDS backwards compatibility - CF itself
+  calls this use "deprecated by this standard" (units section), so parsing
+  one of these raises `DeprecationWarning`.
+- `practical_salinity_unit`/`psu`: `1e-3`, matching `cfunits` - not `1`, as
+  CF's own (outdated) FAQ suggests.
+- `decibel`/`dB`, `bel`: plain dimensionless ratio units. CF's real
+  definition ties the reference level to the variable's `standard_name`
+  (e.g. `sound_intensity_level_in_air`), which pint-cf does not resolve -
+  this matches what `cfunits`/`cf-units` themselves do.
+- `sverdrup`/`Sv`: UDUNITS-2 assigns `Sv` to `sievert` (SI); CF/`cfunits`
+  reassigns it to `sverdrup` (ocean volume transport) instead. `sievert`'s
+  own name still works, just not the `Sv` symbol.
+
+Pass `cf_extensions=False` to `cf_unitregistry()` for a registry that
+matches plain UDUNITS-2 instead, without any of these additions (`Sv` keeps
+meaning sievert, and `level`/`psu`/`dB`/etc. are all undefined).

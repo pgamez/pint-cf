@@ -3,14 +3,11 @@ TODO:
 
 - https://docs.unidata.ucar.edu/udunits/current/udunits2lib.html#Grammar
 - fechas (tienen el signo -)
-- # ("days since 1970-01-01", "a; offset: 1"), -> not implemented error
 - El XML tambien se tiene que probar
 
 """
 
 import pytest
-
-# from cfunits import Units
 from lark.exceptions import UnexpectedInput, VisitError
 from pint.delegates import ParserConfig
 from pint.delegates.txt_defparser.plain import UnitDefinition
@@ -186,27 +183,6 @@ TEST_CASES_TRANSFORM = [
     ("1 m/s", "1 * m / s"),
     ("g/kg", "g / kg"),
     # =========================================================================
-    # Shift-Spec → Product-Spec SHIFT INT
-    # =========================================================================
-    ("a @ 1", "a; offset: 1"),
-    ("a after 1", "a; offset: 1"),
-    ("a from 1", "a; offset: 1"),
-    ("a ref 1", "a; offset: 1"),
-    ("K @ 0", "K; offset: 0"),
-    # =========================================================================
-    # Shift-Spec → Product-Spec SHIFT REAL
-    # =========================================================================
-    ("K @ 273.15", "K; offset: 273.15"),
-    ("K @ -273.15", "K; offset: -273.15"),
-    ("a @ 1.5", "a; offset: 1.5"),
-    ("K after 273.15", "K; offset: 273.15"),
-    ("K from 273.15", "K; offset: 273.15"),
-    ("K ref 273.15", "K; offset: 273.15"),
-    ("degC @ 1.5", "degC; offset: 1.5"),
-    ("°R @ 459.67", "°R; offset: 459.67"),
-    # Shift on product expression
-    ("m/s @ 0", "m / s; offset: 0"),
-    # =========================================================================
     # Basic-Spec → LOGREF Product-Spec ")" : logarithmic units
     # =========================================================================
     # All log types with reference value
@@ -287,6 +263,25 @@ TEST_CASES_TIME_SHIFTS = [
     "seconds since 19700101T1234",
     "seconds since 19700101T1234 +01:00",
     "seconds since 19700101T1234 UTC",
+]
+
+
+TEST_CASES_NUMBER_SHIFTS = [
+    "a @ 1",
+    "a after 1",
+    "a from 1",
+    "a ref 1",
+    "K @ 0",
+    "K @ 273.15",
+    "K @ -273.15",
+    "a @ 1.5",
+    "K after 273.15",
+    "K from 273.15",
+    "K ref 273.15",
+    "degC @ 1.5",
+    "°R @ 459.67",
+    # Shift on product expression
+    "m/s @ 0",
 ]
 
 
@@ -424,5 +419,18 @@ def test_invalid_raises(input_str: str) -> None:
 def test_time_shifts_raise_not_implemented(input_str: str) -> None:
     with pytest.raises(
         VisitError, match="Time-based offsets are not directly supported by pint"
+    ):
+        cf_string_to_pint(input_str)
+
+
+@pytest.mark.parametrize("input_str", TEST_CASES_NUMBER_SHIFTS)
+def test_number_shifts_raise_not_implemented(input_str: str) -> None:
+    """Numeric offset units (e.g. "K @ 273.15") always fail downstream:
+    pint's "unit; offset: value" syntax is only valid when defining a new
+    named unit, not as a runtime unit expression - rejected explicitly
+    instead of producing a string that looks valid but always crashes
+    later with an unrelated pint error."""
+    with pytest.raises(
+        VisitError, match="Numeric offset units .* are not directly supported"
     ):
         cf_string_to_pint(input_str)

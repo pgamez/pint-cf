@@ -1,3 +1,4 @@
+import warnings
 from collections.abc import Iterable
 from importlib import resources
 from typing import Any, Unpack
@@ -15,6 +16,39 @@ from pint.facets.plain import PlainUnit
 from .parser import cf_string_to_pint
 
 _CF_FORMATTER_NAME = "cf"
+_CF_EXTENSIONS_RESOURCE = "cf-extensions.txt"
+
+# Dimensionless vertical coordinate placeholders CF keeps only for COARDS
+# backwards compatibility and calls "deprecated by this standard" outright
+# (CF conventions, units section) - see resources/registry/cf-extensions.txt.
+_DEPRECATED_CF_UNITS = {
+    "level",
+    "levels",
+    "sigma_level",
+    "sigma_levels",
+    "layer",
+    "layers",
+}
+
+
+def _warn_if_deprecated_cf_unit(unit_string: str) -> str:
+    """Preprocessor: warn on a bare deprecated CF vertical-coordinate unit.
+
+    A no-op transform (returns its input unchanged) purely for the
+    DeprecationWarning side effect - these units are only ever used bare
+    (e.g. ``units = "level"``), never combined with anything else.
+    """
+    if unit_string.strip() in _DEPRECATED_CF_UNITS:
+        warnings.warn(
+            f"{unit_string.strip()!r} is a dimensionless vertical "
+            "coordinate placeholder kept only for COARDS backwards "
+            "compatibility - CF conventions (units section) call it "
+            "deprecated outright in favor of a proper vertical "
+            "coordinate variable.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+    return unit_string
 
 
 class _NoCache(dict):
@@ -99,11 +133,26 @@ def _register_cf_formatter(ureg: pint.UnitRegistry) -> None:
     REGISTERED_FORMATTERS[_CF_FORMATTER_NAME] = formatter
 
 
-def cf_unitregistry() -> pint.UnitRegistry:
+def cf_unitregistry(*, cf_extensions: bool = True) -> pint.UnitRegistry:
     """Create a CF-ready pint UnitRegistry.
 
     Configured with the UDUNITS-2 registry, the `cf_string_to_pint`
     preprocessor, and the ``"cf"`` formatter.
+
+    Parameters
+    ----------
+    cf_extensions : bool, optional
+        By default (``True``), the registry also includes CF units
+        that UDUNITS-2 itself doesn't define - ``level``,
+        ``sigma_level``, ``layer`` (dimensionless vertical-coordinate
+        placeholders, deprecated - parsing one raises
+        ``DeprecationWarning``), ``practical_salinity_unit``/``psu``,
+        ``decibel``/``dB``, ``bel``, and reassigning the ``Sv`` symbol
+        from ``sievert`` to ``sverdrup``. Sourced from `cfunits`
+        (https://github.com/NCAS-CMS/cfunits), see
+        ``resources/registry/cf-extensions.txt``. Pass ``False`` to
+        get a registry that matches plain UDUNITS-2 instead, without
+        any of these additions.
 
     Returns
     -------
@@ -113,12 +162,22 @@ def cf_unitregistry() -> pint.UnitRegistry:
         ``format(q, "~cf")``.
 
     """
+    preprocessors = [cf_string_to_pint]
+    if cf_extensions:
+        preprocessors.insert(0, _warn_if_deprecated_cf_unit)
+
     with resources.path("pint_cf.resources.registry", "udunits2.txt") as filename:
         ureg = pint.UnitRegistry(
             filename=str(filename),
             autoconvert_offset_to_baseunit=True,
-            preprocessors=[cf_string_to_pint],
+            preprocessors=preprocessors,
         )
+
+    if cf_extensions:
+        with resources.path(
+            "pint_cf.resources.registry", _CF_EXTENSIONS_RESOURCE
+        ) as cf_extensions_filename:
+            ureg.load_definitions(str(cf_extensions_filename))
 
     # Deliberately NOT setting ureg.formatter.default_format = "cf": pint only
     # applies default_format when the format spec is completely empty

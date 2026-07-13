@@ -1,0 +1,52 @@
+# CF units not supported by UDUNITS-2.
+#
+# Unlike udunits2-*.txt, this file is hand-maintained, NOT generated from
+# tools/xml/*.xml - these units are CF-specific extensions on top of
+# UDUNITS-2, not part of the upstream UDUNITS-2 database itself, so they
+# have no XML source to regenerate from. `cfunits`
+# (https://github.com/NCAS-CMS/cfunits), the CF ecosystem's de facto
+# reference implementation for these additions, is the source of truth
+# for every definition below.
+#
+# Loaded on top of the base UDUNITS-2 registry by cf_unitregistry(), unless
+# called with cf_extensions=False.
+
+# Dimensionless vertical coordinate placeholders, kept only for COARDS
+# backwards compatibility. CF conventions (section on units) call this use
+# "not compatible with UDUNITS, and ... deprecated by this standard" -
+# cf_unitregistry() raises a DeprecationWarning when one of these is parsed
+# (see units.py:_warn_if_deprecated_cf_unit).
+level = 1 = _ = levels
+sigma_level = 1 = _ = sigma_levels
+layer = 1 = _ = layers
+
+# CF's own FAQ calls this unit "no longer used" and effectively `1`, but
+# `cfunits` defines it as 1e-3, which is what's actually needed to read
+# existing files using it correctly.
+practical_salinity_unit = 1e-3 = psu = practical_salinity_units
+
+# The physical reference level a decibel value is relative to (e.g. 1e-12 W
+# m-2 for sound_intensity_level_in_air) is defined per `standard_name` in the
+# CF standard name table, not by the unit itself - resolving that would mean
+# reading standard_name, which is out of scope for a unit-string converter.
+# This matches `cfunits`/`cf-units`, which likewise only define dB as a
+# plain dimensionless ratio unit.
+decibel = 1 = dB = decibels
+bel = 10 * decibel = _ = bels
+
+# UDUNITS-2 assigns the "Sv" symbol to sievert (SI); CF/cfunits instead
+# assigns it to sverdrup (ocean volume transport) - see
+# https://github.com/xarray-contrib/cf-xarray/discussions/632. This
+# redefines sverdrup (already added by udunits2-common.txt) with "Sv" as
+# its symbol, relying on pint's default on_redefinition="warn" to let the
+# new definition take over the "Sv" key.
+#
+# udunits2-accepted.txt's `rem` is defined as "cSv" (centisievert) - pint
+# resolves that symbolic reference against whatever "Sv" means at the time
+# `rem` is *used*, not when it was defined, so reassigning "Sv" would
+# silently corrupt `rem` into a fraction of a sverdrup instead of a
+# sievert. Redefine it first, spelled out against "gray" (sievert's own
+# base unit) instead of the now-contested "Sv" symbol, so it's immune to
+# the reassignment below.
+rem = 0.01 * gray = _ = rems
+sverdrup = 1e6 * m ** 3 / s = Sv = sverdrups
