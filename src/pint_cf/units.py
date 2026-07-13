@@ -17,8 +17,28 @@ from .parser import cf_string_to_pint
 _CF_FORMATTER_NAME = "cf"
 
 
+class _NoCache(dict):
+    """A dict that never stores anything - every lookup is a cache miss.
+
+    Used to disable pint's `_cache.parse_unit`, which memoizes a parsed unit
+    result keyed on the RAW string, before preprocessors run. Left enabled,
+    a later call with the same raw string but a different (or no) active
+    CFContext would silently return the stale cached result instead of
+    re-running cf_string_to_pint - this makes CFContext work transparently
+    with plain pint calls like ureg.Quantity(value, units), instead of
+    requiring a pint-cf-specific replacement for them.
+    """
+
+    def __setitem__(self, key: Any, value: Any) -> None:
+        pass
+
+
 class CFFormatter(DefaultFormatter):
-    """Formatter for CF-compliant unit strings."""
+    """Formatter for CF-compliant unit strings.
+
+    Registered under the ``"cf"`` format spec by `cf_unitregistry`;
+    not meant to be instantiated directly.
+    """
 
     def format_unit(
         self,
@@ -80,7 +100,19 @@ def _register_cf_formatter(ureg: pint.UnitRegistry) -> None:
 
 
 def cf_unitregistry() -> pint.UnitRegistry:
-    """Create a CF-ready UnitRegistry with parser and formatter configured."""
+    """Create a CF-ready pint UnitRegistry.
+
+    Configured with the UDUNITS-2 registry, the `cf_string_to_pint`
+    preprocessor, and the ``"cf"`` formatter.
+
+    Returns
+    -------
+    pint.UnitRegistry
+        A registry ready to parse UDUNITS-2/CF unit strings and to
+        format results back with ``format(q, "cf")`` /
+        ``format(q, "~cf")``.
+
+    """
     with resources.path("pint_cf.resources.registry", "udunits2.txt") as filename:
         ureg = pint.UnitRegistry(
             filename=str(filename),
@@ -103,4 +135,21 @@ def cf_unitregistry() -> pint.UnitRegistry:
     # defines plural forms for units
     ureg._suffixes = {"": ""}
     _register_cf_formatter(ureg)
+
+    # See _NoCache: without this, ureg.Quantity(value, units) (or ureg(units))
+    # would only pick up an active CFContext the FIRST time a given raw
+    # string is parsed - later calls with the same string but a different
+    # (or no) context would silently get the first call's stale result.
+    #
+    # Measured cost: none, in both a mixed-string workload and a
+    # same-string-repeated-5000-times worst case (~40-60 us/call either way,
+    # within noise, disabled sometimes even marginally faster). This cache is
+    # keyed on the raw string BEFORE preprocessors run, but written back with
+    # the string AFTER preprocessors run (registry.py:_parse_units_as_container)
+    # - since cf_string_to_pint almost always changes the string (e.g.
+    # "degree_C" -> "degree_Celsius"), the read and write keys rarely match
+    # in the first place, so this cache was already close to a no-op for any
+    # registry using a non-trivial preprocessor like ours.
+    ureg._cache.parse_unit = _NoCache()
+
     return ureg

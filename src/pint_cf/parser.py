@@ -9,6 +9,8 @@ from pathlib import Path
 
 from lark import Lark, Token, Transformer, v_args
 
+from .context import _apply_temperature_mode
+
 # Unicode superscript to ASCII digit mapping
 _SUPERSCRIPT_MAP = {
     "⁰": "0",
@@ -67,16 +69,18 @@ def _split_id_with_exponent(token_str: str) -> tuple[str, str]:
 
 @v_args(inline=True)
 class UdunitsToPintTransformer(Transformer):
-    """
-    Transform a Lark parse tree from udunits2.lark into a string
-    that pint can parse directly.
+    """Transform a Lark parse tree into a pint-parseable string.
 
-    Example:
-        >>> transformer = UdunitsToPintTransformer()
-        >>> parser = get_parser()
-        >>> tree = parser.parse("kg.m/s2")
-        >>> result = transformer.transform(tree)
-        >>> print(result)  # "kg * m / s ** 2"
+    The parse tree is produced from `udunits2.lark` by the parser
+    returned by `get_parser`.
+
+    Examples
+    --------
+    >>> transformer = UdunitsToPintTransformer()
+    >>> parser = get_parser()
+    >>> tree = parser.parse("kg.m/s2")
+    >>> transformer.transform(tree)
+    'kg * m / s ** 2'
     """
 
     # -------------------------------------------------------------------------
@@ -245,7 +249,14 @@ _parser = None
 
 
 def get_parser() -> Lark:
-    """Get the UDUNITS-2 parser (cached)."""
+    """Get the UDUNITS-2 parser.
+
+    Returns
+    -------
+    lark.Lark
+        A parser built from `udunits2.lark`, cached after the
+        first call.
+    """
     global _parser
     if _parser is None:
         grammar_path = Path(__file__).parent / "resources" / "udunits2.lark"
@@ -259,28 +270,47 @@ def get_parser() -> Lark:
 
 
 def cf_string_to_pint(unit_string: str) -> str:
-    """
-    Convert a UDUNITS-2 unit string to pint-compatible format.
+    """Convert a UDUNITS-2 unit string to pint-compatible format.
 
-    Args:
-        unit_string: A unit specification in UDUNITS-2 format.
+    Under an active `pint_cf.CFContext`, a CF ``units_metadata``
+    temperature mode (see `context`) is applied: ``"difference"``
+    forces a bare temperature unit to its delta_ counterpart, e.g.
+    ``"degree_C"`` -> ``"delta_degree_Celsius"``. With no active
+    context (or ``"unknown"``), behavior is unchanged - pint's own
+    default ``as_delta=True`` already applies UDUNITS' compound
+    expression heuristic.
 
-    Returns:
+    Parameters
+    ----------
+    unit_string : str
+        A unit specification in UDUNITS-2 format.
+
+    Returns
+    -------
+    str
         A string that pint can parse directly.
 
-    Examples:
-        >>> cf_string_to_pint("m")
-        'm'
-        >>> cf_string_to_pint("m2")
-        'm ** 2'
-        >>> cf_string_to_pint("kg.m/s2")
-        'kg * m / s ** 2'
-        >>> cf_string_to_pint("K @ 273.15")
-        'K; offset: 273.15'
+    Raises
+    ------
+    NotImplementedError
+        For a shift by timestamp (e.g. "seconds since
+        1970-01-01") - pint has no notion of a time origin.
+    ValueError
+        For ``"temperature: on_scale"`` applied to a compound unit
+        expression, which can't be honored through the
+        preprocessor - see `_apply_temperature_mode`.
 
-    Raises:
-        NotImplementedError: For a shift by timestamp (e.g. "seconds since
-            1970-01-01") - pint has no notion of a time origin.
+    Examples
+    --------
+    >>> cf_string_to_pint("m")
+    'm'
+    >>> cf_string_to_pint("m2")
+    'm ** 2'
+    >>> cf_string_to_pint("kg.m/s2")
+    'kg * m / s ** 2'
+    >>> cf_string_to_pint("K @ 273.15")
+    'K; offset: 273.15'
+
     """
     if not unit_string or unit_string.isspace():
         return "1"
@@ -298,4 +328,4 @@ def cf_string_to_pint(unit_string: str) -> str:
     if not isinstance(result, str):
         return "1"
 
-    return result
+    return _apply_temperature_mode(result)
