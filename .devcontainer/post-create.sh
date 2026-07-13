@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Eliminar el repositorio de Yarn que causa problemas de verificación GPG
+# Yarn repo causes GPG varification issues
 sudo rm -f /etc/apt/sources.list.d/yarn.list
 
 sudo apt update

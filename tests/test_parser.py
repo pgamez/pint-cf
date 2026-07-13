@@ -3,14 +3,11 @@ TODO:
 
 - https://docs.unidata.ucar.edu/udunits/current/udunits2lib.html#Grammar
 - fechas (tienen el signo -)
-- # ("days since 1970-01-01", "a; offset: 1"), -> not implemented error
 - El XML tambien se tiene que probar
 
 """
 
 import pytest
-
-# from cfunits import Units
 from lark.exceptions import UnexpectedInput, VisitError
 from pint.delegates import ParserConfig
 from pint.delegates.txt_defparser.plain import UnitDefinition
@@ -94,6 +91,9 @@ TEST_CASES_TRANSFORM = [
     ("s¹", "s ** 1"),
     # Multi-digit superscript
     ("m¹²", "m ** 12"),
+    # Signed superscript (sign only valid once, at the start)
+    ("m⁻¹", "m ** -1"),
+    ("m⁺²", "m ** +2"),
     # =========================================================================
     # Power-Spec → Basic-Spec RAISE INT : ^ or **
     # =========================================================================
@@ -153,6 +153,8 @@ TEST_CASES_TRANSFORM = [
     ("a  /  b", "a / b"),
     ("a per b", "a / b"),
     ("a PER b", "a / b"),
+    ("a Per b", "a / b"),
+    ("a PEr b", "a / b"),
     ("kg  /  m", "kg / m"),
     # Chained division
     ("m/s/K", "m / s / K"),
@@ -181,27 +183,6 @@ TEST_CASES_TRANSFORM = [
     ("1 m/s", "1 * m / s"),
     ("g/kg", "g / kg"),
     # =========================================================================
-    # Shift-Spec → Product-Spec SHIFT INT
-    # =========================================================================
-    ("a @ 1", "a; offset: 1"),
-    ("a after 1", "a; offset: 1"),
-    ("a from 1", "a; offset: 1"),
-    ("a ref 1", "a; offset: 1"),
-    ("K @ 0", "K; offset: 0"),
-    # =========================================================================
-    # Shift-Spec → Product-Spec SHIFT REAL
-    # =========================================================================
-    ("K @ 273.15", "K; offset: 273.15"),
-    ("K @ -273.15", "K; offset: -273.15"),
-    ("a @ 1.5", "a; offset: 1.5"),
-    ("K after 273.15", "K; offset: 273.15"),
-    ("K from 273.15", "K; offset: 273.15"),
-    ("K ref 273.15", "K; offset: 273.15"),
-    ("degC @ 1.5", "degC; offset: 1.5"),
-    ("°R @ 459.67", "°R; offset: 459.67"),
-    # Shift on product expression
-    ("m/s @ 0", "m / s; offset: 0"),
-    # =========================================================================
     # Basic-Spec → LOGREF Product-Spec ")" : logarithmic units
     # =========================================================================
     # All log types with reference value
@@ -222,6 +203,9 @@ TEST_CASES_TRANSFORM = [
     # Colon without number
     ("lb(re: W)", "W; logbase: 2; logfactor: 1"),
     ("lg(re: mW)", "mW; logbase: 10; logfactor: 10"),
+    # "re" is mandatory (per UDUNITS spec): without it, this is NOT a
+    # logarithmic unit - "log" is just an identifier multiplied by a group.
+    ("log(1 mW)", "log * (1 * mW)"),
     # =========================================================================
     # Complex / Real-world CF-convention expressions
     # =========================================================================
@@ -282,6 +266,25 @@ TEST_CASES_TIME_SHIFTS = [
 ]
 
 
+TEST_CASES_NUMBER_SHIFTS = [
+    "a @ 1",
+    "a after 1",
+    "a from 1",
+    "a ref 1",
+    "K @ 0",
+    "K @ 273.15",
+    "K @ -273.15",
+    "a @ 1.5",
+    "K after 273.15",
+    "K from 273.15",
+    "K ref 273.15",
+    "degC @ 1.5",
+    "°R @ 459.67",
+    # Shift on product expression
+    "m/s @ 0",
+]
+
+
 TEST_CASES_INVALID = [
     # =========================================================================
     # Invalid operators / syntax
@@ -292,6 +295,10 @@ TEST_CASES_INVALID = [
     # Double raise
     "a^^2",
     "a ^ ^ 2",
+    # Malformed superscript: sign only valid once, at the start
+    "m²⁻",
+    "m²⁺³",
+    "m⁻²⁺",
     # Double consecutive operators
     "a * * b",
     "a / / b",
@@ -412,5 +419,18 @@ def test_invalid_raises(input_str: str) -> None:
 def test_time_shifts_raise_not_implemented(input_str: str) -> None:
     with pytest.raises(
         VisitError, match="Time-based offsets are not directly supported by pint"
+    ):
+        cf_string_to_pint(input_str)
+
+
+@pytest.mark.parametrize("input_str", TEST_CASES_NUMBER_SHIFTS)
+def test_number_shifts_raise_not_implemented(input_str: str) -> None:
+    """Numeric offset units (e.g. "K @ 273.15") always fail downstream:
+    pint's "unit; offset: value" syntax is only valid when defining a new
+    named unit, not as a runtime unit expression - rejected explicitly
+    instead of producing a string that looks valid but always crashes
+    later with an unrelated pint error."""
+    with pytest.raises(
+        VisitError, match="Numeric offset units .* are not directly supported"
     ):
         cf_string_to_pint(input_str)

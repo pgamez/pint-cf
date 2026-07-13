@@ -9,6 +9,8 @@ from pathlib import Path
 
 from lark import Lark, Token, Transformer, v_args
 
+from .context import _apply_temperature_mode
+
 # Unicode superscript to ASCII digit mapping
 _SUPERSCRIPT_MAP = {
     "⁰": "0",
@@ -67,16 +69,18 @@ def _split_id_with_exponent(token_str: str) -> tuple[str, str]:
 
 @v_args(inline=True)
 class UdunitsToPintTransformer(Transformer):
-    """
-    Transform a Lark parse tree from udunits2.lark into a string
-    that pint can parse directly.
+    """Transform a Lark parse tree into a pint-parseable string.
 
-    Example:
-        >>> transformer = UdunitsToPintTransformer()
-        >>> parser = get_parser()
-        >>> tree = parser.parse("kg.m/s2")
-        >>> result = transformer.transform(tree)
-        >>> print(result)  # "kg * m / s ** 2"
+    The parse tree is produced from `udunits2.lark` by the parser
+    returned by `get_parser`.
+
+    Examples
+    --------
+    >>> transformer = UdunitsToPintTransformer()
+    >>> parser = get_parser()
+    >>> tree = parser.parse("kg.m/s2")
+    >>> transformer.transform(tree)
+    'kg * m / s ** 2'
     """
 
     # -------------------------------------------------------------------------
@@ -217,62 +221,36 @@ class UdunitsToPintTransformer(Transformer):
         """
         Shift by numeric offset (e.g., K @ 273.15).
 
-        Uses pint's offset notation: "unit; offset: value"
+        pint's own offset notation ("unit; offset: value") is only valid
+        when defining a NEW named unit in a registry file - it can't be
+        parsed as a runtime unit expression by Quantity()/Unit()/ureg(),
+        so there is no pint spelling of this that would actually work for
+        a caller. Rejected explicitly rather than returning a string that
+        looks valid here but always fails downstream with a confusing,
+        unrelated pint error.
         """
-        return f"{unit}; offset: {offset}"
+        raise NotImplementedError(
+            "Numeric offset units (e.g. 'K @ 273.15') are not directly "
+            "supported: pint's offset syntax ('unit; offset: value') only "
+            "works when defining a new named unit, not as a runtime unit "
+            "expression. Define the shifted unit explicitly instead, e.g. "
+            "ureg.define('my_unit = kelvin; offset: 273.15')."
+        )
 
-    def shift_by_time(self, unit: str, shift_op: str, timestamp: str) -> str:
+    def shift_by_time(self, unit: str, shift_op: str, timestamp) -> str:
         """
         Shift by timestamp (e.g., seconds since 1970-01-01).
 
-        Creates a special notation for time references.
+        pint has no notion of a time origin, so this is always rejected. The
+        grammar still parses the timestamp (rather than treating it as a syntax
+        error) purely so this explicit message can be raised instead - its
+        parsed value is otherwise unused.
         """
-        # return f"{unit} since {timestamp}"
         raise NotImplementedError(
             "Time-based offsets are not directly supported by pint. "
             "Consider using a dedicated time handling library like cftime "
             "for this use case (see: https://unidata.github.io/cftime/)"
         )
-
-    # -------------------------------------------------------------------------
-    # Timestamps
-    # -------------------------------------------------------------------------
-
-    def date_only(self, date: Token) -> str:
-        """Date without time (e.g., 1970-01-01)."""
-        return str(date)
-
-    def date_time(self, date: Token, clock: Token) -> str:
-        """Date with time (e.g., 1970-01-01 00:00:00)."""
-        return f"{date} {clock}"
-
-    def date_time_offset(self, date: Token, clock: Token, offset: Token) -> str:
-        """Date with time and timezone offset."""
-        return f"{date} {clock} {offset}"
-
-    def date_time_tz(self, date: Token, clock: Token, tz: Token) -> str:
-        """Date with time and timezone identifier."""
-        return f"{date} {clock} {tz}"
-
-    def datetime_iso(self, dt: Token) -> str:
-        """ISO 8601 datetime (e.g., 1970-01-01T00:00:00)."""
-        return str(dt)
-
-    def datetime_iso_tz(self, dt: Token, tz: Token) -> str:
-        """ISO 8601 datetime with timezone."""
-        return f"{dt} {tz}"
-
-    def packed_timestamp(self, ts: Token) -> str:
-        """Packed timestamp (e.g., 19700101T000000)."""
-        return str(ts)
-
-    def packed_timestamp_offset(self, ts: Token, offset: Token) -> str:
-        """Packed timestamp with offset."""
-        return f"{ts} {offset}"
-
-    def packed_timestamp_tz(self, ts: Token, tz: Token) -> str:
-        """Packed timestamp with timezone."""
-        return f"{ts} {tz}"
 
 
 # =============================================================================
@@ -283,7 +261,14 @@ _parser = None
 
 
 def get_parser() -> Lark:
-    """Get the UDUNITS-2 parser (cached)."""
+    """Get the UDUNITS-2 parser.
+
+    Returns
+    -------
+    lark.Lark
+        A parser built from `udunits2.lark`, cached after the
+        first call.
+    """
     global _parser
     if _parser is None:
         grammar_path = Path(__file__).parent / "resources" / "udunits2.lark"
@@ -297,26 +282,50 @@ def get_parser() -> Lark:
 
 
 def cf_string_to_pint(unit_string: str) -> str:
-    """
-    Convert a UDUNITS-2 unit string to pint-compatible format.
+    """Convert a UDUNITS-2 unit string to pint-compatible format.
 
-    Args:
-        unit_string: A unit specification in UDUNITS-2 format.
+    Under an active `pint_cf.CFContext`, the CF ``units_metadata``
+    temperature mode is applied: ``"difference"`` forces a bare
+    temperature unit to its ``delta_`` counterpart, e.g.
+    ``"degree_C"`` -> ``"delta_degree_Celsius"``. With no active
+    context (or ``"unknown"``), behavior is unchanged - pint's own
+    default ``as_delta=True`` already applies UDUNITS' compound
+    expression heuristic.
 
-    Returns:
+    Parameters
+    ----------
+    unit_string : str
+        A unit specification in UDUNITS-2 format.
+
+    Returns
+    -------
+    str
         A string that pint can parse directly.
 
-    Examples:
-        >>> udunits_to_pint("m")
-        'm'
-        >>> udunits_to_pint("m2")
-        'm ** 2'
-        >>> udunits_to_pint("kg.m/s2")
-        'kg * m / s ** 2'
-        >>> udunits_to_pint("K @ 273.15")
-        'K; offset: 273.15'
-        >>> udunits_to_pint("seconds since 1970-01-01")
-        'seconds since 1970-01-01'
+    Raises
+    ------
+    NotImplementedError
+        For a shift by timestamp (e.g. "seconds since
+        1970-01-01") - pint has no notion of a time origin. Also for
+        a shift by number (e.g. "K @ 273.15") - pint's offset syntax
+        only works when defining a new named unit, not as a runtime
+        unit expression.
+    ValueError
+        For ``"temperature: on_scale"`` applied to a compound unit
+        expression - it can't be honored through the automatic
+        preprocessor pipeline; call
+        ``ureg.Quantity(value, units, as_delta=False)`` directly
+        instead.
+
+    Examples
+    --------
+    >>> cf_string_to_pint("m")
+    'm'
+    >>> cf_string_to_pint("m2")
+    'm ** 2'
+    >>> cf_string_to_pint("kg.m/s2")
+    'kg * m / s ** 2'
+
     """
     if not unit_string or unit_string.isspace():
         return "1"
@@ -334,4 +343,4 @@ def cf_string_to_pint(unit_string: str) -> str:
     if not isinstance(result, str):
         return "1"
 
-    return result
+    return _apply_temperature_mode(result)

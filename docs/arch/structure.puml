@@ -11,10 +11,15 @@ package "pint" {
 
 package "pint-cf" {
     component "cf_unitregistry()" <<function>> as FACTORY #Gold
+    component "CFContext" <<context manager>> as CFCONTEXT #Gold
+    component "cf_attributes_for()" <<function>> as ATTRS_FOR #Gold
     component CFFormatter <<class>> as FORMATTER
     component "cf_string_to_pint()" <<function>> as PREPROCESSOR
     component UdunitsToPintTransformer <<class>> as PARSER
-    file "udunits2.txt" <<registry file>> as F_TXT
+    component "_apply_temperature_mode()" <<function>> as TEMP_MODE
+    collections "_temperature_mode\n(ContextVar)" as CTXVAR
+    file "udunits2.txt" <<generated registry>> as F_TXT
+    file "cf-extensions.txt" <<hand-maintained registry>> as F_CFEXT
     file "udunits2.lark" <<parser file>> as F_LARK
 }
 
@@ -33,10 +38,15 @@ FORMATTER .u.|> PINT_DEFAULT_FORMATTER : inherits
 FACTORY ..> PREPROCESSOR : adds as preprocessor
 PARSER .l.> F_LARK : uses for parsing
 FACTORY .r.> F_TXT : loads definitions
+FACTORY .r.> F_CFEXT : loads on top, unless cf_extensions=False
 SCRIPT .l.> XMLRD : calls gen_pint_registry()
 XMLRD ..> F_XML : parses XML input
 XMLRD .l.> F_TXT : generates from XML
 XMLRD .l.> PREPROCESSOR : reuses for parsing CF strings
 PREPROCESSOR ..> PARSER : uses for parsing CF strings
+PREPROCESSOR ..> TEMP_MODE : applies active CFContext
+CFCONTEXT ..> CTXVAR : sets temperature mode
+TEMP_MODE ..> CTXVAR : reads temperature mode
+ATTRS_FOR .u.> PINT_UNIT_REGISTRY : reads Unit._units directly\n(reverse direction, no ContextVar)
 
 @enduml

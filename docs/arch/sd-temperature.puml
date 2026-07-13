@@ -1,0 +1,46 @@
+@startuml sd-temperature
+mainframe **sd** Temperature units_metadata round-trip
+
+autoactivate on
+
+actor User
+control "CFContext" as CFCONTEXT
+participant "ureg\n(cf_unitregistry())" as UREG
+participant "cf_string_to_pint()" as PREPROCESSOR
+participant "_apply_temperature_mode()" as TEMP_MODE
+participant "cf_attributes_for()" as ATTRS_FOR
+collections "_temperature_mode\n(ContextVar)" as CTXVAR
+
+== Reading: CF units_metadata -> pint Unit ==
+
+User -> CFCONTEXT : with CFContext(units_metadata="temperature: difference")
+    CFCONTEXT -> CTXVAR : set mode = "difference"
+        return token
+
+User -> UREG : ureg.Quantity(1, "degree_C")
+    UREG -> PREPROCESSOR : preprocess "degree_C"
+        PREPROCESSOR -> PREPROCESSOR : grammar transform\n-> "degree_C"
+        PREPROCESSOR -> TEMP_MODE : apply to transformed string
+            TEMP_MODE -> CTXVAR : read active mode
+                return "difference"
+            note right of TEMP_MODE
+                bare unit + "difference" -> prefix "delta_"
+                (compound units are left alone: pint's own
+                as_delta=True already handles those)
+            end note
+            return "delta_degree_C"
+        return "delta_degree_C"
+    return Quantity(1, delta_degree_Celsius)
+
+User -> CFCONTEXT : (exiting the with block)
+    CFCONTEXT -> CTXVAR : reset to previous value
+        return
+
+== Writing: pint Unit -> CF units_metadata ==
+
+User -> ATTRS_FOR : cf_attributes_for(q.units)
+    ATTRS_FOR -> ATTRS_FOR : inspect Unit._units directly\n(NOT the CFFormatter output -\nthose two are fully decoupled)
+        return {"units_metadata": "temperature: difference"}
+    return CF attributes dict, ready for\nds[name].attrs.update(...)
+
+@enduml

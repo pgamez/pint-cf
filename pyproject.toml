@@ -11,6 +11,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
 classifiers = [
+    "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
@@ -19,20 +20,24 @@ dependencies = ["Pint>=0.25.2", "lark"]
 
 [project.urls]
 Homepage = "https://github.com/pgamez/pint-cf"
+Documentation = "https://pgamez.github.io/pint-cf/"
 Issues = "https://github.com/pgamez/pint-cf/issues"
 
 [dependency-groups]
 tests = ["pytest", "pytest-cov"]
 build = ["build", "twine"]
 tools = ["defusedxml"]
+docs = ["sphinx", "myst-parser", "furo"]
+lint = ["ruff"]
 dev = [
     { include-group = "tests" },
     { include-group = "tools" },
     { include-group = "build" },
+    { include-group = "docs" },
+    { include-group = "lint" },
     "cf-units",
     "cfunits",
     "prek",
-    "ruff",
 ]
 
 [tool.setuptools.dynamic]
@@ -42,7 +47,7 @@ version = { attr = "pint_cf.__version__" }
 where = ["src/"]
 
 [tool.setuptools.package-data]
-"*" = ["*.txt", "*.lark"]
+"*" = ["*.txt", "*.lark", "py.typed"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "S"]
