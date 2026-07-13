@@ -5,11 +5,15 @@
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"image": "mcr.microsoft.com/devcontainers/python:2-3.12-trixie",
 	"remoteEnv": {
-		// Establece el modo copia por defecto para evitar warnings en Docker
 		"UV_LINK_MODE": "copy"
 	},
+	"mounts": [
+		"source=claude-code-config,target=/home/vscode/.claude,type=volume"
+	],
 	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
+	"features": {
+		"ghcr.io/devcontainers-extra/features/claude-code:2": {}
+	},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 	// Use 'postCreateCommand' to run commands after the container is created.
@@ -29,9 +33,6 @@
 			],
 			"settings": {
 				"python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python"
-				// "python.analysis.extraPaths": [
-				// 	"./src"
-				// ]
 			}
 		}
 	}
