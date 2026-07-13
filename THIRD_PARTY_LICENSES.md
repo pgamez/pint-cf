@@ -6,5 +6,5 @@ pint-cf's unit-definition data
 unit database (see `tools/xml/*.xml` and `tools/xmlrd.py` in this
 repository) and is redistributed under UDUNITS-2's own copyright and
 license terms, reproduced in full in
-[`src/pint_cf/resources/registry/UDUNITS2-COPYRIGHT.txt`](src/pint_cf/resources/registry/UDUNITS2-COPYRIGHT.txt)
+[`src/pint_cf/resources/registry/UDUNITS2-COPYRIGHT.txt`](https://github.com/pgamez/pint-cf/blob/main/src/pint_cf/resources/registry/UDUNITS2-COPYRIGHT.txt)
 (also included in the installed package).

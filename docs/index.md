@@ -8,5 +8,6 @@
 :maxdepth: 2
 
 api
+third_party_licenses
 changelog
 ```

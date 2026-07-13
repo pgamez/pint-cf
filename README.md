@@ -107,4 +107,4 @@ matches plain UDUNITS-2 instead, without any of these additions.
 
 The UDUNITS-2 unit database this package is built on is redistributed
 under its own license - see
-[THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+[THIRD_PARTY_LICENSES.md](https://github.com/pgamez/pint-cf/blob/main/THIRD_PARTY_LICENSES.md).
