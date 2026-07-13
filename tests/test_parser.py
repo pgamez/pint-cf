@@ -94,6 +94,9 @@ TEST_CASES_TRANSFORM = [
     ("s¹", "s ** 1"),
     # Multi-digit superscript
     ("m¹²", "m ** 12"),
+    # Signed superscript (sign only valid once, at the start)
+    ("m⁻¹", "m ** -1"),
+    ("m⁺²", "m ** +2"),
     # =========================================================================
     # Power-Spec → Basic-Spec RAISE INT : ^ or **
     # =========================================================================
@@ -153,6 +156,8 @@ TEST_CASES_TRANSFORM = [
     ("a  /  b", "a / b"),
     ("a per b", "a / b"),
     ("a PER b", "a / b"),
+    ("a Per b", "a / b"),
+    ("a PEr b", "a / b"),
     ("kg  /  m", "kg / m"),
     # Chained division
     ("m/s/K", "m / s / K"),
@@ -222,6 +227,9 @@ TEST_CASES_TRANSFORM = [
     # Colon without number
     ("lb(re: W)", "W; logbase: 2; logfactor: 1"),
     ("lg(re: mW)", "mW; logbase: 10; logfactor: 10"),
+    # "re" is mandatory (per UDUNITS spec): without it, this is NOT a
+    # logarithmic unit - "log" is just an identifier multiplied by a group.
+    ("log(1 mW)", "log * (1 * mW)"),
     # =========================================================================
     # Complex / Real-world CF-convention expressions
     # =========================================================================
@@ -292,6 +300,10 @@ TEST_CASES_INVALID = [
     # Double raise
     "a^^2",
     "a ^ ^ 2",
+    # Malformed superscript: sign only valid once, at the start
+    "m²⁻",
+    "m²⁺³",
+    "m⁻²⁺",
     # Double consecutive operators
     "a * * b",
     "a / / b",

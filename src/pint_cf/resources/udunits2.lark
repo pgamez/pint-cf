@@ -63,17 +63,23 @@ shift_op: SHIFT_AT | SHIFT_AFTER | SHIFT_FROM | SHIFT_SINCE | SHIFT_REF
 // -----------------------------------------------------------------------------
 // Timestamp: date/time specifications for temporal units
 // Examples: "1970-01-01", "1970-01-01 00:00:00", "1970-01-01T00:00:00Z"
+//
+// pint has no notion of a time origin, so the transformer always rejects a
+// shift-by-timestamp with a NotImplementedError (see shift_by_time in parser.py).
+// This rule only needs to *recognize* the syntax so users get that clear error
+// instead of a raw parse failure - the timestamp's parsed value is never used,
+// so branches are left untagged (no "-> name") rather than each building a string.
 // -----------------------------------------------------------------------------
 
-?timestamp: DATE                                      -> date_only
-          | DATE CLOCK                                -> date_time
-          | DATE CLOCK CLOCK                          -> date_time_offset
-          | DATE CLOCK TIMEZONE                       -> date_time_tz
-          | DATE_TIME_ISO                             -> datetime_iso
-          | DATE_TIME_ISO TIMEZONE                    -> datetime_iso_tz
-          | PACKED_TIMESTAMP                          -> packed_timestamp
-          | PACKED_TIMESTAMP CLOCK                    -> packed_timestamp_offset
-          | PACKED_TIMESTAMP TIMEZONE                 -> packed_timestamp_tz
+timestamp: DATE
+         | DATE CLOCK
+         | DATE CLOCK CLOCK
+         | DATE CLOCK TIMEZONE
+         | DATE_TIME_ISO
+         | DATE_TIME_ISO TIMEZONE
+         | PACKED_TIMESTAMP
+         | PACKED_TIMESTAMP CLOCK
+         | PACKED_TIMESTAMP TIMEZONE
 
 // =============================================================================
 // TERMINALS (priority indicated by .N suffix - higher = preferred)
@@ -98,7 +104,7 @@ SHIFT_REF.3: "ref"i
 // after a basic_exp, SIGNED_INT "-1" (length 2) wins over MULTIPLY "-" (length 1),
 // so "s-1" is correctly parsed as s^-1.
 MULTIPLY: /[-*.·]/
-DIVIDE.2: /\/|per|PER/
+DIVIDE.2: /\/|per/i
 
 // Exponentiation: ^ or **
 RAISE: /\^|\*\*/
@@ -108,7 +114,7 @@ RAISE: /\^|\*\*/
 // Format: log(re, lg(re, ln(re, lb(re (opening paren included)
 // -----------------------------------------------------------------------------
 
-LOGREF.4: /(log|lg|ln|lb)\s*\(\s*(re:?\s*)?/i
+LOGREF.4: /(log|lg|ln|lb)\s*\(\s*re:?\s*/i
 
 // -----------------------------------------------------------------------------
 // Date and Time (high priority - must match before INTEGER)
@@ -141,8 +147,10 @@ REAL.4: /[+-]?[0-9]+\.[0-9]*([eE][+-]?[0-9]+)?/
 // Signed integer: used for exponents and scalar numbers
 SIGNED_INT.3: /[+-]?[0-9]+/
 
-// Unicode superscript exponents: ¹ ² ³ ⁴ ⁵ ⁶ ⁷ ⁸ ⁹ ⁰ ⁺ ⁻
-EXPONENT.3: /[\u00B2\u00B3\u00B9\u2070\u2074-\u2079\u207A\u207B]+/
+// Unicode superscript exponents: ¹ ² ³ ⁴ ⁵ ⁶ ⁷ ⁸ ⁹ ⁰, optional leading sign ⁺ ⁻
+// Sign may only appear once, at the start (matches UDUNITS' utf8_exp_sign? utf8_exp_digit+ —
+// a trailing/embedded sign like "²⁻" is invalid and must be rejected, not silently accepted).
+EXPONENT.3: /[\u207A\u207B]?[\u00B2\u00B3\u00B9\u2070\u2074-\u2079]+/
 
 // -----------------------------------------------------------------------------
 // Identifiers (low priority - catch-all for unit names)

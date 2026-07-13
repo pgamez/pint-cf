@@ -221,58 +221,20 @@ class UdunitsToPintTransformer(Transformer):
         """
         return f"{unit}; offset: {offset}"
 
-    def shift_by_time(self, unit: str, shift_op: str, timestamp: str) -> str:
+    def shift_by_time(self, unit: str, shift_op: str, timestamp) -> str:
         """
         Shift by timestamp (e.g., seconds since 1970-01-01).
 
-        Creates a special notation for time references.
+        pint has no notion of a time origin, so this is always rejected. The
+        grammar still parses the timestamp (rather than treating it as a syntax
+        error) purely so this explicit message can be raised instead - its
+        parsed value is otherwise unused.
         """
-        # return f"{unit} since {timestamp}"
         raise NotImplementedError(
             "Time-based offsets are not directly supported by pint. "
             "Consider using a dedicated time handling library like cftime "
             "for this use case (see: https://unidata.github.io/cftime/)"
         )
-
-    # -------------------------------------------------------------------------
-    # Timestamps
-    # -------------------------------------------------------------------------
-
-    def date_only(self, date: Token) -> str:
-        """Date without time (e.g., 1970-01-01)."""
-        return str(date)
-
-    def date_time(self, date: Token, clock: Token) -> str:
-        """Date with time (e.g., 1970-01-01 00:00:00)."""
-        return f"{date} {clock}"
-
-    def date_time_offset(self, date: Token, clock: Token, offset: Token) -> str:
-        """Date with time and timezone offset."""
-        return f"{date} {clock} {offset}"
-
-    def date_time_tz(self, date: Token, clock: Token, tz: Token) -> str:
-        """Date with time and timezone identifier."""
-        return f"{date} {clock} {tz}"
-
-    def datetime_iso(self, dt: Token) -> str:
-        """ISO 8601 datetime (e.g., 1970-01-01T00:00:00)."""
-        return str(dt)
-
-    def datetime_iso_tz(self, dt: Token, tz: Token) -> str:
-        """ISO 8601 datetime with timezone."""
-        return f"{dt} {tz}"
-
-    def packed_timestamp(self, ts: Token) -> str:
-        """Packed timestamp (e.g., 19700101T000000)."""
-        return str(ts)
-
-    def packed_timestamp_offset(self, ts: Token, offset: Token) -> str:
-        """Packed timestamp with offset."""
-        return f"{ts} {offset}"
-
-    def packed_timestamp_tz(self, ts: Token, tz: Token) -> str:
-        """Packed timestamp with timezone."""
-        return f"{ts} {tz}"
 
 
 # =============================================================================
@@ -307,16 +269,18 @@ def cf_string_to_pint(unit_string: str) -> str:
         A string that pint can parse directly.
 
     Examples:
-        >>> udunits_to_pint("m")
+        >>> cf_string_to_pint("m")
         'm'
-        >>> udunits_to_pint("m2")
+        >>> cf_string_to_pint("m2")
         'm ** 2'
-        >>> udunits_to_pint("kg.m/s2")
+        >>> cf_string_to_pint("kg.m/s2")
         'kg * m / s ** 2'
-        >>> udunits_to_pint("K @ 273.15")
+        >>> cf_string_to_pint("K @ 273.15")
         'K; offset: 273.15'
-        >>> udunits_to_pint("seconds since 1970-01-01")
-        'seconds since 1970-01-01'
+
+    Raises:
+        NotImplementedError: For a shift by timestamp (e.g. "seconds since
+            1970-01-01") - pint has no notion of a time origin.
     """
     if not unit_string or unit_string.isspace():
         return "1"

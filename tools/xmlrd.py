@@ -369,7 +369,8 @@ class _UnitElement:
         aliases = []
         _force_noplural = False
 
-        for i in element.find("aliases") or []:
+        aliases_element = element.find("aliases")
+        for i in aliases_element if aliases_element is not None else []:
             match i.tag:
                 case "noplural":
                     # BUG: In XML file there are <noplural/> elements
@@ -390,9 +391,20 @@ class _UnitElement:
                     raise ValueError(f"Unexpected alias element: {i.tag}")
 
         if _force_noplural:
-            for i in aliases:
-                if isinstance(i, Name):
-                    i.noplural = True
+            name_aliases = [i for i in aliases if isinstance(i, Name)]
+
+            if len(name_aliases) != 1:
+                # The workaround above assumes <noplural/> in <aliases> means
+                # "the single Name alias here has no plural". That assumption
+                # breaks if a future XML update adds a second Name alias
+                # alongside <noplural/> - fail loudly instead of silently
+                # forcing noplural onto the wrong (or every) name.
+                raise ValueError(
+                    f"<noplural/> in <aliases> expected exactly one Name alias, "
+                    f"got {len(name_aliases)}: {[n.singular for n in name_aliases]}"
+                )
+
+            name_aliases[0].noplural = True
 
         # Attributes
         self.name = name
@@ -478,7 +490,10 @@ def parse_unit(element: Element) -> BaseUnit:
 
 
 def _get_delta_alias(unit: Alias) -> Alias | None:
-    if not ureg._is_multiplicative(unit.target):
+    """Build a delta_ counterpart for an offset (non-multiplicative) temperature
+    alias, so it can be parsed as a delta unit in pint (see gh hgrecco/pint#2296).
+    """
+    if ureg._is_multiplicative(unit.target):
         return None
 
     aliases = []
@@ -571,22 +586,13 @@ def gen_pint_registry(f: TextIO, write_doc: bool = True) -> None:
                     # with "delta_" prefix, so that we can parse it as a delta unit
                     # in pint.
                     # See: https://github.com/hgrecco/pint/issues/2296
-                    if isinstance(unit, Alias):
-                        if ureg.get_dimensionality(unit.target) == "[temperature]":
-                            if not ureg._is_multiplicative(unit.target):
-                                aliases = []
-                                for alias in unit.aliases:
-                                    if isinstance(alias, Name):
-                                        aliases.append(
-                                            Name(f"delta_{alias.singular}", None)
-                                        )
-                                    elif isinstance(alias, Symbol):
-                                        aliases.append(Symbol(f"delta_{alias.symbol}"))
-
-                                delta_alias = Alias(
-                                    target=f"delta_{unit.target}", aliases=aliases
-                                )
-                                print(delta_alias, file=out)
+                    if (
+                        isinstance(unit, Alias)
+                        and ureg.get_dimensionality(unit.target) == "[temperature]"
+                    ):
+                        delta_alias = _get_delta_alias(unit)
+                        if delta_alias is not None:
+                            print(delta_alias, file=out)
 
                     ureg.define(str(unit))
 

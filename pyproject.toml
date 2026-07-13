@@ -42,7 +42,7 @@ version = { attr = "pint_cf.__version__" }
 where = ["src/"]
 
 [tool.setuptools.package-data]
-"*" = ["*.txt", "*.lark"]
+"*" = ["*.txt", "*.lark", "py.typed"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "S"]
