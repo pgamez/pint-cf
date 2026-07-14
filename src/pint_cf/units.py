@@ -104,7 +104,8 @@ class CFFormatter(DefaultFormatter):
         )
 
         return (
-            pint.formatter(
+            pint
+            .formatter(
                 numerator,
                 denominator,
                 as_ratio=as_ratio,
@@ -136,23 +137,21 @@ def _register_cf_formatter(ureg: pint.UnitRegistry) -> None:
 def cf_unitregistry(*, cf_extensions: bool = True) -> pint.UnitRegistry:
     """Create a CF-ready pint UnitRegistry.
 
-    Configured with the UDUNITS-2 registry, the `cf_string_to_pint`
-    preprocessor, and the ``"cf"`` formatter.
-
     Parameters
     ----------
     cf_extensions : bool, optional
-        By default (``True``), the registry also includes CF units
-        that UDUNITS-2 itself doesn't define - ``level``,
-        ``sigma_level``, ``layer`` (dimensionless vertical-coordinate
-        placeholders, deprecated - parsing one raises
-        ``DeprecationWarning``), ``practical_salinity_unit``/``psu``,
-        ``decibel``/``dB``, ``bel``, and reassigning the ``Sv`` symbol
-        from ``sievert`` to ``sverdrup``. Sourced from `cfunits`
-        (https://github.com/NCAS-CMS/cfunits), see
-        ``resources/registry/cf-extensions.txt``. Pass ``False`` to
-        get a registry that matches plain UDUNITS-2 instead, without
-        any of these additions.
+        By default (``True``), the registry also includes CF units that
+        UDUNITS-2 itself doesn't define:
+
+        - ``level``, ``sigma_level``, ``layer`` - dimensionless
+          vertical-coordinate placeholders, deprecated (parsing one
+          raises ``DeprecationWarning``).
+        - ``practical_salinity_unit`` / ``psu``.
+        - ``decibel`` / ``dB``, ``bel``.
+        - Reassigning the ``Sv`` symbol from ``sievert`` to ``sverdrup``.
+
+        Pass ``False`` to get a registry that matches plain UDUNITS-2
+        instead, without any of these additions.
 
     Returns
     -------

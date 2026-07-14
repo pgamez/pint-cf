@@ -46,9 +46,9 @@ from pint_cf import cf_unitregistry
 
 ureg = cf_unitregistry()
 
-q = ureg('10 meters per second^2').to('km s-2')
+q = ureg("10 meters per second^2").to("km s-2")
 
-print(f"{q:cf}")   # 0.01 kilometer-second^-2
+print(f"{q:cf}")  # 0.01 kilometer-second^-2
 print(f"{q:~cf}")  # 0.01 km/s2
 ```
 
@@ -82,7 +82,7 @@ derives the `units_metadata` attribute from an already-computed `Unit` or
 ```python
 from pint_cf import cf_attributes_for
 
-print(cf_attributes_for(q))                   # {"units_metadata": "temperature: difference"}
+print(cf_attributes_for(q))  # {"units_metadata": "temperature: difference"}
 print(cf_attributes_for(ureg.Unit("meter")))  # {} - not a temperature unit
 
 ds[name].attrs.update(cf_attributes_for(q.units))
@@ -94,9 +94,8 @@ have no zero-offset, so on-scale and difference look identical for them -
 
 ### CF units not in UDUNITS-2
 
-CF defines a few units that UDUNITS-2 doesn't
-([details](https://github.com/pgamez/pint-cf/issues/10)), sourced from
-[`cfunits`](https://github.com/NCAS-CMS/cfunits). `cf_unitregistry()`
+CF defines a few units that UDUNITS-2 doesn't, sourced from
+[`cfunits`](https://ncas-cms.github.io/cfunits/cfunits.Units.html#cfunits-units). `cf_unitregistry()`
 includes them by default:
 
 | Unit                                 | Behavior                                                                                                              |
