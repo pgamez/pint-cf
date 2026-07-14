@@ -24,6 +24,11 @@ repos:
         args: [ '--fix' ]
       - id: ruff-format
 
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 1.0.0
+    hooks:
+      - id: mdformat
+
 ci:
   autofix_commit_msg: |
     [pre-commit.ci] auto fixes from pre-commit.com hooks
