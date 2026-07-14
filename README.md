@@ -1,26 +1,26 @@
 # pint-cf
 
-This package extends Pint with a CF-compliant unit registry and formatter.
+`pint-cf` is a lightweight, pure-Python package that extends Pint with a
+CF-compliant unit registry and formatter.
 
 ## Features
 
-- A CF-compliant Pint `UnitRegistry`, understanding UDUNITS-2 unit strings.
-- A `cf` format for `Unit`/`Quantity`, to write results back out as CF strings.
-- `CFContext`, to correctly read CF's `units_metadata` temperature attribute.
+- A CF-compliant Pint `UnitRegistry` that understands UDUNITS-2 unit strings.
+- A `cf` format for `Unit`/`Quantity` that writes results back out as CF strings.
+- `CFContext`, which correctly reads CF's `units_metadata` temperature attribute.
 - CF units that UDUNITS-2 itself doesn't define (`level`, `psu`, `decibel`,
   `sverdrup`'s `Sv` symbol, ...), included by default.
 
-Known limitations:
+## Notes
 
 - No support for **time coordinates** (e.g. `days since 2001-01-01`) or
-  **climate calendars** (e.g. `360_day`). Use
+  **climate calendars** (e.g. `360_day`) - Pint has no notion of a time
+  origin or calendar, so it can't represent these as units. Use
   [cftime](https://unidata.github.io/cftime/) for those instead.
-- `decibel`/`bel` are treated as plain dimensionless ratio units, matching
-  [`cfunits`](https://github.com/NCAS-CMS/cfunits)/`cf-units` - CF's own
-  reference level for a `dB` value depends on the variable's
-  `standard_name`, but neither of those reference packages resolves it
-  either, so pint-cf follows the same convention rather than the letter of
-  the spec.
+- `decibel`/`bel` are treated as plain dimensionless ratio units, with no
+  physical reference level attached, matching the convention used by
+  [`cfunits`](https://github.com/NCAS-CMS/cfunits) and
+  [`cf-units`](https://github.com/SciTools/cf-units).
 
 ## Installation
 
@@ -28,6 +28,12 @@ Install via `pip`:
 
 ```bash
 pip install pint-cf
+```
+
+or via `conda`, from conda-forge:
+
+```bash
+conda install conda-forge::pint-cf
 ```
 
 ## Usage
@@ -40,9 +46,9 @@ from pint_cf import cf_unitregistry
 
 ureg = cf_unitregistry()
 
-q = ureg('10 meters per second^2').to('km s-2')
+q = ureg("10 meters per second^2").to("km s-2")
 
-print(f"{q:cf}")   # 0.01 kilometer-second^-2
+print(f"{q:cf}")  # 0.01 kilometer-second^-2
 print(f"{q:~cf}")  # 0.01 km/s2
 ```
 
@@ -76,7 +82,7 @@ derives the `units_metadata` attribute from an already-computed `Unit` or
 ```python
 from pint_cf import cf_attributes_for
 
-print(cf_attributes_for(q))                   # {"units_metadata": "temperature: difference"}
+print(cf_attributes_for(q))  # {"units_metadata": "temperature: difference"}
 print(cf_attributes_for(ureg.Unit("meter")))  # {} - not a temperature unit
 
 ds[name].attrs.update(cf_attributes_for(q.units))
@@ -88,16 +94,15 @@ have no zero-offset, so on-scale and difference look identical for them -
 
 ### CF units not in UDUNITS-2
 
-CF defines a few units that UDUNITS-2 doesn't
-([details](https://github.com/pgamez/pint-cf/issues/10)), sourced from
-[`cfunits`](https://github.com/NCAS-CMS/cfunits). `cf_unitregistry()`
+CF defines a few units that UDUNITS-2 doesn't, sourced from
+[`cfunits`](https://ncas-cms.github.io/cfunits/cfunits.Units.html#cfunits-units). `cf_unitregistry()`
 includes them by default:
 
 | Unit                                 | Behavior                                                                                                              |
 | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `level`, `sigma_level`, `layer`       | Dimensionless; kept only for legacy COARDS files, so using one raises a `DeprecationWarning`.                          |
 | `practical_salinity_unit` / `psu`     | `1e-3`, not `1` (CF's own FAQ is out of date here).                                                                    |
-| `decibel` / `dB`, `bel`               | Plain dimensionless ratio units (see "Known limitations" above).                                                       |
+| `decibel` / `dB`, `bel`               | Plain dimensionless ratio units (see "Notes" above).                                                                   |
 | `sverdrup` / `Sv`                     | `Sv` now means `sverdrup` (ocean volume transport), not `sievert` - `sievert` itself still works by its full name.     |
 
 Pass `cf_extensions=False` to `cf_unitregistry()` for a registry that

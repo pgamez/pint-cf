@@ -208,3 +208,15 @@ __marimo__/
 
 # VS Code
 devcontainer-lock.json
+
+# Claude Code
+#  settings.json (shared project config) is fine to commit; these are
+#  personal/ephemeral.
+.claude/settings.local.json
+.claude/worktrees/
+
+# Generated Pint registry files
+#  tools/parse_xml.py writes these next to the UDUNITS-2 XML sources; they're
+#  reviewed and copied by hand into src/pint_cf/resources/registry/ (see
+#  docs/arch/overview.md), so they shouldn't be tracked here.
+tools/xml/*.txt

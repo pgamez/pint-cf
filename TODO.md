@@ -1,3 +1,0 @@
-- [DONE] Fix `delta_` prefixes for temperature aliases in the UnitRegistry
-- Add tests for temperature conversion
-- Kelvins have no `delta_` counterpart on `Pint` (due to offset=0), is this correct?

@@ -41,7 +41,18 @@ def _parse_units_metadata(value: str) -> str:
 
 @contextmanager
 def CFContext(*, units_metadata: str | None = None) -> Iterator[None]:
-    """Make a CF variable attribute visible to `cf_string_to_pint`.
+    """Apply a CF ``units_metadata`` attribute while building a unit or quantity.
+
+    A NetCDF/CF variable can carry a ``units_metadata`` attribute that
+    disambiguates a temperature unit as either a point on a scale
+    (``"temperature: on_scale"``, e.g. a measured temperature of 15
+    degrees Celsius) or a difference between two temperatures
+    (``"temperature: difference"``, e.g. a 5-degree warming). Plain
+    pint has no way to know which one you mean from the unit string
+    alone. Wrap the ``ureg.Quantity(...)``/``ureg.Unit(...)`` call
+    that needs this distinction in a ``with CFContext(...):`` block,
+    and it will resolve to the right pint unit (e.g.
+    ``delta_degree_Celsius`` for a difference).
 
     Scope this tightly around a single unit/quantity construction:
     it must not wrap a loop over multiple variables that may carry
@@ -52,8 +63,10 @@ def CFContext(*, units_metadata: str | None = None) -> Iterator[None]:
     ----------
     units_metadata : str or None, optional
         A CF ``units_metadata`` attribute value, e.g.
-        ``"temperature: difference"`` (CF conventions, section
-        3.1.2). ``None`` (the default) is a no-op.
+        ``"temperature: difference"`` (`CF conventions, section 3.1.2,
+        "Temperature units"
+        <https://cfconventions.org/cf-conventions/cf-conventions.html#temperature-units>`_).
+        ``None`` (the default) is a no-op.
 
     Yields
     ------
