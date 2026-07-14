@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pint-cf"
 authors = [{ name = "Pedro Gámez" }]
-description = "CF-compliant unit registry and formatter for Pint"
+description = "A CF-compliant, pure-Python unit registry and formatter for Pint"
 dynamic = ["version"]
 readme = "README.md"
 requires-python = ">=3.12"
