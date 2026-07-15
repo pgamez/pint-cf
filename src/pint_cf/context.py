@@ -47,8 +47,13 @@ _STANDARD_NAME_BY_DB_REFERENCE_UNIT = {
 }
 
 # Bare spellings of the plain dimensionless decibel unit (cf-extensions.txt)
-# that a recognized standard_name may override. Deliberately excludes `bel`:
-# CF's standard name table only ever pairs these standard names with dB.
+# that a recognized standard_name may override. Deliberately excludes `bel`
+# (`bel = 10 * decibel`): CF's FAQ allows a variable's units to be merely
+# *convertible* to its standard_name's canonical unit, not identical to it
+# (e.g. wind_speed in mph, canonical m/s), so a bare `bel` would be just as
+# CF-valid here as `dB`. Left out anyway since this whole standard_name
+# resolution is pint-cf's own invention - `cfunits`/`cf-units` don't do it
+# at all - and `bel` essentially never appears in real CF data.
 _DB_BARE_UNIT_NAMES = frozenset({"decibel", "dB", "decibels"})
 
 _standard_name: ContextVar[str | None] = ContextVar("_standard_name", default=None)

@@ -137,9 +137,19 @@ print(q.to("pascal"))  # 0.10023744672545465 pascal
 print(f"{q:~cf}")  # 74 dB - still writes back out as a plain CF dB value
 ```
 
+The same context also resolves `dB` the other way around, converting a
+physical quantity to it - handy when writing a CF variable out from an
+already-computed physical value:
+
+```python
+with CFContext(standard_name="sound_pressure_level_in_air"):
+    q = ureg.Quantity(0.10023744672545465, "pascal").to("dB")
+
+print(f"{q:~cf}")  # 74.0 dB
+```
+
 Without `CFContext` (or with any other `standard_name`), `dB`/`decibel`
-stays the plain dimensionless ratio unit. `bel` isn't covered - CF's
-standard name table only ever pairs these standard names with `dB`.
+stays the plain dimensionless ratio unit.
 
 `cf_attributes_for` does the reverse here too, deriving `standard_name`
 from an already-resolved quantity:
