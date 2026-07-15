@@ -13,6 +13,7 @@ from pint.delegates.formatter._spec_helpers import REGISTERED_FORMATTERS
 from pint.delegates.formatter.plain import DefaultFormatter
 from pint.facets.plain import PlainUnit
 
+from .context import _DB_REFERENCE_UNIT_NAMES
 from .parser import cf_string_to_pint
 
 _CF_FORMATTER_NAME = "cf"
@@ -103,7 +104,7 @@ class CFFormatter(DefaultFormatter):
             registry=self._registry,
         )
 
-        return (
+        result = (
             pint
             .formatter(
                 numerator,
@@ -116,7 +117,19 @@ class CFFormatter(DefaultFormatter):
             .replace("Δ", "")
             .replace("delta_", "")
             .replace("dimensionless", "")
-        ) or "1"
+        )
+
+        # A standard_name-resolved dB unit (see CFContext, context.py:
+        # _apply_standard_name_reference) is internally one of the private,
+        # leading-underscore units in _DB_REFERENCE_UNIT_NAMES, not the
+        # plain "decibel" - written back out, it must still read as a CF dB
+        # unit, not that internal name (which isn't a CF unit string at all
+        # - the reference level it carries comes from standard_name, a
+        # separate attribute this formatter doesn't have access to).
+        for name in _DB_REFERENCE_UNIT_NAMES:
+            result = result.replace(name, "dB" if as_ratio else "decibel")
+
+        return result or "1"
 
 
 def _register_cf_formatter(ureg: pint.UnitRegistry) -> None:

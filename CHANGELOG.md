@@ -1,3 +1,27 @@
+## Unreleased
+
+- Added `CFContext(standard_name=...)`: resolves a bare `dB`/`decibel` to
+  the pint unit carrying that standard name's physical reference level and
+  dimension, for the four CF standard names whose canonical unit is dB
+  (`sound_intensity_level_in_air`, `sound_intensity_level_in_water`,
+  `sound_pressure_level_in_air`, `sound_pressure_level_in_water` - reference
+  levels and logfactor from the CF standard name table / CF's own FAQ).
+  Fully opt-in, same as `units_metadata`: with no active context (or any
+  other standard_name), `dB`/`decibel` stays the plain dimensionless ratio
+  unit added in v0.2.0. A resolved unit still formats back out as
+  `dB`/`decibel` with `format(q, "cf")`/`format(q, "~cf")`, not its internal
+  pint unit name. Doesn't cover `bel`: CF's standard name table only ever
+  pairs these standard names with `dB`. The pint units these resolve to
+  (e.g. `_dB_sound_pressure_level_in_air`) are private, leading-underscore
+  names - pint-cf's own invention, not real CF units, since CF only defines
+  the standard_name itself, not a unit for it. Like plain `dB`/`decibel`
+  itself, this only works with `cf_extensions=True` (the default) - with
+  `cf_extensions=False`, resolving a standard_name raises
+  `UndefinedUnitError` instead
+- Extended `cf_attributes_for` to also derive `standard_name` back from one
+  of these resolved dB units - an exact, unambiguous 1:1 lookup, unlike
+  temperature's on_scale/difference/unknown
+
 ## v0.2.1
 
 - Added `THIRD_PARTY_LICENSES.md` and

@@ -27,12 +27,40 @@ practical_salinity_unit = 1e-3 = psu = practical_salinity_units
 
 # The physical reference level a decibel value is relative to (e.g. 1e-12 W
 # m-2 for sound_intensity_level_in_air) is defined per `standard_name` in the
-# CF standard name table, not by the unit itself - resolving that would mean
-# reading standard_name, which is out of scope for a unit-string converter.
-# This matches `cfunits`/`cf-units`, which likewise only define dB as a
-# plain dimensionless ratio unit.
+# CF standard name table, not by the unit itself. With no active
+# `pint_cf.CFContext(standard_name=...)`, dB/decibel/bel stay this plain
+# dimensionless ratio unit, matching `cfunits`/`cf-units`.
+#
+# CF's FAQ (https://cfconventions.org/faq.html) also lists "db" (lowercase)
+# and "dbel" as accepted decibel spellings, alongside "dB". Deliberately not
+# aliased here: neither `cfunits` nor `cf-units` - the reference
+# implementations this file otherwise follows - define "db" either, and
+# UDUNITS-2 already assigns lowercase "b" to `barn` (an area unit), so a
+# "db" alias here would silently shadow "decibarn" (deci- + barn) instead of
+# meaning decibel.
 decibel = 1 = dB = decibels
 bel = 10 * decibel = _ = bels
+
+# Physical reference levels for the CF standard names whose canonical unit
+# is dB (CF standard name table; values also listed in CF's FAQ). Only
+# resolved from a bare dB/decibel string under an active
+# CFContext(standard_name=...) - see
+# pint_cf.context._apply_standard_name_reference - so this never changes
+# the plain `decibel` unit above.
+#
+# Leading-underscore names: these are pint-cf's own invention, not CF units
+# at all (CF only defines the *standard_name*, not a unit for it) - the
+# underscore marks them as a private implementation detail, never meant to
+# be typed directly in a units string. CFFormatter maps them back to
+# dB/decibel when formatting a result (see units.py). `_watt_per_square_meter`
+# exists solely as an intermediate: pint's LogarithmicConverter only tracks
+# the reference dimension correctly when it's a single named unit, not an
+# inline compound expression like "watt / meter ** 2".
+_watt_per_square_meter = watt / meter ** 2
+_dB_sound_intensity_level_in_air = 1e-12 * _watt_per_square_meter; logbase: 10; logfactor: 10
+_dB_sound_intensity_level_in_water = 6.7e-19 * _watt_per_square_meter; logbase: 10; logfactor: 10
+_dB_sound_pressure_level_in_air = 2e-5 * pascal; logbase: 10; logfactor: 20
+_dB_sound_pressure_level_in_water = 1e-6 * pascal; logbase: 10; logfactor: 20
 
 # UDUNITS-2 assigns the "Sv" symbol to sievert (SI); CF/cfunits instead
 # assigns it to sverdrup (ocean volume transport) - see

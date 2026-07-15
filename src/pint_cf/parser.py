@@ -9,7 +9,7 @@ from pathlib import Path
 
 from lark import Lark, Token, Transformer, v_args
 
-from .context import _apply_temperature_mode
+from .context import _apply_standard_name_reference, _apply_temperature_mode
 
 # Unicode superscript to ASCII digit mapping
 _SUPERSCRIPT_MAP = {
@@ -311,6 +311,14 @@ def cf_string_to_pint(unit_string: str) -> str:
     default ``as_delta=True`` already applies UDUNITS' compound
     expression heuristic.
 
+    Likewise, under an active `pint_cf.CFContext` with a recognized
+    ``standard_name``, a bare ``"dB"``/``"decibel"`` is resolved to the
+    (private, pint-cf-internal) pint unit carrying that standard name's
+    physical reference level, e.g. ``"dB"`` ->
+    ``"_dB_sound_pressure_level_in_air"``. With no active context (or an
+    unrecognized standard_name), it stays the plain dimensionless ratio
+    unit.
+
     Parameters
     ----------
     unit_string : str
@@ -362,4 +370,4 @@ def cf_string_to_pint(unit_string: str) -> str:
     if not isinstance(result, str):
         return "1"
 
-    return _apply_temperature_mode(result)
+    return _apply_standard_name_reference(_apply_temperature_mode(result))
