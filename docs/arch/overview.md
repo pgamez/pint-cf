@@ -71,8 +71,8 @@ have no UDUNITS-2 XML source to regenerate from.
 Basic usage:
 
 1. Create the pint.UnitRegistry `ureg` by using `cf_unitregistry()`
-2. Use the `ureg` as usual with pint. This will support CF syntax transparently
-3. After data processing, obtain the resulting CF unit string by formatting the
+1. Use the `ureg` as usual with pint. This will support CF syntax transparently
+1. After data processing, obtain the resulting CF unit string by formatting the
    `Unit` with `cf` format.
 
 ![Usage workflow with pint-cf](sd-usage.png)

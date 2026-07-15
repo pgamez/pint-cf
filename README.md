@@ -100,12 +100,12 @@ CF defines a few units that UDUNITS-2 doesn't, sourced from
 [`cfunits`](https://ncas-cms.github.io/cfunits/cfunits.Units.html#cfunits-units). `cf_unitregistry()`
 includes them by default:
 
-| Unit                                 | Behavior                                                                                                              |
+| Unit | Behavior |
 | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `level`, `sigma_level`, `layer`       | Dimensionless; kept only for legacy COARDS files, so using one raises a `DeprecationWarning`.                          |
-| `practical_salinity_unit` / `psu`     | `1e-3`, not `1` (CF's own FAQ is out of date here).                                                                    |
-| `decibel` / `dB`, `bel`               | Plain dimensionless ratio units by default (see "Decibel `standard_name`" below).                                     |
-| `sverdrup` / `Sv`                     | `Sv` now means `sverdrup` (ocean volume transport), not `sievert` - `sievert` itself still works by its full name.     |
+| `level`, `sigma_level`, `layer` | Dimensionless; kept only for legacy COARDS files, so using one raises a `DeprecationWarning`. |
+| `practical_salinity_unit` / `psu` | `1e-3`, not `1` (CF's own FAQ is out of date here). |
+| `decibel` / `dB`, `bel` | Plain dimensionless ratio units by default (see "Decibel `standard_name`" below). |
+| `sverdrup` / `Sv` | `Sv` now means `sverdrup` (ocean volume transport), not `sievert` - `sievert` itself still works by its full name. |
 
 Pass `cf_extensions=False` to `cf_unitregistry()` for a registry that
 matches plain UDUNITS-2 instead, without any of these additions - including
