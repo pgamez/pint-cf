@@ -143,19 +143,19 @@ class UdunitsToPintTransformer(Transformer):
     # Arithmetic operations
     # -------------------------------------------------------------------------
 
-    def multiply(self, *args) -> str:
+    def multiply(self, *args: str | Token) -> str:
         """
         Multiplication (explicit or implicit via juxtaposition).
         """
         left, right = self._binary_operands(args)
         return f"{left} * {right}"
 
-    def divide(self, *args) -> str:
+    def divide(self, *args: str | Token) -> str:
         """Division."""
         left, right = self._binary_operands(args)
         return f"{left} / {right}"
 
-    def power(self, base: str, *args) -> str:
+    def power(self, base: str, *args: Token) -> str:
         """
         Exponentiation. Handles multiple forms:
         - basic_exp EXPONENT (e.g., m²)
@@ -257,7 +257,7 @@ class UdunitsToPintTransformer(Transformer):
             "ureg.define('my_unit = kelvin; offset: 273.15')."
         )
 
-    def shift_by_time(self, unit: str, shift_op: str, timestamp) -> str:
+    def shift_by_time(self, unit: str, shift_op: str, timestamp: Token) -> str:
         """
         Shift by timestamp (e.g., seconds since 1970-01-01).
 

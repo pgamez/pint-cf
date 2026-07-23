@@ -5,7 +5,7 @@ from pathlib import Path
 from xmlrd import gen_pint_registry
 
 
-def main():
+def main() -> None:
     parser = ArgumentParser(
         description="Parse udunits2.xml and generate a pint definition file"
     )

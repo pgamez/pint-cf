@@ -16,6 +16,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
 
+import pint
 from pint.facets.plain import PlainQuantity, PlainUnit
 
 _TEMPERATURE_MODES = {"on_scale", "difference", "unknown"}
@@ -187,7 +188,7 @@ def _apply_temperature_mode(result: str) -> str:
     return result
 
 
-def _component_temperature_mode(registry, cname: str) -> str:
+def _component_temperature_mode(registry: pint.UnitRegistry, cname: str) -> str:
     is_delta = cname.startswith("delta_")
     base_name = cname.removeprefix("delta_") if is_delta else cname
 

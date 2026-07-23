@@ -98,7 +98,7 @@ class Name(BaseElement):
     @property
     def plural(self) -> str | None:
         if self.noplural:
-            return
+            return None
 
         if self._plural:
             return self._plural
@@ -125,22 +125,19 @@ class Name(BaseElement):
             penultimate = singular[-2]
             if penultimate in "aeiou":
                 return f"{singular}s"
-            else:
-                return f"{singular[:-1]}ies"
-        elif last_char in "sxz" or (length >= 2 and singular[-2:] in ["ch", "sh"]):
+            return f"{singular[:-1]}ies"
+        if last_char in "sxz" or (length >= 2 and singular[-2:] in ["ch", "sh"]):
             return f"{singular}es"
-        else:
-            return f"{singular}s"
+        return f"{singular}s"
 
     def spec(self) -> list[str]:
         if self.plural:
             return [self.singular, self.plural]
-        else:
-            return [self.singular]
+        return [self.singular]
 
 
 class Symbol(BaseElement):
-    def __init__(self, symbol, comment: str | None = None) -> None:
+    def __init__(self, symbol: str, comment: str | None = None) -> None:
         self.symbol = symbol
         self.comment = comment
 
@@ -297,7 +294,7 @@ class _UnitReference:
     def __init__(
         self,
     ) -> None:
-        self.reference = {}
+        self.reference: dict[str, str] = {}
 
     def add(self, unit: Unit) -> None:
         if unit.name is None:
@@ -315,10 +312,10 @@ class _UnitReference:
             for j in i.spec():
                 self.reference[j] = name
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> str:
         return self.reference[key]
 
-    def __contains__(self, item):
+    def __contains__(self, item: str) -> bool:
         return item in self.reference
 
     def get(self, key: str) -> str | None:
@@ -462,10 +459,10 @@ def parse_unit(element: Element) -> BaseUnit:
         UnitReference.add(unit)
         return unit
 
-    elif u.definition is None:
+    if u.definition is None:
         raise ValueError("Unit element missing name and def")
 
-    elif reference := UnitReference.get(u.definition):
+    if reference := UnitReference.get(u.definition):
         # If the definition has already been processed, we
         # should have a name for it, so we create an alias
         return Alias(
@@ -502,7 +499,7 @@ def parse_unit(element: Element) -> BaseUnit:
             comment=u.comment,
         )
 
-    elif symbol is not None:
+    if symbol is not None:
         # If there is no name in the aliases, we create an
         # instance of UnitConstant
         return Constant(

@@ -63,7 +63,7 @@ class _NoCache(dict):
     requiring a pint-cf-specific replacement for them.
     """
 
-    def __setitem__(self, key: Any, value: Any) -> None:
+    def __setitem__(self, key: Any, value: Any) -> None:  # noqa: ANN401
         pass
 
 

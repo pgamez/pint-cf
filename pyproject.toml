@@ -63,7 +63,11 @@ select = [
   "UP", # pyupgrade (use modern syntax for the target Python version)
   "C4", # flake8-comprehensions (simplify comprehensions)
   "SIM", # flake8-simplify (simplify obviously complex constructs)
-  "RUF" # ruff-specific rules
+  "RUF", # ruff-specific rules
+  "RET", # flake8-return (unnecessary else/implicit None after return)
+  "PERF", # perflint (performance anti-patterns)
+  "TID", # flake8-tidy-imports (import hygiene, e.g. no relative imports)
+  "ANN" # flake8-annotations (require type annotations, since this ships py.typed)
 ]
 
 [tool.ruff.lint.per-file-ignores]
