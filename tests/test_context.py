@@ -60,9 +60,11 @@ def test_cfcontext_accepts_valid_units_metadata(units_metadata: str) -> None:
 
 @pytest.mark.parametrize("units_metadata", INVALID_UNITS_METADATA)
 def test_cfcontext_rejects_invalid_units_metadata(units_metadata: str) -> None:
-    with pytest.raises(ValueError, match="Invalid units_metadata"):
-        with CFContext(units_metadata=units_metadata):
-            pass
+    with (
+        pytest.raises(ValueError, match="Invalid units_metadata"),
+        CFContext(units_metadata=units_metadata),
+    ):
+        pass
 
 
 def test_cfcontext_none_is_a_no_op() -> None:
@@ -80,9 +82,11 @@ def test_cfcontext_resets_after_exit() -> None:
 
 
 def test_cfcontext_resets_on_exception() -> None:
-    with pytest.raises(RuntimeError):
-        with CFContext(units_metadata="temperature: difference"):
-            raise RuntimeError("boom")
+    with (
+        pytest.raises(RuntimeError),
+        CFContext(units_metadata="temperature: difference"),
+    ):
+        raise RuntimeError("boom")
 
     assert _current_temperature_mode() is None
 
@@ -140,9 +144,11 @@ def test_no_active_context_behaves_as_before() -> None:
 
 
 def test_on_scale_on_compound_unit_raises() -> None:
-    with pytest.raises(ValueError, match="on_scale.*compound"):
-        with CFContext(units_metadata="temperature: on_scale"):
-            cf_string_to_pint("degree_C/s")
+    with (
+        pytest.raises(ValueError, match=r"on_scale.*compound"),
+        CFContext(units_metadata="temperature: on_scale"),
+    ):
+        cf_string_to_pint("degree_C/s")
 
 
 # =============================================================================
@@ -181,9 +187,11 @@ def test_temperature_mode_applied_to_quantity(
 
 
 def test_quantity_on_scale_on_compound_unit_raises(ureg: pint.UnitRegistry) -> None:
-    with pytest.raises(ValueError, match="on_scale.*compound"):
-        with CFContext(units_metadata="temperature: on_scale"):
-            ureg.Quantity(1, "degree_C/s")
+    with (
+        pytest.raises(ValueError, match=r"on_scale.*compound"),
+        CFContext(units_metadata="temperature: on_scale"),
+    ):
+        ureg.Quantity(1, "degree_C/s")
 
 
 def test_ureg_call_form_also_honors_context(ureg: pint.UnitRegistry) -> None:
