@@ -431,7 +431,7 @@ def test_number_shifts_raise_not_implemented(input_str: str) -> None:
     instead of producing a string that looks valid but always crashes
     later with an unrelated pint error."""
     with pytest.raises(
-        VisitError, match="Numeric offset units .* are not directly supported"
+        VisitError, match=r"Numeric offset units .* are not directly supported"
     ):
         cf_string_to_pint(input_str)
 

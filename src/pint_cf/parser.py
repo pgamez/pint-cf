@@ -6,6 +6,7 @@ that can be parsed directly by pint.
 """
 
 from pathlib import Path
+from typing import ClassVar
 
 from lark import Lark, Token, Transformer, v_args
 
@@ -189,7 +190,7 @@ class UdunitsToPintTransformer(Transformer):
     # -------------------------------------------------------------------------
 
     # Mapping from UDUNITS log types to pint logbase/logfactor
-    _LOG_PARAMS = {
+    _LOG_PARAMS: ClassVar[dict[str, tuple[str, str]]] = {
         "lg": ("10", "10"),  # log base 10, decibels
         "log": ("10", "10"),  # log base 10, decibels (alias)
         "ln": (

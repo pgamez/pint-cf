@@ -53,7 +53,18 @@ pythonpath = ["src"]
 preview = true
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "B", "S"]
+select = [
+  "E", # pycodestyle errors (PEP8 style)
+  "W", # pycodestyle warnings
+  "F", # pyflakes (unused imports/vars, undefined names, etc.)
+  "I", # isort (import sorting/grouping)
+  "B", # flake8-bugbear (likely bugs and design issues)
+  "S", # flake8-bandit (security checks)
+  "UP", # pyupgrade (use modern syntax for the target Python version)
+  "C4", # flake8-comprehensions (simplify comprehensions)
+  "SIM", # flake8-simplify (simplify obviously complex constructs)
+  "RUF" # ruff-specific rules
+]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
