@@ -11,15 +11,6 @@
 # Loaded on top of the base UDUNITS-2 registry by cf_unitregistry(), unless
 # called with cf_extensions=False.
 
-# Dimensionless vertical coordinate placeholders, kept only for COARDS
-# backwards compatibility. CF conventions (section on units) call this use
-# "not compatible with UDUNITS, and ... deprecated by this standard" -
-# cf_unitregistry() raises a DeprecationWarning when one of these is parsed
-# (see units.py:_warn_if_deprecated_cf_unit).
-level = 1 = _ = levels
-sigma_level = 1 = _ = sigma_levels
-layer = 1 = _ = layers
-
 # CF's own FAQ calls this unit "no longer used" and effectively `1`, but
 # `cfunits` defines it as 1e-3, which is what's actually needed to read
 # existing files using it correctly.

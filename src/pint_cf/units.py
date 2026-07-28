@@ -17,6 +17,7 @@ from .parser import cf_string_to_pint
 
 _CF_FORMATTER_NAME = "cf"
 _CF_EXTENSIONS_RESOURCE = "cf-extensions.txt"
+_CF_COARDS_VERTICAL_RESOURCE = "cf-coards-vertical.txt"
 
 # Dimensionless vertical coordinate placeholders CF keeps only for COARDS
 # backwards compatibility and calls "deprecated by this standard" outright
@@ -31,12 +32,25 @@ _DEPRECATED_CF_UNITS = {
 }
 
 
+class CFDeprecatedUnitWarning(UserWarning):
+    """A unit string is a COARDS vertical-coordinate placeholder.
+
+    Not a ``DeprecationWarning``/``FutureWarning``: pint-cf isn't going to
+    remove support for these strings (CF itself still allows them), and
+    those categories are silenced by default unless raised from
+    ``__main__`` - which this never is, since it's always raised from
+    inside pint's own parsing, not the caller's code. Subclassing
+    ``UserWarning`` keeps it visible by default while still being
+    filterable by category.
+    """
+
+
 def _warn_if_deprecated_cf_unit(unit_string: str) -> str:
     """Preprocessor: warn on a bare deprecated CF vertical-coordinate unit.
 
     A no-op transform (returns its input unchanged) purely for the
-    DeprecationWarning side effect - these units are only ever used bare
-    (e.g. ``units = "level"``), never combined with anything else.
+    CFDeprecatedUnitWarning side effect - these units are only ever used
+    bare (e.g. ``units = "level"``), never combined with anything else.
     """
     if unit_string.strip() in _DEPRECATED_CF_UNITS:
         warnings.warn(
@@ -45,7 +59,7 @@ def _warn_if_deprecated_cf_unit(unit_string: str) -> str:
             "compatibility - CF conventions (units section) call it "
             "deprecated outright in favor of a proper vertical "
             "coordinate variable.",
-            DeprecationWarning,
+            CFDeprecatedUnitWarning,
             stacklevel=2,
         )
     return unit_string
@@ -143,15 +157,19 @@ def cf_unitregistry(*, cf_extensions: bool = True) -> pint.UnitRegistry:
         By default (``True``), the registry also includes CF units that
         UDUNITS-2 itself doesn't define:
 
-        - ``level``, ``sigma_level``, ``layer`` - dimensionless
-          vertical-coordinate placeholders, deprecated (parsing one
-          raises ``DeprecationWarning``).
         - ``practical_salinity_unit`` / ``psu``.
         - ``decibel`` / ``dB``, ``bel``.
         - Reassigning the ``Sv`` symbol from ``sievert`` to ``sverdrup``.
 
         Pass ``False`` to get a registry that matches plain UDUNITS-2
         instead, without any of these additions.
+
+        ``level``, ``sigma_level``, ``layer`` - the dimensionless
+        vertical-coordinate placeholders kept for COARDS backwards
+        compatibility - are always loaded (parsing one raises
+        ``CFDeprecatedUnitWarning``), regardless of ``cf_extensions``: the
+        CF conventions explicitly allow these strings in the ``units``
+        attribute rather than making them optional.
 
     Returns
     -------
@@ -161,9 +179,7 @@ def cf_unitregistry(*, cf_extensions: bool = True) -> pint.UnitRegistry:
         ``format(q, "~cf")``.
 
     """
-    preprocessors = [cf_string_to_pint]
-    if cf_extensions:
-        preprocessors.insert(0, _warn_if_deprecated_cf_unit)
+    preprocessors = [_warn_if_deprecated_cf_unit, cf_string_to_pint]
 
     with resources.path("pint_cf.resources.registry", "udunits2.txt") as filename:
         ureg = pint.UnitRegistry(
@@ -171,6 +187,11 @@ def cf_unitregistry(*, cf_extensions: bool = True) -> pint.UnitRegistry:
             autoconvert_offset_to_baseunit=True,
             preprocessors=preprocessors,
         )
+
+    with resources.path(
+        "pint_cf.resources.registry", _CF_COARDS_VERTICAL_RESOURCE
+    ) as cf_coards_vertical_filename:
+        ureg.load_definitions(str(cf_coards_vertical_filename))
 
     if cf_extensions:
         with resources.path(

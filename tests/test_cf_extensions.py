@@ -4,13 +4,15 @@ registry by cf_unitregistry() unless cf_extensions=False.
 
 Covers, in order:
   - New dimensionless units (level, sigma_level, layer) and their
-    DeprecationWarning.
+    CFDeprecatedUnitWarning. These are always defined, even with
+    cf_extensions=False, since the CF conventions allow them
+    unconditionally rather than as an opt-in extension.
   - practical_salinity_unit/psu.
   - decibel/bel.
   - The sverdrup/sievert "Sv" symbol reassignment, and the regression it
     could otherwise cause: `rem` (defined upstream as "cSv") must keep
     meaning centisievert, not silently become a fraction of a sverdrup.
-  - cf_extensions=False: none of the above additions are present, and
+  - cf_extensions=False: none of the opt-in additions are present, and
     "Sv" keeps its plain UDUNITS-2 (sievert) meaning.
 """
 
@@ -19,7 +21,7 @@ import warnings
 import pint
 import pytest
 
-from pint_cf import cf_unitregistry
+from pint_cf import CFDeprecatedUnitWarning, cf_unitregistry
 
 # =============================================================================
 # Fixtures
@@ -100,7 +102,7 @@ NON_DEPRECATED_UNITS = ["meter", "psu", "dB", "sverdrup"]
 
 @pytest.mark.parametrize("unit", DEPRECATED_UNITS)
 def test_deprecated_cf_unit_warns(ureg: pint.UnitRegistry, unit: str) -> None:
-    with pytest.warns(DeprecationWarning, match="COARDS"):
+    with pytest.warns(CFDeprecatedUnitWarning, match="COARDS"):
         q = ureg.Quantity(3, unit)
     assert q.to("dimensionless").magnitude == 3
 
@@ -108,18 +110,15 @@ def test_deprecated_cf_unit_warns(ureg: pint.UnitRegistry, unit: str) -> None:
 @pytest.mark.parametrize("unit", NON_DEPRECATED_UNITS)
 def test_non_deprecated_unit_does_not_warn(ureg: pint.UnitRegistry, unit: str) -> None:
     with warnings.catch_warnings():
-        warnings.simplefilter("error", DeprecationWarning)
+        warnings.simplefilter("error", CFDeprecatedUnitWarning)
         ureg.Quantity(1, unit)
 
 
 # =============================================================================
-# cf_extensions=False: none of the CF additions are present
+# cf_extensions=False: none of the opt-in CF additions are present
 # =============================================================================
 
 UNDEFINED_IN_STRICT_MODE = [
-    "level",
-    "sigma_level",
-    "layer",
     "psu",
     "practical_salinity_unit",
     "decibel",
@@ -138,3 +137,19 @@ def test_strict_mode_does_not_define_cf_extensions(
 def test_strict_mode_keeps_sv_as_sievert(strict_ureg: pint.UnitRegistry) -> None:
     q = strict_ureg.Quantity(1, "Sv")
     assert q.to("gray").magnitude == pytest.approx(1)
+
+
+@pytest.mark.parametrize("unit", ["level", "sigma_level", "layer"])
+def test_strict_mode_still_defines_coards_vertical_units(
+    strict_ureg: pint.UnitRegistry, unit: str
+) -> None:
+    q = strict_ureg.Quantity(3, unit)
+    assert q.to("dimensionless").magnitude == 3
+
+
+@pytest.mark.parametrize("unit", ["level", "sigma_level", "layer"])
+def test_strict_mode_still_warns_on_deprecated_coards_vertical_units(
+    strict_ureg: pint.UnitRegistry, unit: str
+) -> None:
+    with pytest.warns(CFDeprecatedUnitWarning, match="COARDS"):
+        strict_ureg.Quantity(1, unit)

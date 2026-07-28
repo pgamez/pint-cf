@@ -1,3 +1,29 @@
+## v0.3.0
+
+- **Breaking:** `level`, `sigma_level`, `layer` (and their plurals) are now
+  always defined by `cf_unitregistry()`, including with
+  `cf_extensions=False` - the CF conventions allow these strings in the
+  `units` attribute unconditionally (as a COARDS backwards-compatibility
+  exception), rather than as an opt-in extension, so
+  `cf_extensions=False` previously raising `UndefinedUnitError` for them
+  was inaccurate. `cf_extensions=False` still skips the other CF-only
+  additions (`practical_salinity_unit`/`psu`, `decibel`/`bel`, the
+  `sverdrup`/`Sv` reassignment). Doesn't affect typical usage - only
+  relevant if your code specifically expects `UndefinedUnitError` for
+  these units in strict mode
+- **Breaking:** parsing one of the units above now raises
+  `CFDeprecatedUnitWarning` (new public symbol, a `UserWarning` subclass)
+  instead of `DeprecationWarning`. `DeprecationWarning` (and
+  `FutureWarning`) are silenced by default unless raised from `__main__`,
+  which this warning never is - it's always raised from inside pint's own
+  parsing, not the caller's code - so in practice it was never visible
+  without explicitly enabling warnings; neither category fits anyway,
+  since pint-cf isn't planning to remove support for these units.
+  `CFDeprecatedUnitWarning` is visible by default and still filterable by
+  category (`warnings.filterwarnings("ignore", category=CFDeprecatedUnitWarning)`).
+  Doesn't affect typical usage - only relevant if your code specifically
+  filters warnings by `DeprecationWarning` category for this case
+
 ## v0.2.1
 
 - Added `THIRD_PARTY_LICENSES.md` and
