@@ -2,7 +2,7 @@
 
 ## Structure
 
-`pint-cf` provides three public symbols:
+`pint-cf` provides four public symbols:
 
 - `cf_unitregistry(*, cf_extensions=True)` - the main entry point, returns a
   `pint.UnitRegistry` with CF/UDUNITS-2 support.
@@ -11,25 +11,37 @@
   unit/quantity is being constructed.
 - `cf_attributes_for(unit_or_quantity)` - the reverse direction: derives CF
   variable attributes back from an already-computed Unit/Quantity.
+- `CFDeprecatedUnitWarning` - the `UserWarning` subclass raised when parsing
+  a COARDS-only `level`/`sigma_level`/`layer` placeholder, exported so
+  callers can filter on it specifically (e.g.
+  `warnings.filterwarnings("ignore", category=CFDeprecatedUnitWarning)`).
 
 `cf_unitregistry()` builds the registry with these features:
 
-- Loads definitions from the generated UDUNITS-2 registry files, plus (by
-  default) `cf-extensions.txt` - CF units that UDUNITS-2 itself doesn't
-  define (`level`, `sigma_level`, `layer`, `practical_salinity_unit`/`psu`,
-  `decibel`/`bel`, and reassigning `sverdrup`'s `Sv` symbol - see
-  [issue #10](https://github.com/pgamez/pint-cf/issues/10)). Pass
-  `cf_extensions=False` to skip this and get a registry that matches plain
-  UDUNITS-2 instead.
+- Loads definitions from the generated UDUNITS-2 registry files, plus
+  always `cf-coards-vertical.txt` - the COARDS-only `level`, `sigma_level`,
+  `layer` placeholders, which the CF conventions allow unconditionally
+  rather than as an opt-in extension - and, by default, `cf-extensions.txt`
+  - CF units that UDUNITS-2 itself doesn't define
+    (`practical_salinity_unit`/`psu`, `decibel`/`bel`, and reassigning
+    `sverdrup`'s `Sv` symbol - see
+    [issue #10](https://github.com/pgamez/pint-cf/issues/10)). Pass
+    `cf_extensions=False` to skip `cf-extensions.txt` and get a registry that
+    matches plain UDUNITS-2 instead (still with the COARDS placeholders).
 - Adds a preprocessor `cf_string_to_pint()` that transforms CF/UDUNITS-2
   strings into pint strings at `pint.Unit`/`pint.Quantity` creation time,
   using a Lark grammar internally for parsing. It also applies the active
   `CFContext`'s temperature mode at the end (via `_apply_temperature_mode()`,
   reading a `ContextVar`).
-- Adds a second preprocessor, `_warn_if_deprecated_cf_unit()` (unless
-  `cf_extensions=False`), that warns (`DeprecationWarning`) on the
-  COARDS-only `level`/`sigma_level`/`layer` placeholders - a no-op
-  transform, run purely for that side effect.
+- Adds a second preprocessor, `_warn_if_deprecated_cf_unit()`, always
+  active, that warns (`CFDeprecatedUnitWarning`) on the COARDS-only
+  `level`/`sigma_level`/`layer` placeholders - a no-op transform, run
+  purely for that side effect. Not a `DeprecationWarning`/`FutureWarning`:
+  those are silenced by default unless raised from `__main__`, which this
+  never is, since the warning is always raised from inside pint's own
+  parsing rather than the caller's code - and neither category fits
+  anyway, since pint-cf isn't planning to remove support for these
+  strings.
 - Registers a custom formatter `CFFormatter` that transforms pint unit
   syntax back into CF strings for display - it strips `delta_`/`Δ`, which
   is purely cosmetic: `cf_attributes_for()` reads `Unit._units` directly and

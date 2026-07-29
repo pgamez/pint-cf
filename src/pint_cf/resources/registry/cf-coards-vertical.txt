@@ -1,0 +1,12 @@
+# Dimensionless vertical coordinate placeholders, kept only for COARDS
+# backwards compatibility. CF conventions (section on units) call this use
+# "not compatible with UDUNITS, and ... deprecated by this standard" - but
+# the standard does not make them optional ("the text strings level, layer,
+# and sigma_level are allowed in the units attribute"), so cf_unitregistry()
+# always loads this file, regardless of cf_extensions.
+#
+# cf_unitregistry() raises a CFDeprecatedUnitWarning when one of these is
+# parsed (see units.py:_warn_if_deprecated_cf_unit).
+level = 1 = _ = levels
+sigma_level = 1 = _ = sigma_levels
+layer = 1 = _ = layers

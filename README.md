@@ -94,19 +94,28 @@ have no zero-offset, so on-scale and difference look identical for them -
 
 ### CF units not in UDUNITS-2
 
-CF defines a few units that UDUNITS-2 doesn't, sourced from
+`level`, `sigma_level`, `layer` are dimensionless vertical-coordinate
+placeholders kept for legacy COARDS files - the CF conventions allow them
+unconditionally, so `cf_unitregistry()` always defines them, regardless of
+`cf_extensions`. Using one raises a `pint_cf.CFDeprecatedUnitWarning` (a
+`UserWarning` subclass, not `DeprecationWarning`/`FutureWarning`: pint-cf
+isn't planning to remove support for these strings, it's just flagging
+that CF itself calls this use deprecated in favor of a proper
+dimensionless vertical coordinate variable).
+
+CF also defines a few more units that UDUNITS-2 doesn't, sourced from
 [`cfunits`](https://ncas-cms.github.io/cfunits/cfunits.Units.html#cfunits-units). `cf_unitregistry()`
-includes them by default:
+includes these by default too:
 
 | Unit | Behavior |
 | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `level`, `sigma_level`, `layer` | Dimensionless; kept only for legacy COARDS files, so using one raises a `DeprecationWarning`. |
 | `practical_salinity_unit` / `psu` | `1e-3`, not `1` (CF's own FAQ is out of date here). |
 | `decibel` / `dB`, `bel` | Plain dimensionless ratio units (see "Notes" above). |
 | `sverdrup` / `Sv` | `Sv` now means `sverdrup` (ocean volume transport), not `sievert` - `sievert` itself still works by its full name. |
 
 Pass `cf_extensions=False` to `cf_unitregistry()` for a registry that
-matches plain UDUNITS-2 instead, without any of these additions.
+matches plain UDUNITS-2 instead, without these additions (the
+`level`/`sigma_level`/`layer` placeholders are still defined).
 
 ## Third-party notices
 
