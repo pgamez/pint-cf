@@ -49,6 +49,22 @@
   the UDUNITS rule, and `cf_attributes_for` then reports that guess as
   `on_scale`/`difference` - keep the original attribute when writing such
   data back out
+- Fixed `CFContext` with the magnitude inside the string (`ureg("5 degC")`,
+  `ureg.Quantity("5 degC")`): `"temperature: difference"` was ignored and
+  `"temperature: on_scale"` raised `ValueError` even for a single unit.
+  Under `"temperature: difference"`, a compound unit with the magnitude
+  inside (`ureg("2 degC/s")`) is now a difference too
+- Fixed `CFContext(units_metadata="temperature: difference")` raising
+  `UndefinedUnitError` for a plural spelling such as `degrees_C`
+- Fixed the `delta_` plurals of Celsius in the registry: the generator
+  built them by appending "s" to the singular (`delta_degree_Cs`,
+  `delta_degreeCs`, `delta_deg_Cs`) instead of using UDUNITS' own plural,
+  so `delta_degrees_C`, `delta_degreesC`, `delta_degs_C` and `delta_degsC`
+  were undefined
+- Documented that, without `CFContext`, a string with the magnitude inside
+  is a pint expression: `ureg("2 degC/s")` gives 275.15 K/s (2 degC
+  converted on-scale, then divided), unlike `ureg.Quantity(2, "degC/s")`.
+  Read CF data with `ureg.Quantity(values, units)`
 - `cf_string_to_pint` is now a pure UDUNITS-to-pint syntax translation:
   the `CFContext` temperature mode is applied by a separate preprocessor,
   bound to the registry, that `cf_unitregistry()` chains right after it.

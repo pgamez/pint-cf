@@ -7,10 +7,11 @@ mechanics behind it:
   - CFContext: parsing units_metadata, None, and restoring the previous
     state on exit.
   - The temperature preprocessor, on cf_string_to_pint's output (string
-    layer): it only forces delta_ for a BARE offset temperature unit
-    (degree_C, not K) under "difference". Compound units are left alone,
-    since pint's own as_delta=True default already turns an offset unit
-    raised to a power != 1, or combined with another unit, into delta_.
+    layer): under "difference", it writes delta_ for every offset
+    temperature unit (degree_C, not K), bare or compound, with or without a
+    magnitude in the string; under "on_scale" it refuses a compound one.
+    Without a context, or with "unknown", it leaves the string alone, so
+    pint behaves as it documents.
   - The same through pint's own entry points, on a shared registry -
     including the regression this depends on: pint's `_cache.parse_unit`
     is keyed on the raw string before preprocessors run, so cf_unitregistry()
@@ -26,7 +27,6 @@ from pint_cf import CFContext, cf_attributes_for
 from pint_cf.context import (
     _current_temperature_mode,
     _make_temperature_preprocessor,
-    _strip_enclosing_parens,
 )
 from pint_cf.parser import cf_string_to_pint
 
@@ -108,33 +108,51 @@ def _preprocess(ureg: pint.UnitRegistry, units: str) -> str:
 
 # (units_metadata, input_units, expected_pint_string)
 TEST_CASES_TEMPERATURE_MODE_STRING = [
-    (DIFFERENCE, "degree_C", "delta_degree_C"),
+    # delta_ always goes on the canonical name: pint doesn't define it for
+    # a plural ("delta_degrees_C") or every other spelling.
+    (DIFFERENCE, "degree_C", "delta_degree_Celsius"),
+    (DIFFERENCE, "degrees_C", "delta_degree_Celsius"),
+    (DIFFERENCE, "degF", "delta_fahrenheit"),
     # Explicit unity power ("**1"/"**+1") must still count as bare: an
     # explicit units_metadata is authoritative and must not be silently
     # dropped just because the pint string happens to contain " ** ".
-    (DIFFERENCE, "degree_C**1", "delta_degree_C ** 1"),
-    (DIFFERENCE, "degree_C**+1", "delta_degree_C ** +1"),
-    # Compound expressions are left untouched here: pint's own as_delta=True
-    # default already adds delta_ once parsed, so acting on the string too
-    # would double up on it.
-    (DIFFERENCE, "degree_C/s", "degree_C / s"),
-    (DIFFERENCE, "degree_C**2", "degree_C ** 2"),
-    (DIFFERENCE, "degree_C**-1", "degree_C ** -1"),
-    # A bare unit stays bare regardless of enclosing parens - prefixing
-    # "delta_" onto the string unstripped would produce invalid syntax like
-    # "delta_(degree_C)".
-    (DIFFERENCE, "(degree_C)", "delta_degree_C"),
-    (DIFFERENCE, "((degree_C))", "delta_degree_C"),
+    (DIFFERENCE, "degree_C**1", "delta_degree_Celsius ** 1"),
+    (DIFFERENCE, "degree_C**+1", "delta_degree_Celsius ** +1"),
+    # Enclosing parens don't make a unit compound.
+    (DIFFERENCE, "(degree_C)", "(delta_degree_Celsius)"),
+    (DIFFERENCE, "((degree_C))", "((delta_degree_Celsius))"),
+    # A magnitude isn't a unit: "5 degree_C" is still bare.
+    (DIFFERENCE, "5 degree_C", "5 * delta_degree_Celsius"),
+    (DIFFERENCE, "-0.5 degree_C", "-0.5 * delta_degree_Celsius"),
+    (ON_SCALE, "15 degree_C", "15 * degree_C"),
+    (None, "15 degree_C", "15 * degree_C"),
+    # Compound under "difference": the metadata applies to every offset
+    # unit, with or without a magnitude.
+    (DIFFERENCE, "degree_C/s", "delta_degree_Celsius / s"),
+    (DIFFERENCE, "degree_C**2", "delta_degree_Celsius ** 2"),
+    (DIFFERENCE, "degree_C**-1", "delta_degree_Celsius ** -1"),
+    (DIFFERENCE, "degrees_C m-2", "delta_degree_Celsius * m ** -2"),
+    (DIFFERENCE, "2 degree_C/s", "2 * delta_degree_Celsius / s"),
+    (DIFFERENCE, "degF degC", "delta_fahrenheit * delta_degree_Celsius"),
+    # Only whole unit names are rewritten, not other names containing one.
+    (DIFFERENCE, "degC kdegC_x", "delta_degree_Celsius * kdegC_x"),
+    # Without a context, or with "unknown", nothing is rewritten: pint
+    # applies its own rules (as_delta for a unit string).
+    (UNKNOWN, "degree_C/s", "degree_C / s"),
+    (None, "degree_C/s", "degree_C / s"),
+    (None, "2 degree_C/s", "2 * degree_C / s"),
     # Idempotency: pint can re-apply its preprocessors to an
     # already-processed string - must not double-prefix into
     # "delta_delta_degree_C".
     (DIFFERENCE, "delta_degree_C", "delta_degree_C"),
+    (DIFFERENCE, "delta_degree_C/s", "delta_degree_C / s"),
     # No offset (kelvin, rankine, prefixed kelvin): on_scale and difference
     # are the same pint unit, so the mode has nothing to change - there is
     # no delta_K to resolve to.
     (DIFFERENCE, "K", "K"),
     (DIFFERENCE, "degree_R", "degree_R"),
     (DIFFERENCE, "mK", "mK"),
+    (DIFFERENCE, "K s-1", "K * s ** -1"),
     # Not a temperature at all: CF forbids units_metadata here, but this is
     # a reader, not a validator - ignored rather than rejected.
     (DIFFERENCE, "m", "m"),
@@ -142,6 +160,7 @@ TEST_CASES_TEMPERATURE_MODE_STRING = [
     # Logarithmic units are non-multiplicative in pint too, but they're not
     # temperatures - must not become "delta_B".
     (DIFFERENCE, "B", "B"),
+    (DIFFERENCE, "B m-1", "B * m ** -1"),
     # CF allows on_scale on a compound unit; without an offset temperature
     # unit in it, there's nothing to reject.
     (ON_SCALE, "K m-1", "K * m ** -1"),
@@ -150,12 +169,10 @@ TEST_CASES_TEMPERATURE_MODE_STRING = [
     (ON_SCALE, "degree_C", "degree_C"),
     (ON_SCALE, "degree_C**1", "degree_C ** 1"),
     (UNKNOWN, "degree_C", "degree_C"),
-    (UNKNOWN, "degree_C/s", "degree_C / s"),
     (None, "degree_C", "degree_C"),
-    (None, "degree_C/s", "degree_C / s"),
 ]
 
-ON_SCALE_COMPOUND_OFFSET_UNITS = ["degree_C/s", "kg degree_C m-2"]
+ON_SCALE_COMPOUND_OFFSET_UNITS = ["degree_C/s", "kg degree_C m-2", "2 degree_C/s"]
 
 
 @pytest.mark.parametrize(
@@ -201,8 +218,10 @@ def test_on_scale_compound_offset_unit_raises(
 TEST_CASES_TEMPERATURE_MODE_PINT = [
     (DIFFERENCE, "degree_C", "delta_degree_Celsius"),
     (ON_SCALE, "degree_C", "degree_Celsius"),
+    # Regression: the delta_ of a plural spelling was undefined.
+    (DIFFERENCE, "degrees_C", "delta_degree_Celsius"),
     (DIFFERENCE, "degree_C/s", "delta_degree_Celsius / second"),
-    (None, "degree_C**2", "delta_degree_Celsius ** 2"),
+    (DIFFERENCE, "degree_C**2", "delta_degree_Celsius ** 2"),
     # Regression: must actually be parseable by pint, not just produce the
     # right intermediate string - "(degree_C)" previously became the invalid
     # "delta_(degree_C)" and raised UndefinedUnitError.
@@ -224,16 +243,6 @@ _BUILDERS = {
     "Unit": lambda ureg, units: ureg.Unit(units),
 }
 
-# ureg(str) evaluates the string as an expression: with
-# autoconvert_offset_to_baseunit=True, "degree_C/s" becomes 1 degree_C
-# converted to 274.15 kelvin, then divided by a second - CODE_REVIEW 18.
-_COMPOUND_OFFSET_UNITS = {"degree_C/s", "degree_C**2"}
-_UREG_STR_COMPOUND_OFFSET = pytest.mark.xfail(
-    strict=True,
-    reason="CODE_REVIEW 18: ureg(str) converts an on-scale offset unit before "
-    "applying the rest of the expression",
-)
-
 CASES_THROUGH_PINT = [
     pytest.param(
         units_metadata,
@@ -241,13 +250,60 @@ CASES_THROUGH_PINT = [
         expected,
         build,
         id=f"{build_id}-{units_metadata}-{units}",
-        marks=_UREG_STR_COMPOUND_OFFSET
-        if build_id == "ureg(str)" and units in _COMPOUND_OFFSET_UNITS
-        else (),
     )
     for units_metadata, units, expected in TEST_CASES_TEMPERATURE_MODE_PINT
     for build_id, build in _BUILDERS.items()
 ]
+
+# Without a context, a unit string follows pint's as_delta rule - the
+# UDUNITS assumption: a compound offset unit is a difference.
+UNIT_STRING_BUILDERS = {k: v for k, v in _BUILDERS.items() if k != "ureg(str)"}
+
+
+@pytest.mark.parametrize("units_metadata", [UNKNOWN, None])
+@pytest.mark.parametrize(
+    "build", UNIT_STRING_BUILDERS.values(), ids=UNIT_STRING_BUILDERS
+)
+@pytest.mark.parametrize(
+    "units, expected",
+    [
+        ("degree_C", "degree_Celsius"),
+        ("degree_C/s", "delta_degree_Celsius / second"),
+        ("degree_C**2", "delta_degree_Celsius ** 2"),
+    ],
+)
+def test_unknown_unit_string_follows_pint_as_delta(
+    ureg: pint.UnitRegistry,
+    units_metadata: str | None,
+    build: object,
+    units: str,
+    expected: str,
+) -> None:
+    with CFContext(units_metadata=units_metadata):
+        assert str(build(ureg, units)) == expected
+
+
+@pytest.mark.parametrize("units_metadata", [UNKNOWN, None])
+def test_unknown_respects_as_delta_false(
+    ureg: pint.UnitRegistry, units_metadata: str | None
+) -> None:
+    """An explicit as_delta=False is the caller's choice: not overridden."""
+    with CFContext(units_metadata=units_metadata):
+        units = ureg.parse_units("degC/s", as_delta=False)
+    assert str(units) == "degree_Celsius / second"
+
+
+def test_unknown_expression_string_follows_pint_arithmetic(
+    ureg: pint.UnitRegistry,
+) -> None:
+    """ureg(str)/Quantity(str) evaluate a pint expression, not a CF units
+    attribute (which never carries a magnitude, CF 3.1.3). Without a
+    context pint-cf leaves pint's documented arithmetic alone: with
+    autoconvert_offset_to_baseunit=True, "2 degC/s" is 2 degC, converted
+    on-scale to kelvin, divided by a second (CODE_REVIEW 18). Read CF data
+    with ureg.Quantity(values, units) instead."""
+    assert ureg("2 degC/s").to("K/s").magnitude == pytest.approx(275.15)
+    assert ureg.Quantity(2, "degC/s").to("K/s").magnitude == pytest.approx(2)
 
 
 @pytest.mark.parametrize("units_metadata, units, expected, build", CASES_THROUGH_PINT)
@@ -260,6 +316,97 @@ def test_temperature_mode_applied_through_pint(
 ) -> None:
     with CFContext(units_metadata=units_metadata):
         assert str(build(ureg, units)) == expected
+
+
+# Under a context, a magnitude in the string - ureg(str), Quantity(str) -
+# must read the same as a magnitude passed separately (CODE_REVIEW 3).
+# (units_metadata, string, expected_magnitude, expected_units)
+TEST_CASES_MAGNITUDE_IN_STRING = [
+    (DIFFERENCE, "5 degC", 5, "delta_degree_Celsius"),
+    (ON_SCALE, "15 degC", 15, "degree_Celsius"),
+    (None, "15 degC", 15, "degree_Celsius"),
+    (DIFFERENCE, "2 degC/s", 2, "delta_degree_Celsius / second"),
+    (DIFFERENCE, "0.02 degC/year", 0.02, "delta_degree_Celsius / tropical_year"),
+]
+
+
+@pytest.mark.parametrize(
+    "units_metadata, string, magnitude, units", TEST_CASES_MAGNITUDE_IN_STRING
+)
+@pytest.mark.parametrize(
+    "build",
+    [lambda ureg, s: ureg(s), lambda ureg, s: ureg.Quantity(s)],
+    ids=["ureg(str)", "Quantity(str)"],
+)
+def test_magnitude_in_string_reads_like_separate_magnitude(
+    ureg: pint.UnitRegistry,
+    units_metadata: str | None,
+    string: str,
+    magnitude: float,
+    units: str,
+    build: object,
+) -> None:
+    with CFContext(units_metadata=units_metadata):
+        q = build(ureg, string)
+    assert q.magnitude == pytest.approx(magnitude)
+    assert str(q.units) == units
+
+
+# Every UDUNITS spelling of an offset temperature unit has a delta_
+# counterpart, plurals included: pint's own automatic plurals are disabled,
+# so the registry must spell each one out (tools/xmlrd.py:_get_delta_alias).
+DELTA_SPELLINGS = {
+    "delta_degree_Celsius": [
+        "degree_Celsius",
+        "degrees_Celsius",
+        "celsius",
+        "celsiuses",
+        "degree_C",
+        "degrees_C",
+        "degreeC",
+        "degreesC",
+        "deg_C",
+        "degs_C",
+        "degC",
+        "degsC",
+    ],
+    "delta_fahrenheit": [
+        "fahrenheit",
+        "fahrenheits",
+        "degree_fahrenheit",
+        "degrees_fahrenheit",
+        "degreeF",
+        "degreesF",
+        "degree_F",
+        "degrees_F",
+        "degF",
+        "degsF",
+        "deg_F",
+        "degs_F",
+    ],
+}
+
+
+@pytest.mark.parametrize(
+    "units, expected",
+    [
+        pytest.param(f"delta_{name}", expected, id=f"delta_{name}")
+        for expected, names in DELTA_SPELLINGS.items()
+        for name in names
+    ],
+)
+def test_every_offset_unit_spelling_has_a_delta(
+    ureg: pint.UnitRegistry, units: str, expected: str
+) -> None:
+    assert str(ureg.Unit(units)) == expected
+
+
+@pytest.mark.parametrize("units", ["delta_degree_Cs", "delta_degreeCs", "delta_deg_Cs"])
+def test_no_invented_delta_plurals(ureg: pint.UnitRegistry, units: str) -> None:
+    """Regression: the generator used to build delta_ plurals by appending
+    "s" to the singular, instead of using the XML's own plural."""
+    with pytest.raises(pint.UndefinedUnitError):
+        ureg.Unit(units)
 
 
 def test_repeated_parsing_of_same_string_survives_pint_cache(
@@ -301,10 +448,11 @@ def test_forced_on_scale_compound_unit_converts_wrongly(
     ureg: pint.UnitRegistry,
 ) -> None:
     """Why that ValueError doesn't suggest parse_units(units,
-    as_delta=False): under autoconvert_offset_to_baseunit=True, pint (0.25
-    and 0.26) silently drops the scale factor converting such a unit - 10
-    kg degC m-2 becomes 10, not 10000, g degC m-2 (CODE_REVIEW 12). If this
-    starts failing, pint fixed it: revisit the ValueError's message."""
+    as_delta=False): under
+    autoconvert_offset_to_baseunit=True, pint (0.25 and 0.26) silently
+    drops the scale factor converting such a unit - 10 kg degC m-2 becomes
+    10, not 10000, g degC m-2 (CODE_REVIEW 12). If this starts failing, pint
+    fixed it: revisit the ValueError's message."""
     q = ureg.Quantity(10, ureg.parse_units("kg degC m-2", as_delta=False))
     converted = q.to(ureg.parse_units("g degC m-2", as_delta=False))
     assert converted.magnitude == pytest.approx(10)
@@ -371,25 +519,3 @@ def test_cf_attributes_for_reports_the_udunits_guess_for_unknown(
     with CFContext(units_metadata=units_metadata):
         q = ureg.Quantity(1, units)
     assert cf_attributes_for(q) == {"units_metadata": udunits_guess}
-
-
-# =============================================================================
-# Helpers
-# =============================================================================
-
-# (pint_string, expected)
-TEST_CASES_STRIP_ENCLOSING_PARENS = [
-    ("degree_C", "degree_C"),
-    ("(degree_C)", "degree_C"),
-    ("((degree_C))", "degree_C"),
-    ("(((degree_C)))", "degree_C"),
-    # Leading "(" closes before the string ends - not fully enclosing, must
-    # be left untouched (stripping it would break the expression).
-    ("(m) * (s)", "(m) * (s)"),
-    ("(m) / s", "(m) / s"),
-]
-
-
-@pytest.mark.parametrize("pint_string, expected", TEST_CASES_STRIP_ENCLOSING_PARENS)
-def test_strip_enclosing_parens(pint_string: str, expected: str) -> None:
-    assert _strip_enclosing_parens(pint_string) == expected

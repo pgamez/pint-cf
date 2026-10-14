@@ -318,7 +318,11 @@ def test_compound_difference_conversion_is_scale_only(
         assert q.to(target).magnitude == pytest.approx(expected)
 
 
-# The same, with the magnitude inside the string. (string, target, expected)
+# The same, with the magnitude inside the string, under an explicit
+# "difference". Without units_metadata, such a string isn't a CF units
+# attribute - one never carries a magnitude (3.1.3) - but a pint
+# expression, evaluated as pint documents it (see test_context.py).
+# (string, target, expected)
 TEST_CASES_COMPOUND_DIFFERENCE_WITH_MAGNITUDE = [
     ("2 degC/s", "mK/s", 2000),
     ("0.02 degC/year", "degF/year", 0.036),
@@ -328,16 +332,10 @@ TEST_CASES_COMPOUND_DIFFERENCE_WITH_MAGNITUDE = [
 @pytest.mark.parametrize(
     "string, target, expected", TEST_CASES_COMPOUND_DIFFERENCE_WITH_MAGNITUDE
 )
-@pytest.mark.parametrize("units_metadata", [DIFFERENCE, UNKNOWN, None])
-@_xfail("18", "the on-scale temperature is converted to kelvin first (+273.15)")
 def test_compound_difference_with_magnitude_in_string_is_scale_only(
-    ureg: pint.UnitRegistry,
-    units_metadata: str | None,
-    string: str,
-    target: str,
-    expected: float,
+    ureg: pint.UnitRegistry, string: str, target: str, expected: float
 ) -> None:
-    with CFContext(units_metadata=units_metadata):
+    with CFContext(units_metadata=DIFFERENCE):
         assert ureg(string).to(target).magnitude == pytest.approx(expected)
 
 
@@ -435,7 +433,6 @@ def test_metadata_applies_to_every_temperature_unit_in_the_block(
         pytest.param(lambda ureg: ureg.Quantity("1.5 degC"), id="Quantity(str)"),
     ],
 )
-@_xfail("3", "a magnitude inside the string makes the unit look compound")
 def test_difference_honored_with_magnitude_in_string(
     ureg: pint.UnitRegistry, build: object
 ) -> None:
@@ -444,7 +441,6 @@ def test_difference_honored_with_magnitude_in_string(
     assert cf_attributes_for(q) == {"units_metadata": DIFFERENCE}
 
 
-@_xfail("3", "on_scale with a magnitude in the string raises the compound-unit error")
 def test_on_scale_honored_with_magnitude_in_string(ureg: pint.UnitRegistry) -> None:
     with CFContext(units_metadata=ON_SCALE):
         q = ureg("15 degC")

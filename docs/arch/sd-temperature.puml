@@ -28,11 +28,13 @@ User -> UREG : ureg.Quantity(1, "degree_C")
         TEMP_MODE -> UREG : offset temperature unit?\n(degree_C: yes - K: no, left as is)
             return yes
         note right of TEMP_MODE
-            bare offset unit + "difference" -> prefix "delta_"
-            (compound units are left alone: pint's own
-            as_delta=True already handles those)
+            only under an explicit mode; a leading magnitude
+            isn't a unit:
+            "difference" -> "delta_" + canonical name, bare or compound
+            "on_scale" + compound -> ValueError
+            no context / "unknown" -> untouched (pint's own rules)
         end note
-        return "delta_degree_C"
+        return "delta_degree_Celsius"
     return Quantity(1, delta_degree_Celsius)
 
 User -> CFCONTEXT : (exiting the with block)

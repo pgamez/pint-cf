@@ -16,9 +16,11 @@ out with a result.
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from contextvars import ContextVar
+from tokenize import NAME
 
 import pint
 from pint.facets.plain import PlainQuantity, PlainUnit
+from pint.pint_eval import tokenizer
 from pint.util import ParserHelper
 
 _TEMPERATURE_MODES = {"on_scale", "difference", "unknown"}
@@ -123,52 +125,6 @@ def _current_temperature_mode() -> str | None:
     return _temperature_mode.get()
 
 
-def _strip_enclosing_parens(pint_string: str) -> str:
-    """Strip parentheses that wrap the *entire* string, one layer at a time
-    - e.g. "((degree_C))" -> "degree_C", but "(m) * (s)" is left untouched,
-    since its leading "(" closes before the string ends (it doesn't enclose
-    the whole expression, just part of it).
-    """
-    while pint_string.startswith("(") and pint_string.endswith(")"):
-        depth = 0
-        for i, char in enumerate(pint_string):
-            if char == "(":
-                depth += 1
-            elif char == ")":
-                depth -= 1
-                if depth == 0:
-                    if i != len(pint_string) - 1:
-                        return pint_string  # closes early - not fully enclosing
-                    break
-        pint_string = pint_string[1:-1]
-    return pint_string
-
-
-def _is_bare_unit(pint_string: str) -> bool:
-    """True for a single unit at unity power - e.g. "degree_Celsius" or the
-    (unusual but valid) "degree_Celsius ** 1" - as opposed to a compound
-    expression: a product, a ratio, a non-unity power, an offset, or a
-    logarithmic unit. Matches UDUNITS' own rule for when a temperature unit
-    counts as a difference: "raised to any power other than unity, or
-    multiplied or divided by any other unit" - unity power must still count
-    as bare even though its pint string contains "**".
-
-    Checks for the operator characters themselves rather than a specific
-    spacing convention - unit names never contain "/", ";", or "*" (see the
-    ID terminal in udunits2.lark), so their mere presence is unambiguous.
-    "*" also appears as half of "**", so it's checked on the base only,
-    after splitting off a trailing power.
-    """
-    if "/" in pint_string or ";" in pint_string:
-        return False
-
-    if "**" not in pint_string:
-        return "*" not in pint_string
-
-    base, exponent = pint_string.rsplit("**", 1)
-    return "*" not in base and exponent.strip() in ("1", "+1")
-
-
 def _is_offset_temperature_unit(registry: pint.UnitRegistry, name: str) -> bool:
     """True for a temperature unit with its own offset (e.g. degree_Celsius,
     fahrenheit) - the only units where on_scale and difference are different
@@ -201,15 +157,6 @@ def _is_offset_temperature_unit(registry: pint.UnitRegistry, name: str) -> bool:
     )
 
 
-def _involves_offset_temperature(registry: pint.UnitRegistry, pint_string: str) -> bool:
-    """True if any unit in `pint_string` (a cf_string_to_pint result) is an
-    offset temperature unit - see `_is_offset_temperature_unit`."""
-    return any(
-        _is_offset_temperature_unit(registry, name)
-        for name in ParserHelper.from_string(pint_string)
-    )
-
-
 def _make_temperature_preprocessor(
     registry: pint.UnitRegistry,
 ) -> Callable[[str], str]:
@@ -231,44 +178,53 @@ def _make_temperature_preprocessor(
 
 
 def _apply_temperature_mode(result: str, registry: pint.UnitRegistry) -> str:
-    """Apply the active CFContext's temperature mode to a unit already
-    converted by cf_string_to_pint.
+    """Apply the active CFContext's temperature mode to a string already
+    converted by cf_string_to_pint, by writing each offset temperature unit
+    (degree_C, degree_F) that must be read as a difference as its delta_
+    counterpart.
 
-    Only units involving an offset temperature unit (degree_C, degree_F)
-    are touched: for anything else - kelvin, a non-temperature unit, or a
-    compound of those - on_scale and difference are the same pint unit, so
-    the mode has nothing to change. CF forbids units_metadata on a
-    non-temperature unit, but this is a reader, not a validator: such
-    metadata is ignored rather than rejected.
+    - "temperature: difference": a difference, bare or compound - the
+      metadata says so, whichever pint entry point reads the string.
+    - "temperature: on_scale": bare stays on-scale; compound raises (see
+      below).
+    - "temperature: unknown" or absent: nothing to do - CF says the reader
+      can't know, and that a correct conversion can't be guaranteed. pint
+      is left to behave as documented: a unit string (Unit,
+      Quantity(value, units), parse_units) follows its as_delta rule, the
+      same assumption UDUNITS makes, which CF quotes as guidance only; a
+      string evaluated as an expression (ureg(str), Quantity(str)) follows
+      pint's arithmetic.
 
-    Absent/"unknown" needs no handling here: pint's own default
-    `as_delta=True` behavior already applies UDUNITS' own heuristic (a
-    non-multiplicative unit gets its delta_ counterpart whenever it's raised
-    to a power other than unity, or combined with another unit).
+    Bare means the only unit, at unity power - pint's own as_delta rule. A
+    leading number is a magnitude, not a unit: "5 degC" is bare, "2 degC/s"
+    is compound.
+
+    Units without an offset (kelvin, Rankine) and non-temperature units are
+    never touched: on_scale and difference are the same pint unit for them.
+    CF forbids units_metadata on a non-temperature unit, but this is a
+    reader, not a validator: such metadata is ignored rather than rejected.
     """
     mode = _current_temperature_mode()
     if mode not in ("difference", "on_scale"):
         return result
 
-    # A single unit stays "bare" regardless of enclosing parens (e.g.
-    # "(degree_C)", "((degree_C))") - strip them first, since the parens are
-    # otherwise redundant once delta_ is prefixed, and prefixing "delta_"
-    # onto the unstripped string would produce invalid syntax like
-    # "delta_(degree_C)".
-    body = _strip_enclosing_parens(result)
+    units = ParserHelper.from_string(result, registry.non_int_type)
 
-    # Also makes this idempotent - pint can re-apply its preprocessors to an
-    # already-processed string, and an already-prefixed delta_ unit has no
-    # offset of its own.
-    if not _involves_offset_temperature(registry, body):
+    # An already-prefixed delta_ unit has no offset of its own, which also
+    # makes this idempotent - pint can re-apply its preprocessors to an
+    # already-processed string.
+    offset_names = [
+        name for name in units if _is_offset_temperature_unit(registry, name)
+    ]
+    if not offset_names:
         return result
 
-    is_bare = _is_bare_unit(body)
+    is_bare = len(units) == 1 and next(iter(units.values())) == 1
 
-    if mode == "difference" and is_bare:
-        return f"delta_{body}"
+    if is_bare and mode == "on_scale":
+        return result
 
-    if mode == "on_scale" and not is_bare:
+    if not is_bare and mode == "on_scale":
         # Valid CF (section 3.1.2), but there is no safe pint
         # representation for it. pint reads an offset unit inside a
         # compound unit as its delta_ counterpart (which would contradict
@@ -291,7 +247,19 @@ def _apply_temperature_mode(result: str, registry: pint.UnitRegistry) -> str:
             "ureg.Quantity(t, 'degC') * ureg.Quantity(x, 'kg m-2')."
         )
 
-    return result
+    # Replace each offset unit's name token, found with the tokenizer pint
+    # itself reads the string with, and keep the rest of the string as is.
+    # pint only defines delta_ for the canonical name and its aliases, not
+    # for a plural or prefixed spelling ("delta_degrees_C" is undefined).
+    pieces = []
+    last = 0
+    for token in tokenizer(result):
+        if token.type == NAME and token.string in offset_names:
+            start, end = token.start[1], token.end[1]
+            pieces += [result[last:start], f"delta_{registry.get_name(token.string)}"]
+            last = end
+    pieces.append(result[last:])
+    return "".join(pieces)
 
 
 def _component_temperature_mode(registry: pint.UnitRegistry, cname: str) -> str:

@@ -523,7 +523,16 @@ def _get_delta_alias(unit: Alias) -> Alias | None:
     aliases = []
     for alias in unit.aliases:
         if isinstance(alias, Name):
-            aliases.append(Name(f"delta_{alias.singular}", None))
+            # Keep the alias' own plural (e.g. degrees_C, from the XML): pint's
+            # automatic plurals are disabled, so each one must be written out.
+            plural = alias.plural
+            aliases.append(
+                Name(
+                    f"delta_{alias.singular}",
+                    f"delta_{plural}" if plural else None,
+                    noplural=plural is None,
+                )
+            )
         elif isinstance(alias, Symbol):
             aliases.append(Symbol(f"delta_{alias.symbol}"))
 

@@ -110,10 +110,26 @@ anomaly.to("degF")      # -457.87 degF: outside, "degF" has no metadata,
 A `units_metadata` on a non-temperature unit, which CF forbids, is ignored.
 
 Without `CFContext`, with `units_metadata` absent, or with
-`"temperature: unknown"`, CF says the data is ambiguous. In that case pint
-applies the UDUNITS rule, which CF quotes as guidance only: a bare unit
-(`degC`) is read as on-scale, and a unit raised to a power or combined with
-others (`degC/s`, `degC2`) as a difference.
+`"temperature: unknown"`, CF says the data is ambiguous, and pint-cf
+leaves pint to behave as it documents. A units string read with
+`ureg.Quantity(values, units)`, `ureg.Unit(units)` or `ureg.parse_units`
+follows pint's `as_delta` rule, which is the UDUNITS one that CF quotes as
+guidance only: a bare unit (`degC`) is read as on-scale, and a unit raised
+to a power or combined with others (`degC/s`, `degC2`) as a difference.
+
+Read CF data with `ureg.Quantity(values, units)`, not with
+`ureg(f"{value} {units}")`. A string with the magnitude inside is a pint
+expression, not a CF units attribute (which never carries one): pint
+evaluates it as arithmetic, and with a temperature inside a compound unit
+that gives an on-scale result:
+
+```python
+ureg.Quantity(2, "degC/s").to("K/s")  # 2 K/s, as UDUNITS
+ureg("2 degC/s").to("K/s")            # 275.15 K/s: 2 degC (275.15 K) / s
+```
+
+Inside a `CFContext` block, the metadata applies to both:
+`"temperature: difference"` makes `ureg("2 degC/s")` a difference too.
 
 `"temperature: on_scale"` on a compound unit that contains a Celsius or
 Fahrenheit temperature (e.g. `kg degC m-2`) is valid CF, but `CFContext`
@@ -129,7 +145,8 @@ q.to("kg K m-2")  # 283.15 kg K m-2
 
 Don't use `ureg.parse_units(units, as_delta=False)` to force an on-scale
 compound unit: pint (0.25 and 0.26) converts such units wrongly without any
-error.
+error. Inside a `CFContext` block the metadata takes precedence over
+`as_delta`.
 
 When writing a result back out, `cf_attributes_for` does the reverse: it
 derives the `units_metadata` attribute from an already-computed `Unit` or
