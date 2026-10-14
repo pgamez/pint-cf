@@ -463,6 +463,11 @@ SCALED_OR_OFFSET_UNITS = [
     "K @ 273.15",
     "K from 273.15",
     "K after 273.15",
+    # After a parenthesis, a factor only when spaced or not an integer
+    # (an integer glued to ")" is an exponent, as in UDUNITS).
+    "(m) 2",
+    "(m s) -1",
+    "(m)1.5",
 ]
 
 
@@ -501,7 +506,6 @@ _UNREADABLE_CANONICAL_UNITS = {
     "1e-3 kg m-2": _xfail("7", "scaled canonical unit"),
     "1e-3 kg s-1": _xfail("7", "scaled canonical unit"),
     "1e-3 s-1": _xfail("7", "scaled canonical unit"),
-    "W m-2 sr-1 (m-1)-1": _xfail("16", "no exponent right after a parenthesis"),
     "dBZ": _xfail("1", "pint can't prefix a logarithmic unit - decibel branch"),
 }
 
@@ -523,7 +527,6 @@ _UNREADABLE_CANONICAL_UNITS = {
     "1e-3 kg m-2": _xfail("7", "scaled canonical unit"),
     "1e-3 kg s-1": _xfail("7", "scaled canonical unit"),
     "1e-3 s-1": _xfail("7", "scaled canonical unit"),
-    "W m-2 sr-1 (m-1)-1": _xfail("16", "no exponent right after a parenthesis"),
     "dBZ": _xfail("1", "pint can't prefix a logarithmic unit - decibel branch"),
 }
 

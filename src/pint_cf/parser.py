@@ -183,6 +183,11 @@ class UdunitsToPintTransformer(Transformer):
         """Parenthetical group."""
         return f"({inner})"
 
+    def group_power(self, inner: str, close_exp: Token) -> str:
+        """Parenthetical group with an integer exponent glued to the closing
+        parenthesis (e.g. '(m s)-1')."""
+        return f"({inner}) ** {str(close_exp)[1:]}"
+
     # -------------------------------------------------------------------------
     # Logarithms
     # -------------------------------------------------------------------------

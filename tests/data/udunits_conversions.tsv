@@ -32,6 +32,12 @@
 4	degC2	K2	4.0
 1	degC m s-1	K m s-1	1.0
 1	J kg-1 degC-1	J kg-1 K-1	1.0
+1	(m-1)-1	m	1.0
+1	(m s)-1	m-1 s-1	1.0
+1	(m)2	m2	1.0
+1	((m)2)3	m6	1.0
+1	W m-2 sr-1 (m-1)-1	W m-1 sr-1	1.0
+2	(degC s)-1	K-1 s-1	2.0
 1	K/s	C/s	not convertible
 1	degC	C	not convertible
 1	K	F	not convertible

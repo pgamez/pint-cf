@@ -64,6 +64,13 @@ CASES = [
     (4, "degC2", "K2"),
     (1, "degC m s-1", "K m s-1"),
     (1, "J kg-1 degC-1", "J kg-1 K-1"),
+    # An integer glued to a closing parenthesis is an exponent.
+    (1, "(m-1)-1", "m"),
+    (1, "(m s)-1", "m-1 s-1"),
+    (1, "(m)2", "m2"),
+    (1, "((m)2)3", "m6"),
+    (1, "W m-2 sr-1 (m-1)-1", "W m-1 sr-1"),
+    (2, "(degC s)-1", "K-1 s-1"),
     # Not temperatures at all: C is the coulomb, F the farad.
     (1, "K/s", "C/s"),
     (1, "degC", "C"),

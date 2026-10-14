@@ -47,6 +47,7 @@ shift_op: SHIFT_AT | SHIFT_AFTER | SHIFT_FROM | SHIFT_SINCE | SHIFT_REF
           | basic_exp
           | basic_exp EXPONENT           -> power
           | basic_exp RAISE SIGNED_INT   -> power
+          | "(" shift_exp CLOSE_EXP      -> group_power
 
 // -----------------------------------------------------------------------------
 // Basic expression: the fundamental building blocks
@@ -108,6 +109,13 @@ DIVIDE.2: /\/|per/i
 
 // Exponentiation: ^ or **
 RAISE: /\^|\*\*/
+
+// Closing parenthesis with an integer exponent right after it, e.g. the
+// ")-1" of "(m s)-1". UDUNITS reads an integer glued to ")" as an exponent,
+// but one after a space ("(m s) -1") or a real number ("(m)1.5") as a
+// factor, so the ")" is part of this token: whitespace is otherwise
+// ignored, and that distinction would be lost.
+CLOSE_EXP.5: /\)[+-]?[0-9]+(?![0-9.eE])/
 
 // -----------------------------------------------------------------------------
 // Logarithmic reference (high priority)

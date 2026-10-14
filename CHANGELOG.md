@@ -65,6 +65,12 @@
   is a pint expression: `ureg("2 degC/s")` gives 275.15 K/s (2 degC
   converted on-scale, then divided), unlike `ureg.Quantity(2, "degC/s")`.
   Read CF data with `ureg.Quantity(values, units)`
+- Fixed an integer exponent right after a closing parenthesis, e.g.
+  `(m s)-1` or `(m-1)-1`: it was read as a scale factor and rejected.
+  As in UDUNITS, an integer glued to `)` is now an exponent, while one
+  after a space (`(m s) -1`) or a real number (`(m)1.5`) is still a
+  factor. This makes the CF standard name table's canonical unit
+  `W m-2 sr-1 (m-1)-1` readable
 - `cf_string_to_pint` is now a pure UDUNITS-to-pint syntax translation:
   the `CFContext` temperature mode is applied by a separate preprocessor,
   bound to the registry, that `cf_unitregistry()` chains right after it.
