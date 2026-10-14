@@ -1,88 +1,85 @@
 # pint-cf
 
-`pint-cf` is a lightweight, pure-Python package that extends Pint with a
-CF-compliant unit registry and formatter.
+`pint-cf` extends [Pint](https://pint.readthedocs.io) so it reads and writes
+the unit strings used in NetCDF files that follow the
+[CF conventions](https://cfconventions.org) (the UDUNITS-2 syntax).
 
-## Features
-
-- A CF-compliant Pint `UnitRegistry` that understands UDUNITS-2 unit strings.
-- A `cf` format for `Unit`/`Quantity` that writes results back out as CF strings.
-- `CFContext`, which correctly reads CF's `units_metadata` temperature attribute.
-- CF units that UDUNITS-2 itself doesn't define (`level`, `psu`, `decibel`,
-  `sverdrup`'s `Sv` symbol, ...), included by default.
-
-## Notes
-
-- No support for **time coordinates** (e.g. `days since 2001-01-01`) or
-  **climate calendars** (e.g. `360_day`) - Pint has no notion of a time
-  origin or calendar, so it can't represent these as units. Use
-  [cftime](https://unidata.github.io/cftime/) for those instead.
-- `decibel`/`bel` are treated as plain dimensionless ratio units, with no
-  physical reference level attached, matching the convention used by
-  [`cfunits`](https://github.com/NCAS-CMS/cfunits) and
-  [`cf-units`](https://github.com/SciTools/cf-units).
+- `cf_unitregistry()`: a Pint registry that understands strings like
+  `m s-2` or `kg m-2 s-1`.
+- `"cf"` format: writes a Pint unit back as a CF string.
+- `CFContext`: reads the `units_metadata` attribute of temperatures.
+- `cf_attributes_for`: works out `units_metadata` when writing a result.
 
 ## Installation
 
-Install via `pip`:
-
 ```bash
 pip install pint-cf
-```
-
-or via `conda`, from conda-forge:
-
-```bash
+# or
 conda install conda-forge::pint-cf
 ```
 
-## Usage
-
-Create a CF-ready unit registry with `cf_unitregistry()`. This also
-registers the `cf` format.
+## Quick start
 
 ```python
 from pint_cf import cf_unitregistry
 
 ureg = cf_unitregistry()
 
-q = ureg("10 meters per second^2").to("km s-2")
+q = ureg.Quantity(10, "m s-2").to("km s-2")
 
-print(f"{q:cf}")  # 0.01 kilometer-second^-2
+print(f"{q:cf}")   # 0.01 kilometer-second^-2
 print(f"{q:~cf}")  # 0.01 km/s2
 ```
 
-### Temperature `units_metadata`
+Use `ureg` as any Pint registry. Format with `cf` (full names) or `~cf`
+(symbols) to get a string you can store in a `units` attribute.
 
-CF distinguishes an on-scale temperature (e.g. today's temperature) from a
-temperature *difference* (e.g. an anomaly) with a `units_metadata`
-attribute - the plain `units` string alone can't tell them apart.
+## Temperatures
 
-When reading a variable that has this attribute, wrap the value in
-`CFContext`:
+### The problem
+
+A `units` attribute of `degC` doesn't say whether the data is a
+temperature (15 °C) or a temperature difference (a warming of 5 °C). The
+two convert differently:
+
+| Data | In °F |
+| -------------------- | ------------- |
+| 15 °C (temperature) | 59 °F |
+| 5 °C (difference) | 9 °F |
+
+CF 1.13 (section 3.1.2) adds a `units_metadata` attribute to tell them
+apart: `"temperature: on_scale"`, `"temperature: difference"` or
+`"temperature: unknown"`.
+
+### Reading a variable: `CFContext`
+
+Pass the variable's `units_metadata` to `CFContext`, and read **and
+convert** the variable inside the block:
 
 ```python
-from pint_cf import cf_unitregistry, CFContext
-
-ureg = cf_unitregistry()
+from pint_cf import CFContext
 
 with CFContext(units_metadata="temperature: difference"):
-    q = ureg.Quantity(1, "degree_C")
-
-print(q.units)  # delta_degree_Celsius
+    anomaly = ureg.Quantity(5, "degC")  # 5 delta_degree_Celsius
+    anomaly.to("degF")                  # 9 delta_fahrenheit
 ```
 
-The metadata applies to every temperature unit read inside the block,
-including the target of a conversion and any unit read by code you call
-from inside it. Keep one variable per block: read it there and convert it
-there too. Anything belonging to a variable with different metadata goes
-outside. A variable without `units_metadata` gets
-`CFContext(units_metadata=None)`, which CF reads as `"temperature: unknown"`
-and which doesn't inherit an outer block's metadata.
+Three rules:
 
-With xarray, quantify one variable per block. Calling `ds.pint.quantify()`
-on the whole dataset inside a single block would give every temperature
-variable the same metadata:
+1. **One block, one variable.** Everything read inside the block gets its
+   metadata, including the target of `.to()`.
+1. **Convert inside the block.** This matters for kelvin and Rankine (see
+   below).
+1. **No attribute: `None`.** For a variable without `units_metadata`, use
+   `CFContext(units_metadata=None)`, which CF reads as
+   `"temperature: unknown"`. It's a different variable, so it doesn't take
+   the metadata of an outer block.
+
+A `units_metadata` on a unit that isn't a temperature is ignored (CF
+forbids it there).
+
+With xarray, use one block per variable, never one block around the whole
+dataset:
 
 ```python
 ureg.force_ndarray_like = True  # required by pint-xarray
@@ -93,114 +90,152 @@ for name, var in ds.data_vars.items():
         quantified[name] = ds[[name]].pint.quantify(unit_registry=ureg)[name]
 ```
 
-Convert inside the block whatever the unit. Celsius and Fahrenheit keep a
-difference as a `delta_` unit, but kelvin and Rankine have no offset: pint
-stores on-scale and difference as the same unit, so the metadata can't
-travel with the quantity:
+### Why convert inside the block
+
+Pint stores a Celsius or Fahrenheit difference as a separate unit
+(`delta_degC`), so the quantity remembers it's a difference. Kelvin and
+Rankine have no `delta_` unit in Pint: a kelvin is just a kelvin.
+Outside the block, Pint decides by the target unit, and a bare `"degF"`
+means a temperature:
 
 ```python
 with CFContext(units_metadata="temperature: difference"):
-    anomaly = ureg.Quantity(1, "K")
-    anomaly.to("degF")  # 1.8 delta_fahrenheit
+    k = ureg.Quantity(1, "K")
+    c = ureg.Quantity(1, "degC")
+    k.to("degF")   # 1.8 delta_fahrenheit   correct
 
-anomaly.to("degF")      # -457.87 degF: outside, "degF" has no metadata,
-                        # so pint reads it as on-scale
+k.to("degF")       # -457.87 fahrenheit     wrong, no error
+c.to("degF")       # DimensionalityError    safe: c is still a difference
 ```
 
-A `units_metadata` on a non-temperature unit, which CF forbids, is ignored.
+### Without `units_metadata`
 
-Without `CFContext`, with `units_metadata` absent, or with
-`"temperature: unknown"`, CF says the data is ambiguous, and pint-cf
-leaves pint to behave as it documents. A units string read with
-`ureg.Quantity(values, units)`, `ureg.Unit(units)` or `ureg.parse_units`
-follows pint's `as_delta` rule, which is the UDUNITS one that CF quotes as
-guidance only: a bare unit (`degC`) is read as on-scale, and a unit raised
-to a power or combined with others (`degC/s`, `degC2`) as a difference.
+CF says to treat it as `"temperature: unknown"`: a correct conversion
+can't be guaranteed. pint-cf then leaves Pint's default rule, which is
+the one UDUNITS-2 uses (CF quotes it as guidance only):
 
-Read CF data with `ureg.Quantity(values, units)`, not with
-`ureg(f"{value} {units}")`. A string with the magnitude inside is a pint
-expression, not a CF units attribute (which never carries one): pint
-evaluates it as arithmetic, and with a temperature inside a compound unit
-that gives an on-scale result:
+- a bare unit (`degC`) is a temperature: `15 degC` → `288.15 K`;
+- a compound unit (`degC/s`, `degC2`) is a difference: `2 degC/s` →
+  `2 K/s`.
+
+### Writing a result: `cf_attributes_for`
 
 ```python
-ureg.Quantity(2, "degC/s").to("K/s")  # 2 K/s, as UDUNITS
-ureg("2 degC/s").to("K/s")            # 275.15 K/s: 2 degC (275.15 K) / s
+from pint_cf import cf_attributes_for
+
+cf_attributes_for(anomaly)            # {'units_metadata': 'temperature: difference'}
+cf_attributes_for(ureg.Unit("m"))     # {}  (not a temperature)
+
+ds[name].attrs.update(cf_attributes_for(result))
 ```
 
-Inside a `CFContext` block, the metadata applies to both:
-`"temperature: difference"` makes `ureg("2 degC/s")` a difference too.
+It reports what Pint knows about the unit, so:
 
-`"temperature: on_scale"` on a compound unit that contains a Celsius or
-Fahrenheit temperature (e.g. `kg degC m-2`) is valid CF, but `CFContext`
-raises `ValueError` for it: pint has no safe way to represent it. As CF
-notes, such values can only be converted when the on-scale temperature and
-the other factors are known separately. If they are, multiply them as
-quantities, and pint converts the temperature to kelvin first:
+- For kelvin and Rankine it returns `"temperature: unknown"`: the unit
+  alone can't tell.
+- If the input had no `units_metadata` (or `unknown`), the answer is only
+  Pint's guess. Keep the original attribute, unless your computation
+  settled it (subtracting two temperatures gives a difference).
+
+### Pitfalls
+
+1. Putting the value inside the string: `ureg("2 degC/s")`.
+1. An on-scale temperature inside a compound unit, such as
+   `kg degC m-2`: it can't be converted from the units alone.
+
+#### 1. Value inside the string
+
+`ureg("2 degC/s")` isn't a CF units string but an arithmetic expression,
+`(2 * degC) / s`: a temperature of 2 °C divided by seconds. The pint-cf
+registry turns on Pint's `autoconvert_offset_to_baseunit`, so arithmetic
+with a temperature uses kelvin, as physics requires. 275.15 K/s is right
+for that expression, but it isn't what the CF units `degC/s` mean.
+
+```python
+ureg.Quantity(2, "degC/s").to("K/s")  # 2 K/s       (as UDUNITS-2)
+ureg("2 degC/s").to("K/s")            # 275.15 K/s  (2 °C = 275.15 K, / s)
+```
+
+Pass the value apart from the units: `ureg.Quantity(values, units)`.
+
+#### 2. On-scale temperature in a compound unit
+
+CF 1.13 (section 3.1.2) says the units alone aren't enough to convert it:
+
+> If the quantity is an on-scale temperature multiplied by some other
+> quantity, it is not possible to convert the data from the units given
+> to any other units that involve a temperature with a different origin,
+> given only the units. For instance, when temperature is on-scale, a
+> value in kg degree_C m-2 can be converted to a value in kg K m-2 only
+> if we know separately the values in degree_C and kg m-2 of which it is
+> the product.
+
+For example, `10 kg degC m-2` may be 1 °C × 10 kg m-2 (2741.5 kg K m-2)
+or 10 °C × 1 kg m-2 (283.15 kg K m-2).
+
+Pint doesn't support such a unit either. What you get depends on how you
+reach it:
+
+- **Without metadata**, `kg degC m-2` is read as a difference (the
+  UDUNITS-2 rule above), so there's no on-scale unit at all.
+- **With `CFContext(units_metadata="temperature: on_scale")`**, pint-cf
+  raises `ValueError`. CF doesn't ask for an error: that's pint-cf's
+  choice, rather than give a wrong number.
+- **Built by hand**, with `as_delta=False` or by multiplying units, Pint
+  converts it to meaningless numbers, without an error.
+  pint-cf can't block this from outside Pint, so don't do it.
+
+```python
+ureg.Quantity(10, "kg degC m-2").to("kg K m-2")  # 10 kg K m-2 (difference)
+
+with CFContext(units_metadata="temperature: on_scale"):
+    ureg.Quantity(10, "kg degC m-2")             # ValueError
+
+u = ureg.parse_units
+q = ureg.Quantity(10, u("kg degC m-2", as_delta=False))  # or Unit("degC") * Unit("kg m-2")
+q.to(u("g degC m-2", as_delta=False))   # 10, should be 10000
+q.to(u("kg degF m-2", as_delta=False))  # 50, CF says it can't be converted
+```
+
+**The solution.** CF only allows the conversion if you know the
+temperature and the rest separately. If you do, multiply them as
+quantities:
 
 ```python
 q = ureg.Quantity(10, "degC") * ureg.Quantity(1, "kg m-2")
 q.to("kg K m-2")  # 283.15 kg K m-2
 ```
 
-Don't use `ureg.parse_units(units, as_delta=False)` to force an on-scale
-compound unit: pint (0.25 and 0.26) converts such units wrongly without any
-error. Inside a `CFContext` block the metadata takes precedence over
-`as_delta`.
+If the file only has the product, pint-cf can't read it as on-scale.
+That includes conversions CF would allow because the temperature origin
+doesn't change, such as `kg degC m-2` → `g degC m-2`.
 
-When writing a result back out, `cf_attributes_for` does the reverse: it
-derives the `units_metadata` attribute from an already-computed `Unit` or
-`Quantity`, ready to merge into a NetCDF variable's attributes:
+## Units not in UDUNITS-2
 
-```python
-from pint_cf import cf_attributes_for
+pint-cf adds these units by default:
 
-print(cf_attributes_for(q))  # {"units_metadata": "temperature: difference"}
-print(cf_attributes_for(ureg.Unit("meter")))  # {} - not a temperature unit
+| Unit | Notes |
+| --------------------------------- | ----------------------------------------------------------- |
+| `practical_salinity_unit` / `psu` | Equal to `1e-3`, not `1` (the CF FAQ is out of date here). |
+| `decibel` / `dB`, `bel` | Plain dimensionless ratios, with no reference level, as in `cfunits` and `cf-units`. |
+| `sverdrup` / `Sv` | `Sv` is the sverdrup (ocean transport). Write `sievert` in full. |
 
-ds[name].attrs.update(cf_attributes_for(q.units))
-```
+`cf_unitregistry(cf_extensions=False)` leaves them out, for a registry
+that matches plain UDUNITS-2.
 
-This round-trips exactly for Celsius and Fahrenheit read with an explicit
-`"temperature: on_scale"` or `"temperature: difference"`. Kelvin and
-Rankine have no zero-offset, so on-scale and difference look identical for
-them - `cf_attributes_for` reports `"temperature: unknown"` rather than
-guessing.
+`level`, `sigma_level` and `layer` are always defined, since CF allows
+them for old COARDS files. Using one warns with
+`pint_cf.CFDeprecatedUnitWarning`, because CF recommends a dimensionless
+vertical coordinate instead. Support for them isn't going away.
 
-`cf_attributes_for` reports how pint interprets the unit, not the metadata
-it was read with - a pint unit can't carry "unknown". If the input's
-`units_metadata` was `"temperature: unknown"` or absent, it reports the
-UDUNITS guess above as if it were known. In that case keep the original
-attribute instead, unless your computation settled the question (e.g.
-subtracting two on-scale temperatures gives a difference).
+## Not supported
 
-### CF units not in UDUNITS-2
-
-`level`, `sigma_level`, `layer` are dimensionless vertical-coordinate
-placeholders kept for legacy COARDS files - the CF conventions allow them
-unconditionally, so `cf_unitregistry()` always defines them, regardless of
-`cf_extensions`. Using one raises a `pint_cf.CFDeprecatedUnitWarning` (a
-`UserWarning` subclass, not `DeprecationWarning`/`FutureWarning`: pint-cf
-isn't planning to remove support for these strings, it's just flagging
-that CF itself calls this use deprecated in favor of a proper
-dimensionless vertical coordinate variable).
-
-CF also defines a few more units that UDUNITS-2 doesn't, sourced from
-[`cfunits`](https://ncas-cms.github.io/cfunits/cfunits.Units.html#cfunits-units). `cf_unitregistry()`
-includes these by default too:
-
-| Unit | Behavior |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `practical_salinity_unit` / `psu` | `1e-3`, not `1` (CF's own FAQ is out of date here). |
-| `decibel` / `dB`, `bel` | Plain dimensionless ratio units (see "Notes" above). |
-| `sverdrup` / `Sv` | `Sv` now means `sverdrup` (ocean volume transport), not `sievert` - `sievert` itself still works by its full name. |
-
-Pass `cf_extensions=False` to `cf_unitregistry()` for a registry that
-matches plain UDUNITS-2 instead, without these additions (the
-`level`/`sigma_level`/`layer` placeholders are still defined).
+- **Time coordinates** (`days since 2001-01-01`) and **calendars**
+  (`360_day`): Pint has no time origin or calendar. Use
+  [cftime](https://unidata.github.io/cftime/).
 
 ## Third-party notices
 
 The UDUNITS-2 unit database this package is built on is redistributed
-under its own license - see
+under its own license: see
 [THIRD_PARTY_LICENSES.md](https://github.com/pgamez/pint-cf/blob/main/THIRD_PARTY_LICENSES.md).

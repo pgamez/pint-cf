@@ -46,39 +46,24 @@ def _parse_units_metadata(value: str) -> str:
 
 @contextmanager
 def CFContext(*, units_metadata: str | None = None) -> Generator[None]:
-    """Apply a CF ``units_metadata`` attribute while building a unit or quantity.
+    """Read temperatures with a CF ``units_metadata`` attribute.
 
-    A NetCDF/CF variable can carry a ``units_metadata`` attribute that
-    disambiguates a temperature unit as either a point on a scale
-    (``"temperature: on_scale"``, e.g. a measured temperature of 15
-    degrees Celsius) or a difference between two temperatures
-    (``"temperature: difference"``, e.g. a 5-degree warming). Plain
-    pint has no way to know which one you mean from the unit string
-    alone. Wrap the ``ureg.Quantity(...)``/``ureg.Unit(...)`` call
-    that needs this distinction in a ``with CFContext(...):`` block,
-    and it will resolve to the right pint unit (e.g.
-    ``delta_degree_Celsius`` for a difference).
+    The ``units`` attribute alone doesn't say whether ``degC`` is a
+    temperature or a temperature difference. CF adds
+    ``units_metadata`` for that (CF 1.13, section 3.1.2). Inside the
+    block, every temperature unit pint reads follows it, e.g.
+    ``degC`` becomes ``delta_degree_Celsius`` for a difference.
 
-    The metadata applies to every temperature unit string pint reads
-    inside the block - not only when building a quantity, but also
-    the target of a conversion (``q.to("degF")``), and any unit
-    string read by code called from inside the block. So one block
-    holds one variable: read it there, and convert it there too.
-    Anything that belongs to a variable with different metadata
-    (including converting a quantity built elsewhere) goes outside
-    the block. In particular, don't wrap a loop over several
-    variables, or a whole-dataset call such as xarray's
-    ``ds.pint.quantify()``, in a single block: every temperature
-    variable would get this one variable's metadata. Use one block
-    per variable instead.
+    Rules:
 
-    Convert inside the block whatever the unit. For Celsius and
-    Fahrenheit it makes no difference, since pint keeps a difference
-    as a ``delta_`` unit. For kelvin and Rankine (no offset), pint
-    stores on-scale and difference as the same unit, so the metadata
-    can't travel with the quantity: outside the block, a target such
-    as ``"degF"`` has no metadata - which CF treats as "unknown",
-    with no guaranteed conversion - and pint reads it as on-scale.
+    - One block, one variable. The metadata also applies to the
+      target of ``.to()`` and to any unit read by code called from
+      inside the block. Don't wrap several variables, or
+      ``ds.pint.quantify()`` on a whole dataset, in one block.
+    - Convert inside the block. Pint has no ``delta_`` unit for
+      kelvin and Rankine, so a kelvin difference is just a kelvin.
+      Outside the block, ``q.to("degF")`` reads ``"degF"`` as a
+      temperature and gives a wrong number, without an error.
 
     Parameters
     ----------
@@ -88,10 +73,8 @@ def CFContext(*, units_metadata: str | None = None) -> Generator[None]:
         "Temperature units"
         <https://cfconventions.org/cf-conventions/cf-conventions.html#temperature-units>`_).
         ``None`` (the default) means the variable has no
-        ``units_metadata`` attribute, which CF says to read as
-        ``"temperature: unknown"``. Inside an outer ``CFContext``, it
-        also clears the outer block's metadata: a variable without the
-        attribute doesn't inherit another variable's.
+        ``units_metadata``, which CF reads as ``"temperature: unknown"``.
+        It also clears the metadata of an outer block.
 
     Yields
     ------
@@ -100,8 +83,12 @@ def CFContext(*, units_metadata: str | None = None) -> Generator[None]:
     Raises
     ------
     ValueError
-        If `units_metadata` is set but isn't one of the values CF
-        defines for the ``temperature`` key.
+        If `units_metadata` isn't a value CF defines for
+        ``temperature``, or if it's ``"temperature: on_scale"`` and a
+        unit read in the block is a compound one with Celsius or
+        Fahrenheit (e.g. ``kg degC m-2``). CF says such a value can only
+        be converted if the temperature and the other factors are known
+        separately: multiply them as quantities instead.
 
     Examples
     --------
@@ -275,45 +262,25 @@ def _component_temperature_mode(registry: pint.UnitRegistry, cname: str) -> str:
 
 
 def cf_attributes_for(unit: PlainUnit | PlainQuantity) -> dict[str, str]:
-    """Derive CF variable attributes from a pint Unit or Quantity.
+    """Work out the CF attributes to write for a Unit or Quantity.
 
-    The reverse of what `CFContext` does going in: for writing a
-    result back to a NetCDF variable, e.g. via
-    ``var.setncatts(...)`` or ``ds[name].attrs.update(...)``.
+    The reverse of `CFContext`: use it when writing a result, e.g.
+    ``ds[name].attrs.update(cf_attributes_for(q))``. It only returns
+    ``units_metadata``, and only for temperatures, since CF forbids
+    that attribute on other units.
 
-    Currently only ever produces a ``units_metadata`` entry, and
-    only for a temperature unit - CF's own rule is that this
-    attribute must be absent unless the unit involves temperature,
-    so a non-temperature unit (or one without a genuine
-    on_scale/difference distinction to report) yields an empty dict
-    rather than a key with a null-ish value.
+    It reports what pint knows about the unit, not the metadata the
+    data was read with:
 
-    Only reliable for units with a genuine on_scale/difference
-    distinction (Celsius, Fahrenheit - units with their own offset,
-    which is why pint gives them a ``delta_`` counterpart at all).
-    For Kelvin/Rankine (no offset, so no ``delta_`` variant exists),
-    on_scale and difference are numerically identical and
-    structurally indistinguishable from the unit alone - this
-    reports ``"temperature: unknown"`` for those rather than
-    guessing; if that distinction matters, the caller must track it
-    through their own computation instead of recovering it from the
-    resulting unit.
-
-    It reports how pint interprets the unit, not the metadata the
-    data was read with. A pint unit can't carry "unknown": with
-    ``units_metadata="temperature: unknown"``, or with no
-    ``units_metadata`` at all (which CF says readers must treat as
-    unknown), pint falls back on the UDUNITS rule - a bare offset
-    unit (``degC``) is read as on_scale, and a compound one
-    (``degC/s``, ``degC2``) as a difference - and this function
-    then reports that guess as ``"temperature: on_scale"`` /
-    ``"temperature: difference"``. CF only cites that rule as
-    guidance, not as a convention. So if the input's
-    ``units_metadata`` was unknown or absent, writing this result
-    back out would state something the original data didn't:
-    keep the original attribute instead, unless your computation
-    itself settled the question (e.g. subtracting two on-scale
-    temperatures, which pint correctly turns into a difference).
+    - Kelvin and Rankine give ``"temperature: unknown"``: pint has no
+      ``delta_`` unit for them, so the unit alone can't tell.
+    - If the input had no ``units_metadata``, or ``unknown``, pint
+      guessed with the UDUNITS-2 rule (a bare ``degC`` is a
+      temperature, ``degC/s`` a difference), which CF quotes as
+      guidance only. This function reports that guess as if it were
+      known. Keep the original attribute instead, unless your
+      computation settled the question (subtracting two temperatures
+      gives a difference).
 
     Parameters
     ----------

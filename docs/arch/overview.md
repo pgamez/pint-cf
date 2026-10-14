@@ -1,108 +1,93 @@
 # Package overview
 
-## Structure
+pint-cf doesn't subclass anything from pint. It builds a normal
+`pint.UnitRegistry` and adds three things to it: unit definitions,
+preprocessors (which rewrite a unit string before pint parses it), and a
+formatter.
 
-`pint-cf` provides four public symbols:
+## Public API
 
-- `cf_unitregistry(*, cf_extensions=True)` - the main entry point, returns a
-  `pint.UnitRegistry` with CF/UDUNITS-2 support.
-- `CFContext` - a context manager that makes a CF `units_metadata` attribute
-  (temperature `on_scale`/`difference`) visible to the preprocessor while a
-  unit/quantity is being constructed.
-- `cf_attributes_for(unit_or_quantity)` - the reverse direction: derives CF
-  variable attributes back from an already-computed Unit/Quantity.
-- `CFDeprecatedUnitWarning` - the `UserWarning` subclass raised when parsing
-  a COARDS-only `level`/`sigma_level`/`layer` placeholder, exported so
-  callers can filter on it specifically (e.g.
-  `warnings.filterwarnings("ignore", category=CFDeprecatedUnitWarning)`).
+| Symbol | What it does |
+| ------------------------- | ------------------------------------------------------------------- |
+| `cf_unitregistry()` | Builds the registry. Entry point. |
+| `CFContext` | Context manager: applies a `units_metadata` while reading units. |
+| `cf_attributes_for()` | Works out `units_metadata` from a unit, for writing. |
+| `CFDeprecatedUnitWarning` | Warning for `level`, `sigma_level`, `layer`. Exported for filtering. |
 
-`cf_unitregistry()` builds the registry with these features:
+## Modules
 
-- Loads definitions from the generated UDUNITS-2 registry files, plus
-  always `cf-coards-vertical.txt` - the COARDS-only `level`, `sigma_level`,
-  `layer` placeholders, which the CF conventions allow unconditionally
-  rather than as an opt-in extension - and, by default, `cf-extensions.txt`
-  - CF units that UDUNITS-2 itself doesn't define
-    (`practical_salinity_unit`/`psu`, `decibel`/`bel`, and reassigning
-    `sverdrup`'s `Sv` symbol - see
-    [issue #10](https://github.com/pgamez/pint-cf/issues/10)). Pass
-    `cf_extensions=False` to skip `cf-extensions.txt` and get a registry that
-    matches plain UDUNITS-2 instead (still with the COARDS placeholders).
-- Adds a preprocessor `cf_string_to_pint()` that transforms CF/UDUNITS-2
-  strings into pint strings at `pint.Unit`/`pint.Quantity` creation time,
-  using a Lark grammar internally for parsing. A pure syntax translation:
-  it neither reads `CFContext` nor needs the registry.
-- Chains a temperature preprocessor right after it (built by
-  `_make_temperature_preprocessor(ureg)`), which applies the active
-  `CFContext`'s temperature mode, read from a `ContextVar`. It's bound to
-  the registry - the only way to tell an offset temperature unit
-  (`degree_C`) from one without an offset (`K`) - so it's appended to
-  `ureg.preprocessors` once the registry exists, rather than passed to its
-  constructor.
-- Adds a second preprocessor, `_warn_if_deprecated_cf_unit()`, always
-  active, that warns (`CFDeprecatedUnitWarning`) on the COARDS-only
-  `level`/`sigma_level`/`layer` placeholders - a no-op transform, run
-  purely for that side effect. Not a `DeprecationWarning`/`FutureWarning`:
-  those are silenced by default unless raised from `__main__`, which this
-  never is, since the warning is always raised from inside pint's own
-  parsing rather than the caller's code - and neither category fits
-  anyway, since pint-cf isn't planning to remove support for these
-  strings.
-- Registers a custom formatter `CFFormatter` that transforms pint unit
-  syntax back into CF strings for display - it strips `delta_`/`Δ`, which
-  is purely cosmetic: `cf_attributes_for()` reads `Unit._units` directly and
-  is unaffected by it.
-- Disables pint's own `parse_unit` cache (`_NoCache`), so a `CFContext`
-  entered/exited around repeated calls with the same raw unit string is
-  never served a stale result from an earlier, differently-contexted call.
+| File | Contents |
+| ---------------------- | ----------------------------------------------------------------------- |
+| `units.py` | `cf_unitregistry()`, the `cf` formatter, the deprecated-unit warning. |
+| `parser.py` | `cf_string_to_pint()`: UDUNITS-2 syntax → pint syntax (Lark grammar). |
+| `context.py` | `CFContext`, the temperature preprocessor, `cf_attributes_for()`. |
+| `resources/registry/` | Unit definition files (see below). |
 
 ![pint-cf structure](structure.png)
 
-## Registry files generation
+## How a unit string is read
 
-The registry file(s) mirroring UDUNITS-2 are generated using a script
-excluded from the package. The code is located in the directory `tools`.
-There are:
+`cf_unitregistry()` sets up three preprocessors. pint runs them in order on
+every unit string, before parsing it:
 
-- The CLI script `parse_xml.py` that launches the process.
-- The `.xml` files containing units definitions, obtained from the UDUNITS2
-  library repository.
-- A module `xmlrd.py` that transforms the XML elements into Pint Unit
-  definitions:
-  - Uses `cf_string_to_pint()` to generate the unit expression, consistently with
-    the library.
-  - Custom classes to build pint unit definitions from XML attributes, including
-    comments from the xml file.
+1. `_warn_if_deprecated_cf_unit`: warns on `level`, `sigma_level`,
+   `layer`. Doesn't change the string.
+1. `cf_string_to_pint`: translates the syntax, e.g. `m s-2` → `m * s ** -2`.
+   Pure translation: it doesn't know about the registry or `CFContext`.
+1. The temperature preprocessor (`context._make_temperature_preprocessor`):
+   if a `CFContext` is active, turns `degC` into `delta_degC` for
+   `"temperature: difference"`, or rejects what pint can't represent. It
+   needs the registry, so it's added after the registry is created.
 
-This generates the registry files that should be moved into the resource
-folder of the library `src/pint_cf/resources/registry`.
+Two details:
 
-`cf-extensions.txt`, in that same folder, is **not** produced by this
-pipeline - it's hand-maintained directly, sourced from
-[`cfunits`](https://github.com/NCAS-CMS/cfunits), since the units it adds
-have no UDUNITS-2 XML source to regenerate from.
+- `CFContext` stores the metadata in a `ContextVar`. The temperature
+  preprocessor reads it. `cf_attributes_for()` doesn't: it only looks at
+  the unit.
+- pint's `parse_unit` cache is turned off (`_NoCache`). It's keyed on the
+  string before preprocessing, so the same string read in two different
+  `CFContext` blocks would get the first result. Turning it off costs
+  nothing measurable.
 
-![Registry file generation](sd-registry.png)
-
-## Usage
-
-Basic usage:
-
-1. Create the pint.UnitRegistry `ureg` by using `cf_unitregistry()`
-1. Use the `ureg` as usual with pint. This will support CF syntax transparently
-1. After data processing, obtain the resulting CF unit string by formatting the
-   `Unit` with `cf` format.
+Writing goes through `CFFormatter` (the `cf` and `~cf` formats), which
+turns a pint unit back into a CF string. It drops `delta_` and `Δ`, since
+CF puts that information in `units_metadata` instead.
 
 ![Usage workflow with pint-cf](sd-usage.png)
 
-### Temperature `units_metadata`
-
-CF's `units_metadata` attribute distinguishes an on-scale temperature from a
-temperature difference - something the plain `units` string alone can't
-express. `CFContext` makes that attribute available to `cf_unitregistry()`'s
-preprocessor while reading a variable; `cf_attributes_for()` derives it back
-when writing one out. The two directions don't share any state beyond the
-`ContextVar` that `CFContext` manages - `cf_attributes_for()` never reads
-it, it inspects the resulting `Unit` directly instead.
-
 ![Temperature units_metadata round-trip](sd-temperature.png)
+
+## Unit definition files
+
+All in `src/pint_cf/resources/registry/`:
+
+| File | Source | Loaded |
+| -------------------------- | ---------------------------------------- | ----------------- |
+| `udunits2*.txt` | Generated from the UDUNITS-2 XML | Always |
+| `cf-coards-vertical.txt` | CF: `level`, `sigma_level`, `layer` | Always |
+| `cf-extensions.txt` | `cfunits`: `psu`, `dB`, `Sv` as sverdrup | Unless `cf_extensions=False` |
+
+The `udunits2*.txt` files are generated. Don't edit them by hand:
+
+1. Update `tools/xml/*.xml` from UDUNITS-2 on GitHub.
+1. Run `tools/parse_xml.py`. It uses `tools/xmlrd.py`, which builds each
+   definition with `cf_string_to_pint()` (the same translation the
+   package uses at runtime) and keeps the XML comments.
+1. Move the output to `src/pint_cf/resources/registry/`.
+
+The two `cf-*.txt` files are written by hand, with the source of each unit
+in a comment.
+
+![Registry file generation](sd-registry.png)
+
+## Expected values for tests
+
+Tests don't depend on `cf_units` or `cfunits`. These scripts use them to
+compute expected values once and store them in `tests/data/`:
+
+| Script | Writes |
+| ------------------------------------- | --------------------------------- |
+| `tools/write_udunits_conversions.py` | `udunits_conversions.tsv`: conversions computed by UDUNITS-2. |
+| `tools/write_canonical_units.py` | `cf_canonical_units_written.tsv`: how pint-cf writes each CF canonical unit. |
+
+Review the diff of the generated file before committing it.
