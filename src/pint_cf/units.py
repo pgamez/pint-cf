@@ -13,6 +13,7 @@ from pint.delegates.formatter._spec_helpers import REGISTERED_FORMATTERS
 from pint.delegates.formatter.plain import DefaultFormatter
 from pint.facets.plain import PlainUnit
 
+from .context import _make_temperature_preprocessor
 from .parser import cf_string_to_pint
 
 _CF_FORMATTER_NAME = "cf"
@@ -214,6 +215,13 @@ def cf_unitregistry(*, cf_extensions: bool = True) -> pint.UnitRegistry:
     # defines plural forms for units
     ureg._suffixes = {"": ""}
     _register_cf_formatter(ureg)
+
+    # Applies an active CFContext's units_metadata to cf_string_to_pint's
+    # output (pint chains preprocessors in order). Appended here rather than
+    # passed to the constructor above because it needs the registry itself,
+    # which doesn't exist yet at that point - see
+    # context._make_temperature_preprocessor.
+    ureg.preprocessors.append(_make_temperature_preprocessor(ureg))
 
     # See _NoCache: without this, ureg.Quantity(value, units) (or ureg(units))
     # would only pick up an active CFContext the FIRST time a given raw

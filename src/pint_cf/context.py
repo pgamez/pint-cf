@@ -3,21 +3,23 @@ CF variable attributes (e.g. units_metadata) going in and out of pint.
 
 Going in: pint's preprocessors are plain `Callable[[str], str]` - they cannot
 receive extra arguments, so there is no way to pass a CF attribute like
-`units_metadata` directly to `cf_string_to_pint` when pint calls it
-internally. `CFContext` makes such attributes available to it via a
-`ContextVar`, without changing pint's own UnitRegistry/Unit/Quantity classes.
+`units_metadata` to a preprocessor when pint calls it internally. `CFContext`
+makes such attributes available to the temperature preprocessor built by
+`_make_temperature_preprocessor` via a `ContextVar`, without changing pint's
+own UnitRegistry/Unit/Quantity classes.
 
 Going out: `cf_attributes_for` derives CF variable attributes (currently just
 `units_metadata`) back from an already-computed Unit/Quantity, e.g. to write
 out with a result.
 """
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
 
 import pint
 from pint.facets.plain import PlainQuantity, PlainUnit
+from pint.util import ParserHelper
 
 _TEMPERATURE_MODES = {"on_scale", "difference", "unknown"}
 
@@ -147,9 +149,77 @@ def _is_bare_unit(pint_string: str) -> bool:
     return "*" not in base and exponent.strip() in ("1", "+1")
 
 
-def _apply_temperature_mode(result: str) -> str:
+def _is_offset_temperature_unit(registry: pint.UnitRegistry, name: str) -> bool:
+    """True for a temperature unit with its own offset (e.g. degree_Celsius,
+    fahrenheit) - the only units where on_scale and difference are different
+    pint units. False for kelvin/degree_rankine (no offset, so on_scale and
+    difference are the same unit), for an already-delta_ unit, for any
+    non-temperature unit - including logarithmic ones like B, which pint
+    also counts as non-multiplicative - and for an unknown name (left for
+    pint itself to report).
+
+    Same name resolution as pint's own `registry._is_multiplicative`
+    (prefixes, plurals, aliases), minus its bare `assert` on an unknown
+    name - an IndexError instead under `python -O`.
+
+    Runs inside a preprocessor, so it must not call any registry method
+    that takes a unit *string*: since pint 0.26, those (e.g.
+    `get_dimensionality(str)`) apply the preprocessors themselves, which
+    would recurse back into this one. `parse_unit_name` and
+    `_get_dimensionality(UnitsContainer)` don't.
+    """
+    if name in registry._units:
+        base_names = [name]
+    else:
+        base_names = [base for _, base, _ in registry.parse_unit_name(name)]
+
+    return any(
+        not registry._units[base].is_multiplicative
+        and registry._get_dimensionality(registry.UnitsContainer({base: 1}))
+        == "[temperature]"
+        for base in base_names
+    )
+
+
+def _involves_offset_temperature(registry: pint.UnitRegistry, pint_string: str) -> bool:
+    """True if any unit in `pint_string` (a cf_string_to_pint result) is an
+    offset temperature unit - see `_is_offset_temperature_unit`."""
+    return any(
+        _is_offset_temperature_unit(registry, name)
+        for name in ParserHelper.from_string(pint_string)
+    )
+
+
+def _make_temperature_preprocessor(
+    registry: pint.UnitRegistry,
+) -> Callable[[str], str]:
+    """Build the pint preprocessor that applies the active CFContext's
+    temperature mode, bound to `registry`.
+
+    Runs right after `cf_string_to_pint` in the preprocessor chain, which
+    keeps that one a pure UDUNITS-to-pint syntax translation. This step is
+    the only one that needs the registry - to tell an offset temperature
+    unit (degree_C) from one without an offset (K), which a unit string
+    alone can't - so it can only be built once the registry exists, and is
+    appended to `registry.preprocessors` afterwards by `cf_unitregistry`.
+    """
+
+    def apply_temperature_mode(pint_string: str) -> str:
+        return _apply_temperature_mode(pint_string, registry)
+
+    return apply_temperature_mode
+
+
+def _apply_temperature_mode(result: str, registry: pint.UnitRegistry) -> str:
     """Apply the active CFContext's temperature mode to a unit already
     converted by cf_string_to_pint.
+
+    Only units involving an offset temperature unit (degree_C, degree_F)
+    are touched: for anything else - kelvin, a non-temperature unit, or a
+    compound of those - on_scale and difference are the same pint unit, so
+    the mode has nothing to change. CF forbids units_metadata on a
+    non-temperature unit, but this is a reader, not a validator: such
+    metadata is ignored rather than rejected.
 
     Absent/"unknown" needs no handling here: pint's own default
     `as_delta=True` behavior already applies UDUNITS' own heuristic (a
@@ -157,32 +227,48 @@ def _apply_temperature_mode(result: str) -> str:
     to a power other than unity, or combined with another unit).
     """
     mode = _current_temperature_mode()
+    if mode not in ("difference", "on_scale"):
+        return result
+
     # A single unit stays "bare" regardless of enclosing parens (e.g.
     # "(degree_C)", "((degree_C))") - strip them first, since the parens are
     # otherwise redundant once delta_ is prefixed, and prefixing "delta_"
     # onto the unstripped string would produce invalid syntax like
     # "delta_(degree_C)".
     body = _strip_enclosing_parens(result)
+
+    # Also makes this idempotent - pint can re-apply its preprocessors to an
+    # already-processed string, and an already-prefixed delta_ unit has no
+    # offset of its own.
+    if not _involves_offset_temperature(registry, body):
+        return result
+
     is_bare = _is_bare_unit(body)
 
     if mode == "difference" and is_bare:
-        # cf_string_to_pint can run more than once on the same string within
-        # one CFContext (e.g. pint re-applies its preprocessors internally) -
-        # don't double up on an already-prefixed delta_ unit.
-        if body.startswith("delta_"):
-            return result
         return f"delta_{body}"
 
     if mode == "on_scale" and not is_bare:
-        # pint decides delta_ substitution via the `as_delta` argument to
-        # Unit()/Quantity(), which a preprocessor cannot influence - so this
-        # override can't be honored transparently. Fail loudly rather than
-        # silently returning a delta_ unit that contradicts the metadata.
+        # Valid CF (section 3.1.2), but there is no safe pint
+        # representation for it. pint reads an offset unit inside a
+        # compound unit as its delta_ counterpart (which would contradict
+        # the metadata), and the only way around that -
+        # parse_units(..., as_delta=False) - gives a unit that pint (0.25-0.26)
+        # converts silently wrong under autoconvert_offset_to_baseunit=True
+        # (e.g. 10 kg degC m-2 -> 10 g degC m-2, not 10000). So refuse it
+        # and point to the route CF itself describes: the separate values.
+        # Multiplying those quantities is correct - pint converts the
+        # on-scale temperature to kelvin first.
         raise ValueError(
-            "units_metadata='temperature: on_scale' cannot be applied to a "
-            f"compound unit expression ({result!r}) through the automatic "
-            "preprocessor pipeline. Call "
-            "ureg.Quantity(value, units, as_delta=False) directly instead."
+            "units_metadata='temperature: on_scale' on a compound unit "
+            f"({result!r}) can't be represented safely in pint: an offset "
+            "temperature unit (degC, degF) inside a compound unit is either "
+            "read as a difference or, forced on-scale, converted "
+            "incorrectly. As CF (section 3.1.2) notes, such values can only "
+            "be converted if the on-scale temperature and the other factors "
+            "are known separately: if they are, build each as its own "
+            "quantity and multiply them, e.g. "
+            "ureg.Quantity(t, 'degC') * ureg.Quantity(x, 'kg m-2')."
         )
 
     return result
@@ -224,6 +310,22 @@ def cf_attributes_for(unit: PlainUnit | PlainQuantity) -> dict[str, str]:
     guessing; if that distinction matters, the caller must track it
     through their own computation instead of recovering it from the
     resulting unit.
+
+    It reports how pint interprets the unit, not the metadata the
+    data was read with. A pint unit can't carry "unknown": with
+    ``units_metadata="temperature: unknown"``, or with no
+    ``units_metadata`` at all (which CF says readers must treat as
+    unknown), pint falls back on the UDUNITS rule - a bare offset
+    unit (``degC``) is read as on_scale, and a compound one
+    (``degC/s``, ``degC2``) as a difference - and this function
+    then reports that guess as ``"temperature: on_scale"`` /
+    ``"temperature: difference"``. CF only cites that rule as
+    guidance, not as a convention. So if the input's
+    ``units_metadata`` was unknown or absent, writing this result
+    back out would state something the original data didn't:
+    keep the original attribute instead, unless your computation
+    itself settled the question (e.g. subtracting two on-scale
+    temperatures, which pint correctly turns into a difference).
 
     Parameters
     ----------

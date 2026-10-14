@@ -23,6 +23,36 @@
   category (`warnings.filterwarnings("ignore", category=CFDeprecatedUnitWarning)`).
   Doesn't affect typical usage - only relevant if your code specifically
   filters warnings by `DeprecationWarning` category for this case
+- Fixed `CFContext(units_metadata="temperature: difference")` raising
+  `UndefinedUnitError` for `K` (`'delta_K' is not defined`) - the
+  canonical CF temperature anomaly - and for any other unit without an
+  offset (`degree_R`, `mK`) or not a temperature at all (`m`). It now only
+  resolves an offset temperature unit (`degree_C`, `degree_F`) to its
+  `delta_` counterpart; kelvin has no offset, so on-scale and difference
+  are the same pint unit. Units metadata on a non-temperature unit (which
+  CF forbids) is ignored rather than rejected
+- Fixed `CFContext(units_metadata="temperature: on_scale")` raising
+  `ValueError` for any compound unit, even without an offset temperature
+  unit in it (`m s-1`, `K m-1`, `W m-2 K-1`) - CF allows on_scale on a
+  compound unit. It still raises when the compound unit does contain one
+  (`degC/s`), since pint can't represent that as on-scale through the
+  preprocessor pipeline
+- Fixed that `ValueError`'s message, which recommended
+  `ureg.Quantity(value, units, as_delta=False)` - a call pint doesn't
+  accept. It now points to the route CF (section 3.1.2) describes: when
+  the on-scale temperature and the other factors are known separately,
+  multiply them as quantities. Forcing the unit with
+  `ureg.parse_units(units, as_delta=False)` is deliberately not suggested:
+  pint (0.25 and 0.26) converts such units wrongly without raising
+- Documented that, with `units_metadata` absent or
+  `"temperature: unknown"` (which CF says is ambiguous), pint falls back on
+  the UDUNITS rule, and `cf_attributes_for` then reports that guess as
+  `on_scale`/`difference` - keep the original attribute when writing such
+  data back out
+- `cf_string_to_pint` is now a pure UDUNITS-to-pint syntax translation:
+  the `CFContext` temperature mode is applied by a separate preprocessor,
+  bound to the registry, that `cf_unitregistry()` chains right after it.
+  Internal change - no effect on `ureg.Quantity`/`ureg.Unit`/`ureg(...)`
 
 ## v0.2.1
 

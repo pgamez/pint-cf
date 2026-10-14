@@ -72,8 +72,31 @@ with CFContext(units_metadata="temperature: difference"):
 print(q.units)  # delta_degree_Celsius
 ```
 
-Without `CFContext` (or with `units_metadata` absent), nothing changes - an
-on-scale temperature is read as usual.
+Kelvin (or any unit without a temperature offset) is unaffected: on-scale
+and difference are the same pint unit. A `units_metadata` on a
+non-temperature unit, which CF forbids, is ignored.
+
+Without `CFContext`, with `units_metadata` absent, or with
+`"temperature: unknown"`, CF says the data is ambiguous. In that case pint
+applies the UDUNITS rule, which CF quotes as guidance only: a bare unit
+(`degC`) is read as on-scale, and a unit raised to a power or combined with
+others (`degC/s`, `degC2`) as a difference.
+
+`"temperature: on_scale"` on a compound unit that contains a Celsius or
+Fahrenheit temperature (e.g. `kg degC m-2`) is valid CF, but `CFContext`
+raises `ValueError` for it: pint has no safe way to represent it. As CF
+notes, such values can only be converted when the on-scale temperature and
+the other factors are known separately. If they are, multiply them as
+quantities, and pint converts the temperature to kelvin first:
+
+```python
+q = ureg.Quantity(10, "degC") * ureg.Quantity(1, "kg m-2")
+q.to("kg K m-2")  # 283.15 kg K m-2
+```
+
+Don't use `ureg.parse_units(units, as_delta=False)` to force an on-scale
+compound unit: pint (0.25 and 0.26) converts such units wrongly without any
+error.
 
 When writing a result back out, `cf_attributes_for` does the reverse: it
 derives the `units_metadata` attribute from an already-computed `Unit` or
@@ -88,9 +111,18 @@ print(cf_attributes_for(ureg.Unit("meter")))  # {} - not a temperature unit
 ds[name].attrs.update(cf_attributes_for(q.units))
 ```
 
-This round-trips exactly for Celsius and Fahrenheit. Kelvin and Rankine
-have no zero-offset, so on-scale and difference look identical for them -
-`cf_attributes_for` reports `"temperature: unknown"` rather than guessing.
+This round-trips exactly for Celsius and Fahrenheit read with an explicit
+`"temperature: on_scale"` or `"temperature: difference"`. Kelvin and
+Rankine have no zero-offset, so on-scale and difference look identical for
+them - `cf_attributes_for` reports `"temperature: unknown"` rather than
+guessing.
+
+`cf_attributes_for` reports how pint interprets the unit, not the metadata
+it was read with - a pint unit can't carry "unknown". If the input's
+`units_metadata` was `"temperature: unknown"` or absent, it reports the
+UDUNITS guess above as if it were known. In that case keep the original
+attribute instead, unless your computation settled the question (e.g.
+subtracting two on-scale temperatures gives a difference).
 
 ### CF units not in UDUNITS-2
 

@@ -30,9 +30,15 @@
     matches plain UDUNITS-2 instead (still with the COARDS placeholders).
 - Adds a preprocessor `cf_string_to_pint()` that transforms CF/UDUNITS-2
   strings into pint strings at `pint.Unit`/`pint.Quantity` creation time,
-  using a Lark grammar internally for parsing. It also applies the active
-  `CFContext`'s temperature mode at the end (via `_apply_temperature_mode()`,
-  reading a `ContextVar`).
+  using a Lark grammar internally for parsing. A pure syntax translation:
+  it neither reads `CFContext` nor needs the registry.
+- Chains a temperature preprocessor right after it (built by
+  `_make_temperature_preprocessor(ureg)`), which applies the active
+  `CFContext`'s temperature mode, read from a `ContextVar`. It's bound to
+  the registry - the only way to tell an offset temperature unit
+  (`degree_C`) from one without an offset (`K`) - so it's appended to
+  `ureg.preprocessors` once the registry exists, rather than passed to its
+  constructor.
 - Adds a second preprocessor, `_warn_if_deprecated_cf_unit()`, always
   active, that warns (`CFDeprecatedUnitWarning`) on the COARDS-only
   `level`/`sigma_level`/`layer` placeholders - a no-op transform, run

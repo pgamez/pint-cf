@@ -3,8 +3,9 @@ Tests for CF units_metadata support (CFContext, cf_attributes_for).
 
 Covers, in order:
   - CFContext validation (accepts/rejects, reset behavior).
-  - cf_string_to_pint (string layer): only forces delta_ for a BARE
-    temperature unit under "temperature: difference" - it never needs to
+  - The temperature preprocessor (string layer, run on cf_string_to_pint's
+    output): only forces delta_ for a BARE offset temperature unit (degree_C,
+    not K) under "temperature: difference" - it never needs to
     handle the compound case, because pint's own default `as_delta=True`
     already applies UDUNITS' heuristic (delta_ whenever a non-multiplicative
     unit is raised to a power != 1, or combined with another unit).
@@ -28,7 +29,11 @@ import pint
 import pytest
 
 from pint_cf import CFContext, cf_attributes_for, cf_unitregistry
-from pint_cf.context import _current_temperature_mode, _strip_enclosing_parens
+from pint_cf.context import (
+    _current_temperature_mode,
+    _make_temperature_preprocessor,
+    _strip_enclosing_parens,
+)
 from pint_cf.parser import cf_string_to_pint
 
 # =============================================================================
@@ -92,8 +97,20 @@ def test_cfcontext_resets_on_exception() -> None:
 
 
 # =============================================================================
-# cf_string_to_pint: string-layer behavior
+# Temperature preprocessor: string-layer behavior
 # =============================================================================
+
+
+@pytest.fixture(scope="module")
+def ureg() -> pint.UnitRegistry:
+    return cf_unitregistry()
+
+
+def _preprocess(ureg: pint.UnitRegistry, units: str) -> str:
+    """cf_string_to_pint followed by the temperature preprocessor - the same
+    chain cf_unitregistry() sets up for pint."""
+    return _make_temperature_preprocessor(ureg)(cf_string_to_pint(units))
+
 
 # (units_metadata, input_units, expected_pint_string)
 TEST_CASES_TEMPERATURE_MODE_STRING = [
@@ -114,10 +131,28 @@ TEST_CASES_TEMPERATURE_MODE_STRING = [
     # "delta_(degree_C)".
     ("temperature: difference", "(degree_C)", "delta_degree_C"),
     ("temperature: difference", "((degree_C))", "delta_degree_C"),
-    # Idempotency: cf_string_to_pint can run more than once on the same
-    # string within one CFContext (pint re-applies its preprocessors
-    # internally) - must not double-prefix into "delta_delta_degree_C".
+    # Idempotency: pint can re-apply its preprocessors to an
+    # already-processed string - must not double-prefix into
+    # "delta_delta_degree_C".
     ("temperature: difference", "delta_degree_C", "delta_degree_C"),
+    # No offset (kelvin, rankine, prefixed kelvin): on_scale and difference
+    # are the same pint unit, so the mode has nothing to change - there is
+    # no delta_K to resolve to.
+    ("temperature: difference", "K", "K"),
+    ("temperature: difference", "degree_R", "degree_R"),
+    ("temperature: difference", "mK", "mK"),
+    # Not a temperature at all: CF forbids units_metadata here, but this is
+    # a reader, not a validator - ignored rather than rejected.
+    ("temperature: difference", "m", "m"),
+    ("temperature: difference", "1", "1"),
+    # Logarithmic units are non-multiplicative in pint too, but they're not
+    # temperatures - must not become "delta_B".
+    ("temperature: difference", "B", "B"),
+    # CF allows on_scale on a compound unit; without an offset temperature
+    # unit in it, there's nothing to reject.
+    ("temperature: on_scale", "K m-1", "K * m ** -1"),
+    ("temperature: on_scale", "W m-2 K-1", "W * m ** -2 * K ** -1"),
+    ("temperature: on_scale", "m s-1", "m * s ** -1"),
     ("temperature: on_scale", "degree_C", "degree_C"),
     ("temperature: on_scale", "degree_C**1", "degree_C ** 1"),
     (None, "degree_C", "degree_C"),
@@ -131,34 +166,42 @@ TEST_CASES_TEMPERATURE_MODE_STRING = [
     "units_metadata, input_units, expected", TEST_CASES_TEMPERATURE_MODE_STRING
 )
 def test_temperature_mode_applied_to_string(
-    units_metadata: str | None, input_units: str, expected: str
+    ureg: pint.UnitRegistry,
+    units_metadata: str | None,
+    input_units: str,
+    expected: str,
 ) -> None:
     with CFContext(units_metadata=units_metadata):
-        assert cf_string_to_pint(input_units) == expected
+        assert _preprocess(ureg, input_units) == expected
 
 
-def test_no_active_context_behaves_as_before() -> None:
+def test_no_active_context_behaves_as_before(ureg: pint.UnitRegistry) -> None:
     """Same as the (None, "degree_C", "degree_C") case above, but without
     even entering CFContext - confirms the feature is fully opt-in."""
-    assert cf_string_to_pint("degree_C") == "degree_C"
+    assert _preprocess(ureg, "degree_C") == "degree_C"
 
 
-def test_on_scale_on_compound_unit_raises() -> None:
+def test_cf_string_to_pint_ignores_context() -> None:
+    """cf_string_to_pint is a pure syntax translation - the temperature mode
+    is applied by a separate preprocessor, not by it."""
+    with CFContext(units_metadata="temperature: difference"):
+        assert cf_string_to_pint("degree_C") == "degree_C"
+
+
+@pytest.mark.parametrize("units", ["degree_C/s", "kg degree_C m-2"])
+def test_on_scale_on_compound_offset_unit_raises(
+    ureg: pint.UnitRegistry, units: str
+) -> None:
     with (
         pytest.raises(ValueError, match=r"on_scale.*compound"),
         CFContext(units_metadata="temperature: on_scale"),
     ):
-        cf_string_to_pint("degree_C/s")
+        _preprocess(ureg, units)
 
 
 # =============================================================================
 # Native pint calls under CFContext, on a shared registry
 # =============================================================================
-
-
-@pytest.fixture(scope="module")
-def ureg() -> pint.UnitRegistry:
-    return cf_unitregistry()
 
 
 # (units_metadata, units, expected_units_str)
@@ -172,6 +215,14 @@ TEST_CASES_TEMPERATURE_MODE_QUANTITY = [
     # "delta_(degree_C)" and raised UndefinedUnitError.
     ("temperature: difference", "(degree_C)", "delta_degree_Celsius"),
     ("temperature: difference", "((degree_C))", "delta_degree_Celsius"),
+    # Regression: "K" became "delta_K" and raised UndefinedUnitError - the
+    # canonical CF temperature anomaly.
+    ("temperature: difference", "K", "kelvin"),
+    ("temperature: difference", "m", "meter"),
+    # Regression: any compound unit raised ValueError under on_scale, even
+    # without an offset temperature unit in it.
+    ("temperature: on_scale", "K m-1", "kelvin / meter"),
+    ("temperature: on_scale", "W m-2 K-1", "watt / kelvin / meter ** 2"),
 ]
 
 
@@ -192,6 +243,63 @@ def test_quantity_on_scale_on_compound_unit_raises(ureg: pint.UnitRegistry) -> N
         CFContext(units_metadata="temperature: on_scale"),
     ):
         ureg.Quantity(1, "degree_C/s")
+
+
+def test_on_scale_compound_route_from_error_message(
+    ureg: pint.UnitRegistry,
+) -> None:
+    """The route the ValueError points to must actually work. It's the one
+    CF section 3.1.2 describes for an on-scale compound unit: converting
+    kg degree_C m-2 needs the degree_C and kg m-2 values separately -
+    multiplying those quantities converts the on-scale temperature to
+    kelvin first, which is correct."""
+    with (
+        pytest.raises(ValueError, match="known separately") as excinfo,
+        CFContext(units_metadata="temperature: on_scale"),
+    ):
+        ureg.Quantity(10, "kg degC m-2")
+    assert "ureg.Quantity(t, 'degC') * ureg.Quantity(x, 'kg m-2')" in str(excinfo.value)
+
+    q = ureg.Quantity(10, "degC") * ureg.Quantity(1, "kg m-2")
+    assert q.to("kg K m-2").magnitude == pytest.approx(283.15)
+    assert q.to("g K m-2").magnitude == pytest.approx(283_150)
+
+
+def test_forced_on_scale_compound_unit_converts_wrongly(
+    ureg: pint.UnitRegistry,
+) -> None:
+    """Why the ValueError above doesn't suggest
+    parse_units(units, as_delta=False): under
+    autoconvert_offset_to_baseunit=True, pint silently drops the scale
+    factor when converting such a unit (10 kg degC m-2 -> 10, not 10000,
+    g degC m-2). If this starts failing, pint fixed it - revisit that
+    ValueError's message."""
+    q = ureg.Quantity(10, ureg.parse_units("kg degC m-2", as_delta=False))
+    converted = q.to(ureg.parse_units("g degC m-2", as_delta=False))
+    assert converted.magnitude == pytest.approx(10)
+
+
+@pytest.mark.parametrize("units_metadata", [None, "temperature: unknown"])
+@pytest.mark.parametrize(
+    "units, udunits_guess",
+    [
+        ("degree_C", "on_scale"),
+        ("degree_C/s", "difference"),
+        ("degree_C2", "difference"),
+    ],
+)
+def test_unknown_falls_back_on_udunits_rule(
+    ureg: pint.UnitRegistry,
+    units_metadata: str | None,
+    units: str,
+    udunits_guess: str,
+) -> None:
+    """Documented limitation: a pint unit can't carry "unknown", so pint
+    applies the UDUNITS rule (CF section 3.1.2 cites it as guidance only),
+    and cf_attributes_for reports that guess as if it were known."""
+    with CFContext(units_metadata=units_metadata):
+        q = ureg.Quantity(1, units)
+    assert cf_attributes_for(q) == {"units_metadata": f"temperature: {udunits_guess}"}
 
 
 def test_ureg_call_form_also_honors_context(ureg: pint.UnitRegistry) -> None:

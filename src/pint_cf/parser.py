@@ -10,8 +10,6 @@ from typing import ClassVar
 
 from lark import Lark, Token, Transformer, v_args
 
-from .context import _apply_temperature_mode
-
 # Unicode superscript to ASCII digit mapping
 _SUPERSCRIPT_MAP = {
     "⁰": "0",
@@ -304,13 +302,10 @@ def get_parser() -> Lark:
 def cf_string_to_pint(unit_string: str) -> str:
     """Convert a UDUNITS-2 unit string to pint-compatible format.
 
-    Under an active `pint_cf.CFContext`, the CF ``units_metadata``
-    temperature mode is applied: ``"difference"`` forces a bare
-    temperature unit to its ``delta_`` counterpart, e.g.
-    ``"degree_C"`` -> ``"delta_degree_Celsius"``. With no active
-    context (or ``"unknown"``), behavior is unchanged - pint's own
-    default ``as_delta=True`` already applies UDUNITS' compound
-    expression heuristic.
+    A pure syntax translation: it doesn't read any `pint_cf.CFContext`
+    and doesn't need a registry. A CF ``units_metadata`` temperature
+    mode is applied by a separate preprocessor that runs right after
+    this one - see ``pint_cf.context._make_temperature_preprocessor``.
 
     Parameters
     ----------
@@ -330,12 +325,6 @@ def cf_string_to_pint(unit_string: str) -> str:
         a shift by number (e.g. "K @ 273.15") - pint's offset syntax
         only works when defining a new named unit, not as a runtime
         unit expression.
-    ValueError
-        For ``"temperature: on_scale"`` applied to a compound unit
-        expression - it can't be honored through the automatic
-        preprocessor pipeline; call
-        ``ureg.Quantity(value, units, as_delta=False)`` directly
-        instead.
 
     Examples
     --------
@@ -363,4 +352,4 @@ def cf_string_to_pint(unit_string: str) -> str:
     if not isinstance(result, str):
         return "1"
 
-    return _apply_temperature_mode(result)
+    return result
