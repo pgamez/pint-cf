@@ -13,7 +13,7 @@ Going out: `cf_attributes_for` derives CF variable attributes (currently just
 out with a result.
 """
 
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from contextvars import ContextVar
 
@@ -43,7 +43,7 @@ def _parse_units_metadata(value: str) -> str:
 
 
 @contextmanager
-def CFContext(*, units_metadata: str | None = None) -> Iterator[None]:
+def CFContext(*, units_metadata: str | None = None) -> Generator[None]:
     """Apply a CF ``units_metadata`` attribute while building a unit or quantity.
 
     A NetCDF/CF variable can carry a ``units_metadata`` attribute that

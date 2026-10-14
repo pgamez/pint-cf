@@ -509,6 +509,28 @@ _UNREADABLE_CANONICAL_UNITS = {
     "dBZ": _xfail("1", "pint can't prefix a logarithmic unit - decibel branch"),
 }
 
+CANONICAL_UNITS = [
+    line
+    for line in (
+        Path(__file__).parent / "data" / "cf_standard_name_canonical_units.txt"
+    )
+    .read_text(encoding="utf-8")
+    .splitlines()
+    if line and not line.startswith("#")
+]
+
+_UNREADABLE_CANONICAL_UNITS = {
+    "1e-3": _xfail("7", "a bare number as units is rejected as a scale factor"),
+    "1e-6": _xfail("7", "a bare number as units is rejected as a scale factor"),
+    # The standard name table itself uses scaled units, which 3.1.3 says CF
+    # doesn't support - an inconsistency in CF, not only in pint-cf.
+    "1e-3 kg m-2": _xfail("7", "scaled canonical unit"),
+    "1e-3 kg s-1": _xfail("7", "scaled canonical unit"),
+    "1e-3 s-1": _xfail("7", "scaled canonical unit"),
+    "W m-2 sr-1 (m-1)-1": _xfail("16", "no exponent right after a parenthesis"),
+    "dBZ": _xfail("1", "pint can't prefix a logarithmic unit - decibel branch"),
+}
+
 # Units UDUNITS 2.2.28 (the cf_units build) doesn't define, though the CF
 # FAQ does - written back as-is.
 _NOT_IN_UDUNITS_2_2_28 = {"dB": _xfail("1", "linear dB from cfunits - decibel branch")}
@@ -536,22 +558,35 @@ def test_canonical_units_written_back_read_the_same(
     assert ureg.Quantity(1, format(unit, spec)).to(unit).magnitude == pytest.approx(1)
 
 
+# "The value of the units attribute is a string that can be recognized by
+# the UDUNITS package" (3.1) - the expected written strings are kept in
+# tests/data, generated and checked against the UDUNITS-2 C library by
+# tools/write_canonical_units.py. Only "dB" (written "decibel"/"dB") isn't
+# recognized by UDUNITS 2.2.28, finding 1, left for the decibel branch.
+_WRITTEN_CANONICAL_UNITS = [
+    line.split("\t")
+    for line in (Path(__file__).parent / "data" / "cf_canonical_units_written.tsv")
+    .read_text(encoding="utf-8")
+    .splitlines()
+    if line and not line.startswith("#")
+]
+
+
+def test_written_canonical_units_cover_every_readable_one() -> None:
+    assert [units for units, _, _ in _WRITTEN_CANONICAL_UNITS] == (
+        READABLE_CANONICAL_UNITS
+    )
+
+
 @pytest.mark.parametrize(
-    "units",
-    [
-        pytest.param(units, marks=_NOT_IN_UDUNITS_2_2_28.get(units, ()))
-        for units in READABLE_CANONICAL_UNITS
-    ],
+    "units, expected_cf, expected_short_cf", _WRITTEN_CANONICAL_UNITS
 )
-@pytest.mark.parametrize("spec", ["cf", "~cf"])
-def test_canonical_units_written_back_are_valid_udunits(
-    ureg: pint.UnitRegistry, spec: str, units: str
+def test_canonical_units_written_back_as_checked_against_udunits(
+    ureg: pint.UnitRegistry, units: str, expected_cf: str, expected_short_cf: str
 ) -> None:
-    """3.1: "The value of the units attribute is a string that can be
-    recognized by the UDUNITS package". Checked against the UDUNITS-2 C
-    library through cf_units, when installed."""
-    cf_units = pytest.importorskip("cf_units")
-    cf_units.Unit(format(ureg.Unit(units), spec))
+    unit = ureg.Unit(units)
+    assert format(unit, "cf") == expected_cf
+    assert format(unit, "~cf") == expected_short_cf
 
 
 # =============================================================================

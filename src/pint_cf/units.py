@@ -6,12 +6,18 @@ from typing import Any, Unpack
 import pint
 from pint.delegates.formatter._compound_unit_helpers import (
     BabelKwds,
-    SortFunc,
     prepare_compount_unit,
 )
 from pint.delegates.formatter._spec_helpers import REGISTERED_FORMATTERS
 from pint.delegates.formatter.plain import DefaultFormatter
 from pint.facets.plain import PlainUnit
+
+try:
+    from pint.delegates.formatter.sorting import SortFunc
+except ImportError:  # pint < 0.26
+    from pint.delegates.formatter._compound_unit_helpers import (
+        SortFunc,  # pyright: ignore[reportPrivateImportUsage]
+    )
 
 from .context import _make_temperature_preprocessor
 from .parser import cf_string_to_pint
