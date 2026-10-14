@@ -1,10 +1,13 @@
 """
+Tests for the UDUNITS-2 grammar and its translation into pint strings
+(cf_string_to_pint), at the string layer - what pint does with those strings
+is tested in the other files.
+
 TODO:
 
 - https://docs.unidata.ucar.edu/udunits/current/udunits2lib.html#Grammar
 - fechas (tienen el signo -)
 - El XML tambien se tiene que probar
-
 """
 
 import pytest

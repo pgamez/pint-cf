@@ -57,10 +57,26 @@ def CFContext(*, units_metadata: str | None = None) -> Iterator[None]:
     and it will resolve to the right pint unit (e.g.
     ``delta_degree_Celsius`` for a difference).
 
-    Scope this tightly around a single unit/quantity construction:
-    it must not wrap a loop over multiple variables that may carry
-    different metadata, since the value set here is only reset on
-    exiting the block.
+    The metadata applies to every temperature unit string pint reads
+    inside the block - not only when building a quantity, but also
+    the target of a conversion (``q.to("degF")``), and any unit
+    string read by code called from inside the block. So one block
+    holds one variable: read it there, and convert it there too.
+    Anything that belongs to a variable with different metadata
+    (including converting a quantity built elsewhere) goes outside
+    the block. In particular, don't wrap a loop over several
+    variables, or a whole-dataset call such as xarray's
+    ``ds.pint.quantify()``, in a single block: every temperature
+    variable would get this one variable's metadata. Use one block
+    per variable instead.
+
+    Convert inside the block whatever the unit. For Celsius and
+    Fahrenheit it makes no difference, since pint keeps a difference
+    as a ``delta_`` unit. For kelvin and Rankine (no offset), pint
+    stores on-scale and difference as the same unit, so the metadata
+    can't travel with the quantity: outside the block, a target such
+    as ``"degF"`` has no metadata - which CF treats as "unknown",
+    with no guaranteed conversion - and pint reads it as on-scale.
 
     Parameters
     ----------
@@ -69,7 +85,11 @@ def CFContext(*, units_metadata: str | None = None) -> Iterator[None]:
         ``"temperature: difference"`` (`CF conventions, section 3.1.2,
         "Temperature units"
         <https://cfconventions.org/cf-conventions/cf-conventions.html#temperature-units>`_).
-        ``None`` (the default) is a no-op.
+        ``None`` (the default) means the variable has no
+        ``units_metadata`` attribute, which CF says to read as
+        ``"temperature: unknown"``. Inside an outer ``CFContext``, it
+        also clears the outer block's metadata: a variable without the
+        attribute doesn't inherit another variable's.
 
     Yields
     ------

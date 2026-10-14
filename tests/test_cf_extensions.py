@@ -1,19 +1,19 @@
 """
-Tests for CF units not supported by UDUNITS-2, added on top of the base
+Tests for the CF units UDUNITS-2 doesn't define, added on top of the base
 registry by cf_unitregistry() unless cf_extensions=False.
 
 Covers, in order:
-  - New dimensionless units (level, sigma_level, layer) and their
-    CFDeprecatedUnitWarning. These are always defined, even with
-    cf_extensions=False, since the CF conventions allow them
-    unconditionally rather than as an opt-in extension.
-  - practical_salinity_unit/psu.
-  - decibel/bel.
-  - The sverdrup/sievert "Sv" symbol reassignment, and the regression it
-    could otherwise cause: `rem` (defined upstream as "cSv") must keep
-    meaning centisievert, not silently become a fraction of a sverdrup.
-  - cf_extensions=False: none of the opt-in additions are present, and
-    "Sv" keeps its plain UDUNITS-2 (sievert) meaning.
+  - The additions themselves: practical_salinity_unit/psu, decibel/bel, and
+    the "Sv" symbol reassigned from sievert to sverdrup - including the
+    regression that could otherwise cause: `rem` (defined upstream as "cSv")
+    must keep meaning centisievert, not silently become a fraction of a
+    sverdrup.
+  - Their CF formatting.
+  - Which units warn: only the COARDS placeholders level/sigma_level/layer.
+    Those are always defined, with or without cf_extensions - see
+    test_cf_conformance.py (section 3.1.1).
+  - cf_extensions=False: none of the additions are present, and "Sv" keeps
+    its plain UDUNITS-2 (sievert) meaning.
 """
 
 import warnings
@@ -21,31 +21,14 @@ import warnings
 import pint
 import pytest
 
-from pint_cf import CFDeprecatedUnitWarning, cf_unitregistry
+from pint_cf import CFDeprecatedUnitWarning
 
 # =============================================================================
-# Fixtures
+# Conversions
 # =============================================================================
 
-
-@pytest.fixture(scope="module")
-def ureg() -> pint.UnitRegistry:
-    return cf_unitregistry()
-
-
-@pytest.fixture(scope="module")
-def strict_ureg() -> pint.UnitRegistry:
-    return cf_unitregistry(cf_extensions=False)
-
-
-# =============================================================================
-# Conversions: (unit, target_unit, expected_magnitude)
-# =============================================================================
-
+# (units, target, expected)
 TEST_CASES_CONVERSION = [
-    ("level", "dimensionless", 1),
-    ("sigma_level", "dimensionless", 1),
-    ("layer", "dimensionless", 1),
     ("psu", "dimensionless", 1e-3),
     ("practical_salinity_unit", "dimensionless", 1e-3),
     ("dB", "dimensionless", 1),
@@ -62,18 +45,18 @@ TEST_CASES_CONVERSION = [
 ]
 
 
-@pytest.mark.parametrize("unit, target, expected", TEST_CASES_CONVERSION)
+@pytest.mark.parametrize("units, target, expected", TEST_CASES_CONVERSION)
 def test_cf_extension_conversion(
-    ureg: pint.UnitRegistry, unit: str, target: str, expected: float
+    ureg: pint.UnitRegistry, units: str, target: str, expected: float
 ) -> None:
-    q = ureg.Quantity(1, unit)
-    assert q.to(target).magnitude == pytest.approx(expected)
+    assert ureg.Quantity(1, units).to(target).magnitude == pytest.approx(expected)
 
 
 # =============================================================================
-# Formatting: (unit, expected_cf, expected_short_cf)
+# Formatting
 # =============================================================================
 
+# (units, expected_cf, expected_short_cf)
 TEST_CASES_FORMAT = [
     ("sverdrup", "sverdrup", "Sv"),
     ("Sv", "sverdrup", "Sv"),
@@ -82,74 +65,43 @@ TEST_CASES_FORMAT = [
 ]
 
 
-@pytest.mark.parametrize("unit, expected_cf, expected_short_cf", TEST_CASES_FORMAT)
+@pytest.mark.parametrize("units, expected_cf, expected_short_cf", TEST_CASES_FORMAT)
 def test_cf_extension_format(
-    ureg: pint.UnitRegistry, unit: str, expected_cf: str, expected_short_cf: str
+    ureg: pint.UnitRegistry, units: str, expected_cf: str, expected_short_cf: str
 ) -> None:
-    q = ureg.Quantity(1, unit)
+    q = ureg.Quantity(1, units)
     assert format(q, "cf") == f"1 {expected_cf}"
     assert format(q, "~cf") == f"1 {expected_short_cf}"
 
 
 # =============================================================================
-# Deprecated dimensionless vertical-coordinate placeholders
+# Only the COARDS placeholders warn
 # =============================================================================
-
-DEPRECATED_UNITS = ["level", "levels", "sigma_level", "sigma_levels", "layer", "layers"]
 
 NON_DEPRECATED_UNITS = ["meter", "psu", "dB", "sverdrup"]
 
 
-@pytest.mark.parametrize("unit", DEPRECATED_UNITS)
-def test_deprecated_cf_unit_warns(ureg: pint.UnitRegistry, unit: str) -> None:
-    with pytest.warns(CFDeprecatedUnitWarning, match="COARDS"):
-        q = ureg.Quantity(3, unit)
-    assert q.to("dimensionless").magnitude == 3
-
-
-@pytest.mark.parametrize("unit", NON_DEPRECATED_UNITS)
-def test_non_deprecated_unit_does_not_warn(ureg: pint.UnitRegistry, unit: str) -> None:
+@pytest.mark.parametrize("units", NON_DEPRECATED_UNITS)
+def test_other_units_do_not_warn(ureg: pint.UnitRegistry, units: str) -> None:
     with warnings.catch_warnings():
         warnings.simplefilter("error", CFDeprecatedUnitWarning)
-        ureg.Quantity(1, unit)
+        ureg.Quantity(1, units)
 
 
 # =============================================================================
-# cf_extensions=False: none of the opt-in CF additions are present
+# cf_extensions=False
 # =============================================================================
 
-UNDEFINED_IN_STRICT_MODE = [
-    "psu",
-    "practical_salinity_unit",
-    "decibel",
-    "bel",
-]
+UNDEFINED_WITHOUT_CF_EXTENSIONS = ["psu", "practical_salinity_unit", "decibel", "bel"]
 
 
-@pytest.mark.parametrize("unit", UNDEFINED_IN_STRICT_MODE)
-def test_strict_mode_does_not_define_cf_extensions(
-    strict_ureg: pint.UnitRegistry, unit: str
+@pytest.mark.parametrize("units", UNDEFINED_WITHOUT_CF_EXTENSIONS)
+def test_strict_registry_does_not_define_cf_extensions(
+    strict_ureg: pint.UnitRegistry, units: str
 ) -> None:
     with pytest.raises(pint.errors.UndefinedUnitError):
-        strict_ureg.Unit(unit)
+        strict_ureg.Unit(units)
 
 
-def test_strict_mode_keeps_sv_as_sievert(strict_ureg: pint.UnitRegistry) -> None:
-    q = strict_ureg.Quantity(1, "Sv")
-    assert q.to("gray").magnitude == pytest.approx(1)
-
-
-@pytest.mark.parametrize("unit", ["level", "sigma_level", "layer"])
-def test_strict_mode_still_defines_coards_vertical_units(
-    strict_ureg: pint.UnitRegistry, unit: str
-) -> None:
-    q = strict_ureg.Quantity(3, unit)
-    assert q.to("dimensionless").magnitude == 3
-
-
-@pytest.mark.parametrize("unit", ["level", "sigma_level", "layer"])
-def test_strict_mode_still_warns_on_deprecated_coards_vertical_units(
-    strict_ureg: pint.UnitRegistry, unit: str
-) -> None:
-    with pytest.warns(CFDeprecatedUnitWarning, match="COARDS"):
-        strict_ureg.Quantity(1, unit)
+def test_strict_registry_keeps_sv_as_sievert(strict_ureg: pint.UnitRegistry) -> None:
+    assert strict_ureg.Quantity(1, "Sv").to("gray").magnitude == pytest.approx(1)

@@ -132,27 +132,14 @@ TEST_CASES_FORMAT = [
     ("W/(m^2 K)", "watt-kelvin^-1-meter^-2", "W/K/m2"),
 ]
 
-_TEST_CASES_FORMAT_LONG = [(i[0], i[1]) for i in TEST_CASES_FORMAT]
-_TEST_CASES_FORMAT_SHORT = [(i[0], i[2]) for i in TEST_CASES_FORMAT]
+TEST_CASES_FORMAT_BY_SPEC = [
+    *[(units, "cf", long_form) for units, long_form, _ in TEST_CASES_FORMAT],
+    *[(units, "~cf", short_form) for units, _, short_form in TEST_CASES_FORMAT],
+]
 
 
-@pytest.mark.parametrize("input_str, expected", _TEST_CASES_FORMAT_LONG)
-def test_cf_format(ureg: pint.UnitRegistry, input_str: str, expected: str) -> None:
-    """Long-form CF format: product='-', power='^', no ratio."""
-    u = ureg.Unit(input_str)
-    result = format(u, "cf")
-    assert result == expected, (
-        f"format(Unit('{input_str}'), 'cf') = {result!r}, expected {expected!r}"
-    )
-
-
-@pytest.mark.parametrize("input_str, expected", _TEST_CASES_FORMAT_SHORT)
-def test_cf_short_format(
-    ureg: pint.UnitRegistry, input_str: str, expected: str
+@pytest.mark.parametrize("input_str, spec, expected", TEST_CASES_FORMAT_BY_SPEC)
+def test_cf_format(
+    ureg: pint.UnitRegistry, input_str: str, spec: str, expected: str
 ) -> None:
-    """Short-form CF format (~): product='.', power=implicit, ratio with '/'."""
-    u = ureg.Unit(input_str)
-    result = format(u, "~cf")
-    assert result == expected, (
-        f"format(Unit('{input_str}'), '~cf') = {result!r}, expected {expected!r}"
-    )
+    assert format(ureg.Unit(input_str), spec) == expected

@@ -72,9 +72,42 @@ with CFContext(units_metadata="temperature: difference"):
 print(q.units)  # delta_degree_Celsius
 ```
 
-Kelvin (or any unit without a temperature offset) is unaffected: on-scale
-and difference are the same pint unit. A `units_metadata` on a
-non-temperature unit, which CF forbids, is ignored.
+The metadata applies to every temperature unit read inside the block,
+including the target of a conversion and any unit read by code you call
+from inside it. Keep one variable per block: read it there and convert it
+there too. Anything belonging to a variable with different metadata goes
+outside. A variable without `units_metadata` gets
+`CFContext(units_metadata=None)`, which CF reads as `"temperature: unknown"`
+and which doesn't inherit an outer block's metadata.
+
+With xarray, quantify one variable per block. Calling `ds.pint.quantify()`
+on the whole dataset inside a single block would give every temperature
+variable the same metadata:
+
+```python
+ureg.force_ndarray_like = True  # required by pint-xarray
+
+quantified = {}
+for name, var in ds.data_vars.items():
+    with CFContext(units_metadata=var.attrs.get("units_metadata")):
+        quantified[name] = ds[[name]].pint.quantify(unit_registry=ureg)[name]
+```
+
+Convert inside the block whatever the unit. Celsius and Fahrenheit keep a
+difference as a `delta_` unit, but kelvin and Rankine have no offset: pint
+stores on-scale and difference as the same unit, so the metadata can't
+travel with the quantity:
+
+```python
+with CFContext(units_metadata="temperature: difference"):
+    anomaly = ureg.Quantity(1, "K")
+    anomaly.to("degF")  # 1.8 delta_fahrenheit
+
+anomaly.to("degF")      # -457.87 degF: outside, "degF" has no metadata,
+                        # so pint reads it as on-scale
+```
+
+A `units_metadata` on a non-temperature unit, which CF forbids, is ignored.
 
 Without `CFContext`, with `units_metadata` absent, or with
 `"temperature: unknown"`, CF says the data is ambiguous. In that case pint
