@@ -227,6 +227,14 @@ TEST_CASES_COMPOUND_DIFFERENCE_CONVERSIONS = [
 # kg m-2 of which it is the product."
 ON_SCALE_COMPOUND_OFFSET_UNITS = ["kg degC m-2", "degC m s-1", "degF/foot"]
 
+# Same temperature origin in source and target: CF allows the conversion, only
+# the other factors change. pint-cf refuses to read the unit instead.
+TEST_CASES_ON_SCALE_COMPOUND_SAME_ORIGIN = [
+    ("kg degC m-2", "g degC m-2", 10_000),
+    ("degC m s-1", "degC km h-1", 36),
+    ("degF/foot", "degF/m", 10 / 0.3048),
+]
+
 # "A variable must not have a units_metadata attribute [...] if its units do
 # not involve a temperature unit" - so it's ignored when reading, and never
 # written.
@@ -345,6 +353,18 @@ def test_on_scale_compound_with_offset_unit_is_refused(
 ) -> None:
     with pytest.raises(ValueError, match="known separately"):
         _read(ureg, 1, units, ON_SCALE)
+
+
+@_xfail("12", "on_scale compound with degC/degF is refused, not converted")
+@pytest.mark.parametrize(
+    "units, target, expected", TEST_CASES_ON_SCALE_COMPOUND_SAME_ORIGIN
+)
+def test_on_scale_compound_with_offset_unit_converts_to_the_same_origin(
+    ureg: pint.UnitRegistry, units: str, target: str, expected: float
+) -> None:
+    with CFContext(units_metadata=ON_SCALE):
+        q = ureg.Quantity(10, units)
+        assert q.to(target).magnitude == pytest.approx(expected)
 
 
 def test_on_scale_kelvin_compound_converts_only_to_the_same_origin(
